@@ -11,7 +11,8 @@
 
     Notes:
         1. Read input from file list(output from IBDPairByPos.py), and output results to stdout.
-        2. See example by -f.
+        2. ***Out put POS has been shift to 1 based.***
+        3. See example by -f.
 
     Options:
         -h --help     Show this screen.
@@ -86,7 +87,7 @@ if __name__ == '__main__':
     out = sorted(covMap.items(), key=lambda x: x[0])
     sys.stdout.write('Pos\tMean\tStd\n')
     for k,v in out:
-        sys.stdout.write('%d\t%.4f\t%.4f\n'%(k, mean(v), std(v)))
+        sys.stdout.write('%d\t%.4f\t%.4f\n'%(k+1, mean(v), std(v)))
 
 sys.stdout.flush()
 sys.stdout.close()
