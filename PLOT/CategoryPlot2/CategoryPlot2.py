@@ -20,7 +20,7 @@
         --yerr yecol  Column index for y error bar.
         --yr yrange   Set the yAxis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
-        --ms msize    Set marker size: float, default 10.
+        --ms msize    Set marker size: float, default 5.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -36,16 +36,11 @@ def ShowFormat():
     print('''
     #Output from: FamilyHitByGene.py
     ------------------------
-    S55     3       5       CHRNA7  chr15   3
-    S55     3       5       NCAM2   chr21   3
-    FGJG1   3       4       JAK3    chr19   2
-    FGJG1   3       4       KRT3    chr12   3
-    FGJG1   3       4       NKD2    chr5    4
-    FGJG1   3       4       MKLN1   chr7    1
-    FGEG    3       21      RET     chr10   2       Auto-Dominant-CAKUT
-    FGEG    3       21      COLEC12 chr18   6
-    FGEG    3       21      NUDT6   chr4    2
-    FGEG    3       21      C6orf222        chr6    5
+c1  1   10  1
+c1  2   -5  3
+c1  5   3   2
+COMMAND vl  3
+COMMAND vl  4
 
     #output:
     ------------------------
@@ -71,7 +66,7 @@ if __name__ == '__main__':
     mode = 'markers'
     hlines = [] #location for horizontal lines.
     vlines = []
-    msize = 10
+    msize = 5
 
     yrange = []
     if args['--yerr']:
@@ -83,8 +78,9 @@ if __name__ == '__main__':
     if args['--ms']:
         msize = float(args['--ms'])
 
-    xdata = {} #{categoryName -> []}
-    ydata = {} #{categoryName -> []}
+    from collections import OrderedDict
+    xdata = OrderedDict() #{categoryName -> []}
+    ydata = OrderedDict() #{categoryName -> []}
     errY  = {} #{categoryName -> []} error bar for Y.ss
     commands = {'vl'}
 
@@ -105,7 +101,7 @@ if __name__ == '__main__':
                 try:
                     x = float(ss[1])
                     y = float(ss[2])
-                    if errYCol:
+                    if errYCol and len(ss) >= errYCol +1:
                         z = float(ss[errYCol])
                         addData(errY,ss[0],z)
                     addData(xdata, ss[0], x)
@@ -127,11 +123,12 @@ if __name__ == '__main__':
      )
 
     for k in xdata.keys():
-        if errY:
+        if k in errY:
             plotData.append(
                 go.Scatter(
                 x=xdata[k],
                 y=ydata[k],
+                name = k,
                 mode = mode,
                 marker = marker,
                 error_y=dict(
@@ -147,6 +144,8 @@ if __name__ == '__main__':
                 go.Scatter(
                 x=xdata[k],
                 y=ydata[k],
+                marker = marker,
+                name=k,
                 mode = mode,
             ))
 
@@ -179,8 +178,17 @@ if __name__ == '__main__':
             'title'   : ytitle,
             'zeroline':False
         },
-
     }
+
+    legend={
+        'legend':{
+            'xanchor': 'right',
+            'x': 0.99,
+            'y': 0,
+            'yanchor': 'bottom'
+        }
+    }
+    layout.update(legend)
 
     hl_data = []
     if hlines:
@@ -225,73 +233,6 @@ if __name__ == '__main__':
     if alllines:
         h = {'shapes':alllines}
         layout.update(h)
-
-    # hlines = {
-    #     'shapes': [{
-    #         'type': 'line',
-    #         'xref': 'paper',
-    #         'x0': 0,
-    #         'y0': 0.5,
-    #         'x1': 1,
-    #         'y1': 0.5,
-    #         'line': {
-    #             'color': 'rgb(50, 171, 96)',
-    #             'width': 2,
-    #             'dash': 'dashdot',
-    #         },
-    #     }]
-    # }
-
-    # layOut = go.Layout(
-    #     #title="hello world"
-    #       margin = go.Margin( # update the left, bottom, right, top margin
-    #       l= 40,
-    #       b= 40,
-    #       r= 10,
-    #       t= 10
-    #      ),
-    #      xaxis=go.XAxis(
-    #         autotick=True,
-    #         mirror=True,
-    #         #range=[0, 500],
-    #         showgrid=True,
-    #         showline=True,
-    #         ticks='outside',
-    #         showticklabels=True,
-    #         title = xtitle
-    #      ),
-    #      yaxis=go.YAxis(
-    #         autotick=True,
-    #         mirror=True,
-    #         range=yrange,
-    #         showgrid=True,
-    #         showline=True,
-    #         ticks='outside',
-    #         title= ytitle,
-    #         zeroline=False
-    #     )
-    # )
-    #add horizontal line
-    # hline = go.Line(
-    #     xref = 'paper',
-    #     yref = 'paper',
-    #     x0 = 0,
-    #     'y0' = 0,
-    #     'x1' = 1,
-    #     'y1' = 1
-    # )
-    # hline = {
-    #     'shapes':{
-    #         'type': 'line',
-    #         'xref': 'paper',
-    #         'yref': 'paper',
-    #         'x0' : 0,
-    #         'y0' : 1,
-    #         'x1' : 1,
-    #         'y1' : 1
-    #     }
-    # }
-    #layOut.update(hline)
 
     #output the last one
     plotly.offline.plot({'data': plotData,'layout': layout}
