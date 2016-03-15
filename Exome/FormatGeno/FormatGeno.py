@@ -29,24 +29,14 @@ def ShowFormat():
     print('''
     #Genotype column from: ExomeModelFilter
     ------------------------
-    S55     3       5       CHRNA7  chr15   3
-    S55     3       5       NCAM2   chr21   3
-    FGJG1   3       4       JAK3    chr19   2
-    FGJG1   3       4       KRT3    chr12   3
-    FGJG1   3       4       NKD2    chr5    4
-    FGJG1   3       4       MKLN1   chr7    1
-    FGEG    3       21      RET     chr10   2       Auto-Dominant-CAKUT
-    FGEG    3       21      COLEC12 chr18   6
-    FGEG    3       21      NUDT6   chr4    2
-    FGEG    3       21      C6orf222        chr6    5
+(FGGU1[FGGU11:0/1:16,13;FGGU117:0/1:14,19;FGGU1112:./.;FGGU114:0/1:13,18];FGGU1110:./.)
+(FGGU1[FGGU11:0/1:19,23;FGGU117:0/1:13,12;FGGU1112:./.:3,0;FGGU114:0/1:17,14];FGGU1110:0/0:13,0)
 
     #output:
     ------------------------
-    FamilyName      #SeqMember      #hitGeneNum     GeneList
-    S55     3       5       CHRNA7-chr15-3  NCAM2-chr21-3
-    FGJG1   3       4       JAK3-chr19-2    KRT3-chr12-3    NKD2-chr5-4     MKLN1-chr7-1
-    FGEG    3       21      RET-chr10-2-Auto-Dominant-CAKUT COLEC12-chr18-6 NUDT6-chr4-2    C6or
-    f222-chr6-5
+FGGU11  FGGU117 FGGU1112        FGGU114 FGGU1110
+0/1:16,13       0/1:14,19       ./.     0/1:13,18       ./.
+0/1:19,23       0/1:13,12       ./.:3,0 0/1:17,14       0/0:13,0
     ''');
 
 if __name__ == '__main__':
