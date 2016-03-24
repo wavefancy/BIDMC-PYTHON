@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """
 
@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        KeyMapReplace.py -p <key-value-pair-file> -k <kcol> [-r <rcol>] [-a aValue]
+        KeyMapReplace.py -p <key-value-pair-file> -k <kcol> (-r <rcol> | -a aValue)
         KeyMapReplace.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -15,7 +15,8 @@
 
     Options:
         -p <key-map-pair-file>  Key value pairs, one entry one line.
-        -k <kcol>     Colum as key in stdin, column index starts from 1.
+                                [1,(n-1)] columns as key, last column(n) as value.
+        -k <kcol>     Colums as key in stdin, column index starts from 1, eg 1|1,3
         -r <rcol>     Colum to replace in stdin, column index starts from 1.
         -a aValue     Add one column at line end, other than replace one column,
                         add 'aValue' if no key matching.
@@ -57,7 +58,12 @@ def ShowFormat():
           ''');
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='2.0')
+    args = docopt(__doc__, version='3.0')
+    #version 3.0
+    # 1. Add function to support multiple columns as key.
+    #    Treat all the columns except the last one in the key-map-pair-file as key.
+    #    Columns for key were concatentated by '-'
+
     #print(args)
     #sys.exit(-1)
 
@@ -74,21 +80,23 @@ if __name__ == '__main__':
         line = line.strip()
         if line:
             ss = line.split()
-            if ss[0] not in kv_map:
-                kv_map[ss[0]] = ss[1]
+            k = '-'.join(ss[0:-1])
+            if k not in kv_map:
+                kv_map[k] = ss[-1]
             else:
                 sys.stderr.write('Warning: Duplicate keys, only keep first entry. Skip: %s\n'%(line))
 
     #Replace one colum
-    kcol = int(args['-k']) -1
+    kcols = [int(x) -1 for x in args['-k'].split(',')]
     if args['-r']:
         rcol = int(args['-r']) -1
         for line in sys.stdin:
             line = line.strip()
             if line:
                 ss = line.split()
-                if ss[kcol] in kv_map:
-                    ss[rcol] = kv_map[ss[kcol]]
+                k = '-'.join([ss[x] for x in kcols])
+                if k in kv_map:
+                    ss[rcol] = kv_map[k]
                 sys.stdout.write('%s\n'%('\t'.join(ss)))
 
     if args['-a']:
@@ -97,8 +105,9 @@ if __name__ == '__main__':
             line = line.strip()
             if line:
                 ss = line.split()
-                if ss[kcol] in kv_map:
-                    sys.stdout.write('%s\t%s\n'%('\t'.join(ss), kv_map[ss[kcol]]))
+                k = '-'.join([ss[x] for x in kcols])
+                if k in kv_map:
+                    sys.stdout.write('%s\t%s\n'%('\t'.join(ss), kv_map[k]))
                 else:
                     sys.stdout.write('%s\t%s\n'%('\t'.join(ss), val))
 
