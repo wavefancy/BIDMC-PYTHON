@@ -1,0 +1,7 @@
+##fileformat=VCFv4.0
+##FORMAT=<ID=HQ,Number=2,Type=Integer,Description="Haplotype Quality">
+#CHROM  POS ID  REF ALT QUAL    FILTER  INFO    FORMAT  NA00001 NA00002 NA00003 NA4 NA5 NA6 NA7
+20  14372   rs6054257   G   A   29  PASS    NS=3;DP=14;AF=0.5;DB;H2 GT:AD:DP:GQ:PL 0/1:9,1:10:27:0,27,303   0/1:9,6:15:24:0,24,360   0/1:22,10:32:60:0,60,900 0/1:13,5:18:30:0,30,450 ./.     ./.     ./.
+20  14373   rs6054257   G   A   29  PASS    NS=3;DP=14;AF=0.5;DB;H2 GT:AD:DP:GQ:PL ./.     0/1:9,1:10:27:0,27,303     0/1:9,6:15:24:0,24,360     ./.     ./.     ./.     ./.
+20  14373   rs6054257   G   A   29  PASS    NS=3;DP=14;AF=0.5;DB;H2 GT:AD:DP:GQ:PL ./.     .     0/1:9,6:15:24:0,24,360     ./.     ./.     ./.     ./.
+20  14373   rs6054257   G   A   29  PASS    NS=3;DP=14;AF=0.5;DB;H2 GT:AD:DP:GQ:PL 0/1:3,5,0:8:86:.:.:147,0,86,156,101,257 0/1:1,5,0:6:9:.:.:159,0,9,162,24,185    0/1:7,4,0:11:99:.:.:106     ./.     ./.     ./.     ./.
