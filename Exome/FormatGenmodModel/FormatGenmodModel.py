@@ -29,6 +29,16 @@ signal(SIGPIPE,SIG_DFL) #prevent IOError: [Errno 32] Broken pipe. If pipe closed
 def ShowFormat():
     '''Input File format example:'''
     print('''
+#Input data (output from genmod).
+------------------------
+Exonic;Annotation=MFF;Compounds=FGCP1:chr2_227332588_A_AATCC,AATCCGAGCAGTTG,AATCCGAGCAGTT;GeneticModels=FGCP1:AD_dn|AR_comp_dn;M
+odelScore=FGCP1:79
+Exonic;Annotation=PCDH12;GeneticModels=FGCP1:AD_dn;ModelScore=FGCP1:5
+
+#output data:
+------------------------
+GM:AD_dn|AR_comp_dn;Compounds:chr2_227332588_A_AATCC,AATCCGAGCAGTTG,AATCCGAGCAGTT;
+GM:AD_dn;
     ''');
 
 class P(object):
