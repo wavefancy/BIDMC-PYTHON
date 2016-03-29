@@ -1,0 +1,8 @@
+#Title
+Exonic;Annotation=MFF;Compounds=FGCP1:chr2_227332589_G_GAGCAGTTGGCAGAC;GeneticModels=FGCP1:AD_dn|AR_comp_dn;ModelScore=FGCP1:94
+Exonic;Annotation=MFF;Compounds=FGCP1:chr2_227332588_A_AATCC,AATCCGAGCAGTTG,AATCCGAGCAGTT;GeneticModels=FGCP1:AD_dn|AR_comp_dn;ModelScore=FGCP1:79
+Exonic;Annotation=PCDH12;GeneticModels=FGCP1:AD_dn;ModelScore=FGCP1:5
+Exonic;Annotation=EVX1;GeneticModels=FGCP1:AD_dn;ModelScore=FGCP1:17
+Exonic;Annotation=AVPR1A;GeneticModels=FGCP1:AD_dn;ModelScore=FGCP1:15
+Exonic;Annotation=TDG;GeneticModels=FGCP1:AD_dn;ModelScore=FGCP1:14
+
