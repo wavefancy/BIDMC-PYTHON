@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        KeyMapReplace.py -p <key-value-pair-file> -k <kcol> (-r <rcol> | -a aValue)
+        KeyMapReplace.py -p <key-value-pair-file> -k <kcol> (-r <rcol> | -a aValue) [-d delimter]
         KeyMapReplace.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -20,6 +20,10 @@
         -r <rcol>     Colum to replace in stdin, column index starts from 1.
         -a aValue     Add one column at line end, other than replace one column,
                         add 'aValue' if no key matching.
+        -d delimter   Delimter to split key from stdin,
+                        *** Can only set one column by -k option.
+                        *** NA will be set up if no key matching [different behavior as no this option].
+                        *** if -a model is open, 'aValue' will be set up instead.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -28,6 +32,7 @@
 import sys
 from docopt import docopt
 from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE,SIG_DFL)
 
 def ShowFormat():
     '''File format example'''
@@ -64,6 +69,9 @@ if __name__ == '__main__':
     #    Treat all the columns except the last one in the key-map-pair-file as key.
     #    Columns for key were concatentated by '-'
 
+    #version 4.0
+    # 1. add option to split kep colum from stdin.
+
     #print(args)
     #sys.exit(-1)
 
@@ -73,6 +81,9 @@ if __name__ == '__main__':
     if args['-a'] and args['-r']:
         sys.stderr.write('ERROR: option -a|-r can only be applied by one of them.\n')
         sys.exit(-1)
+    delimter = ''
+    if args['-d']:
+        delimter = args['-d']
 
     #read key-value pairs
     kv_map = {}
@@ -94,10 +105,21 @@ if __name__ == '__main__':
             line = line.strip()
             if line:
                 ss = line.split()
-                k = '-'.join([ss[x] for x in kcols])
-                if k in kv_map:
-                    ss[rcol] = kv_map[k]
-                sys.stdout.write('%s\n'%('\t'.join(ss)))
+                if delimter:
+                    keys = ss[kcols[0]].split(delimter)
+                    out = []
+                    for k in keys:
+                        if k in kv_map:
+                            out.append(kv_map[k])
+                        else:
+                            out.append('NA')
+                    ss[rcol] = delimter.join(out)
+                    sys.stdout.write('%s\n'%('\t'.join(ss)))
+                else:
+                    k = '-'.join([ss[x] for x in kcols])
+                    if k in kv_map:
+                        ss[rcol] = kv_map[k]
+                    sys.stdout.write('%s\n'%('\t'.join(ss)))
 
     if args['-a']:
         val = args['-a']
@@ -105,11 +127,22 @@ if __name__ == '__main__':
             line = line.strip()
             if line:
                 ss = line.split()
-                k = '-'.join([ss[x] for x in kcols])
-                if k in kv_map:
-                    sys.stdout.write('%s\t%s\n'%('\t'.join(ss), kv_map[k]))
+                if delimter:
+                    keys = ss[kcols[0]].split(delimter)
+                    out = []
+                    for k in keys:
+                        if k in kv_map:
+                            out.append(kv_map[k])
+                        else:
+                            out.append(val)
+                    sys.stdout.write('%s\t%s\n'%('\t'.join(ss), delimter.join(out)))
+
                 else:
-                    sys.stdout.write('%s\t%s\n'%('\t'.join(ss), val))
+                    k = '-'.join([ss[x] for x in kcols])
+                    if k in kv_map:
+                        sys.stdout.write('%s\t%s\n'%('\t'.join(ss), kv_map[k]))
+                    else:
+                        sys.stdout.write('%s\t%s\n'%('\t'.join(ss), val))
 
 sys.stdout.flush()
 sys.stdout.close()
