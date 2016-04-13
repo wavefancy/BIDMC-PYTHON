@@ -40,7 +40,7 @@ chr16   30395111,30395779,30397329, 30395578,30395873,30400108, ZNF48
 chr1    101,120    110,130   T1
 chr1    115  150  T1
 
-    #output:
+    #output: contigName, regionStart, regionEnd, geneName+regionID.
     ------------------------
 chr16   30395010        30395973        ZNF48+1
 chr16   30397228        30400208        ZNF48+2
