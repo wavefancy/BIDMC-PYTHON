@@ -1,0 +1,4 @@
+##FORMAT=<ID=NV,Number=.,Type=Integer,Description="Number of reads containing variant in this sample">
+##contig=<ID=chr1>
+##contig=<ID=chr2>
+#CHR
