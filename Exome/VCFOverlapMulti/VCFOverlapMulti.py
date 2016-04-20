@@ -7,8 +7,8 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        VCFOverlap.py <input1> <input2>
-        VCFOverlap.py -h | --help | -v | --version | -f | --format
+        VCFOverlapMulti.py -n num <inputs>...
+        VCFOverlapMulti.py -h | --help | -v | --version | -f | --format
 
     Notes:
         1.
@@ -16,8 +16,8 @@
         3. See example by -f.
 
     Options:
-        <input1>      Input vcf file1.
-        <input2>      Input vcf file2.
+        -n num        Output threshold, at least 'num' of inputs have consistence call.
+        <inputs>...   Input vcf files.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -80,28 +80,58 @@ class Record:
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='1.0')
-    #print(args)
+    print(args)
 
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
 
     vcfMetaCols=9       #number of colummns for vcf meta information.
-    inF1 = VariantFile(args['<input1>'], 'r')
-    inF2 = VariantFile(args['<input2>'], 'r')
-    Record = Record(inF2)
+    supportNum = int(args['-n'])
+    infiles = [VariantFile(f, 'r') for f in args['<inputs>']]
+    #read contig and its length.
+    contigs = [] # [(contigName, len),....]
+    for line in str(infiles[0].header).split():
+        if line.startswith('##contig'):
+            ss = line[:-1].split(',')
+            try:
+                l = int(ss[1].split('=')[-1])
+                contigs.append((ss[0].split('=')[-1], l))
+            except ValueError:
+                sys.stderr.write('ERROR: Please make sure contig in header has length info, like: ##contig=<ID=chr1,length=248956422>\n')
+
+    if not contigs:
+        sys.stderr.write('ERROR: Please make sure contig has been deleared in header, like: ##contig=<ID=chr1,length=248956422>\n')
+    print(contigs)
+    sys.exit(-1)
+
     #check smaples in two input file, same samples, and same order.
-    if len(inF1.header.samples) != len(inF2.header.samples):
-        sys.stderr.write('ERROR: different number of samples in two input files.\n')
-        sys.exit(-1)
-    else:
-        for x, y in zip( inF1.header.samples, inF2.header.samples):
-            if x != y:
-                sys.stderr.write('ERROR: two input files should have the same samples, and ordered in same order.\n')
-                sys.exit(-1)
+    for x in infiles[1:]:
+        if len(infiles[0].header.samples) != len(x.header.samples):
+            sys.stderr.write('ERROR: different number of samples in input files.\n')
+            sys.exit(-1)
+        else:
+            for m,n in zip(infiles[0].header.samples, x.header.samples):
+                if m != n:
+                    sys.stderr.write('ERROR: input files should have the same samples, and ordered in same order.\n')
+                    sys.exit(-1)
+
+    # if len(inF1.header.samples) != len(inF2.header.samples):
+    #     sys.stderr.write('ERROR: different number of samples in two input files.\n')
+    #     sys.exit(-1)
+    # else:
+    #     for x, y in zip( inF1.header.samples, inF2.header.samples):
+    #         if x != y:
+    #             sys.stderr.write('ERROR: two input files should have the same samples, and ordered in same order.\n')
+    #             sys.exit(-1)
 
     #output vcf header
-    sys.stdout.write('%s'%(str(inF1.header)))
+    sys.stdout.write('%s'%(str(infiles[0].header)))
+
+    #compare and output results.
+    
+
+
     for line in inF1.fetch():
         if len(line.alleles) != 2:
             sys.stderr.write('ERROR: please decompose the input vcf, only one alt allele permited each line, error record:\n%s\n'
