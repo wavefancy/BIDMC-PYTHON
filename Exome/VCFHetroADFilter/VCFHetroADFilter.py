@@ -7,8 +7,8 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        VCFDPFilter.py -a minDP
-        VCFDPFilter.py -h | --help | -v | --version | -f | --format
+        VCFHetroADFilter.py -a minDP [-b]
+        VCFHetroADFilter.py -h | --help | -v | --version | -f | --format
 
     Notes:
         1. Read vcf file from stdin, mask genotype as miss if AD tage value < 'minDP'.
@@ -17,6 +17,7 @@
 
     Options:
         -a minDP        Minimum value for alt allele read depth,int.
+        -b              Input is Freebayes format, read alt allele depth from 'DPR' tag.
         -h --help       Show this screen.
         -v --version    Show version.
         -f --format     Show format example.
@@ -39,7 +40,11 @@ PL:GT:GQ        .       .       0/1:0,5:5:6:90,6,0
     ''');
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='1.0')
+    args = docopt(__doc__, version='1.1')
+    # version 1.1
+    # Add support for multi-allelic sites.
+    # Add support for Freebayes input format.
+
     #print(args)
 
     if(args['--format']):
@@ -50,6 +55,8 @@ if __name__ == '__main__':
 
     vcfMetaCols=9       #number of colummns for vcf meta information.
     tags = 'AD'
+    if args['-b']:
+        tags = 'DPR'    #for Freebayes input format.
     altMinDP = int(args['-a'])
 
     def reformat(geno):
@@ -60,7 +67,8 @@ if __name__ == '__main__':
             if geno[0] != geno[2]: #only check for hetero genotype.
                 ss = geno.split(':')
                 try:
-                    altDPvalue = int(ss[ADIndex].split(',')[1]) #read depth for alt allele.
+                    tmp = [int(x) for x in ss[ADIndex].split(',')[1:]]
+                    altDPvalue = sum(tmp) #read depth for alt allele.
                     if altDPvalue < altMinDP:
                         return '.'
                     else:
@@ -78,7 +86,7 @@ if __name__ == '__main__':
             y = ss.index(tags)
             ADIndex = y
         except ValueError:
-            sys.stderr.write('ERROR: can not find tag: "%s", from input vcf FORMAT field.\n'%(x))
+            sys.stderr.write('ERROR: can not find tag: "%s", from input vcf FORMAT field.\n'%(tags))
             sys.exit(-1)
 
     infile = VariantFile('-', 'r')
