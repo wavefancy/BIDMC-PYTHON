@@ -7,7 +7,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        VCFHetroADFilter.py -a minDP [-b]
+        VCFHetroADFilter.py -a minDP [-b|-p]
         VCFHetroADFilter.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -18,6 +18,7 @@
     Options:
         -a minDP        Minimum value for alt allele read depth,int.
         -b              Input is Freebayes format, read alt allele depth from 'DPR' tag.
+        -p              Input is Playtypus format, read alt allele depth from 'NV' tag.
         -h --help       Show this screen.
         -v --version    Show version.
         -f --format     Show format example.
@@ -57,6 +58,9 @@ if __name__ == '__main__':
     tags = 'AD'
     if args['-b']:
         tags = 'DPR'    #for Freebayes input format.
+    if args['-p']:
+        tags = 'NV'
+
     altMinDP = int(args['-a'])
 
     def reformat(geno):
@@ -66,15 +70,20 @@ if __name__ == '__main__':
         else:
             if geno[0] != geno[2]: #only check for hetero genotype.
                 ss = geno.split(':')
-                try:
-                    tmp = [int(x) for x in ss[ADIndex].split(',')[1:]]
-                    altDPvalue = sum(tmp) #read depth for alt allele.
-                    if altDPvalue < altMinDP:
-                        return '.'
-                    else:
-                        return geno
-                except (IndexError,ValueError) as e:
+                #try:
+                if tags == 'NV': #single value or multiple values for multi-allelic.
+                    tmp = [int(x) for x in ss[ADIndex].split(',') if x != '.']
+                else:
+                    tmp = [int(x) for x in ss[ADIndex].split(',')[1:] if x != '.']
+
+                altDPvalue = sum(tmp) #read depth for alt allele.
+                if altDPvalue < altMinDP:
                     return '.'
+                else:
+                    return geno
+                #except (IndexError,ValueError) as e:
+                #    return '.'
+
             else:
                 return geno
 
