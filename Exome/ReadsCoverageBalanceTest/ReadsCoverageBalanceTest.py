@@ -41,11 +41,11 @@ def ShowFormat():
 
     #output:
     ------------------------
-#CHROM  POS     P_BAL
-20      14372   8.3460e-02
-20      14373   2.7160e-01
-20      14373   1.0000e+00
-20      14373   6.3019e-01
+#CHROM  POS     Ref     Alt     P_BAL
+20      14372   G       A       8.3460e-02
+20      14373   G       A       2.7160e-01
+20      14373   G       A       1.0000e+00
+20      14373   G       A       6.3019e-01
     ''');
 
 if __name__ == '__main__':
@@ -67,6 +67,9 @@ if __name__ == '__main__':
             try:
                 r = int(ss[1].split(',')[0]) #ref coverage
                 a = int(ss[2]) - r           #alt coverage   0/1:0,0,0:.:39:0|1:73146216_G_A:39,0,65,42,68,110
+
+                if r == 0 and a == 0:
+                    continue
 
                 ref.append(r)
                 alt.append(a)
@@ -105,7 +108,7 @@ if __name__ == '__main__':
                     sys.exit(-1)
 
                 #prepare output
-                out = ss[0:2]
+                out = ss[0:2] + ss[3:5]
                 hetro = [x for x in ss[seqStartCol:] if x[0] != '.' and x[0] != x[2]]
                 if hetro:
                     #print(unblanceTest(hetro))
@@ -120,7 +123,7 @@ if __name__ == '__main__':
                     pass
                 elif line.startswith('#C') or line.startswith('#c'):
                     output = True
-                    sys.stdout.write('#CHROM\tPOS\tP_BAL\n')
+                    sys.stdout.write('#CHROM\tPOS\tRef\tAlt\tP_BAL\n')
 
 
 sys.stdout.flush()
