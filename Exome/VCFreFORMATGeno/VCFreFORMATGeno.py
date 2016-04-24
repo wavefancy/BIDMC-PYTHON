@@ -39,7 +39,9 @@ PL:GT:GQ        258,27,0:1/1:27      .       49,6,0:1/1:6
     ''');
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='1.0')
+    args = docopt(__doc__, version='1.1')
+    # version 1.1
+    # Check format at each line. FORMAT may different line by line.
     #print(args)
 
     if(args['--format']):
@@ -67,6 +69,7 @@ if __name__ == '__main__':
 
     outGenoArrayIndex = []
     def setoutGenoArrayIndex(oldFormatTags):
+        outGenoArrayIndex.clear()
         ss = oldFormatTags.upper().split(':')
         for x in tags:
             try:
@@ -82,9 +85,10 @@ if __name__ == '__main__':
         ss = str(line).strip().split()
         out = ss[:vcfMetaCols]
         out[8] = otags                  #update tags genotyp tags info.
+        setoutGenoArrayIndex(ss[8])     #Check format line by line.
         for x in ss[vcfMetaCols:]:
-            if not outGenoArrayIndex:
-                setoutGenoArrayIndex(ss[8])
+            #if not outGenoArrayIndex:
+            #    setoutGenoArrayIndex(ss[8])
             out.append(reformat(x))
 
         sys.stdout.write('%s\n'%('\t'.join(out)))
