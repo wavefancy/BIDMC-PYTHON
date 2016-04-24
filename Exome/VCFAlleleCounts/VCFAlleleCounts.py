@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
     infile = VariantFile('-', 'r')
     #sys.stdout.write(str(infile.header))
-    sys.stdout.write('CHR\tPOS\tRef\tAlt\tTotalCout\tAltCount\tAltFre\n')
+    sys.stdout.write('#CHROM\tPOS\tREF\tALT\tTotalCout\tAltCount\tAltFre\n')
     for line in infile:
         ss = str(line).strip().split()
         out = ss[0:2] + ss[3:5]
