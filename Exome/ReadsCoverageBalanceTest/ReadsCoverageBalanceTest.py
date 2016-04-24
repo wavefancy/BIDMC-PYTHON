@@ -123,7 +123,7 @@ if __name__ == '__main__':
                     pass
                 elif line.startswith('#C') or line.startswith('#c'):
                     output = True
-                    sys.stdout.write('#CHROM\tPOS\tRef\tAlt\tP_BAL\n')
+                    sys.stdout.write('#CHROM\tPOS\tREF\tALT\tP_BAL\n')
 
 
 sys.stdout.flush()
