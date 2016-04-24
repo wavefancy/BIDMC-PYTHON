@@ -58,8 +58,12 @@ if __name__ == '__main__':
             return '.'
         else:
             ss = geno.split(':')
-            out = [ss[x] for x in outGenoArrayIndex]
-            return ':'.join(out)
+            try:
+                out = [ss[x] for x in outGenoArrayIndex]
+                return ':'.join(out)
+            except IndexError:
+                sys.stderr.write('ERROR: Index out of range. geno: %s, out index: %s\n'%(geno, str(outGenoArrayIndex)))
+                sys.exit(-1)
 
     outGenoArrayIndex = []
     def setoutGenoArrayIndex(oldFormatTags):
