@@ -1,0 +1,3 @@
+F   FGJG1   0   0   1   1
+F   FGJG10  0   0   2   1
+F   FGJG2   FGJG1   FGJG10  2   2
