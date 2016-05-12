@@ -50,7 +50,7 @@ if __name__ == '__main__':
     infile = VariantFile('-', 'r')
     sys.stdout.write(str(infile.header))
     for line in infile:
-        ss = str(line).strip().split()
+        ss = str(line).strip().split(None, maxsplit=7)
         ss[2] = ss[0] + ':' + ss[1] + ':' + ss[3] + ':' + ss[4]
 
         sys.stdout.write('%s\n'%('\t'.join(ss)))
