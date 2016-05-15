@@ -106,6 +106,7 @@ class Record:
                 key = r.contig + str(r.pos) + r.alleles[0] + r.alleles[1]
                 if key in self.currentMap:
                     sys.stderr.write('ERROR: repeated records detected, same meta info, error record:\n%s\n'%(r))
+                    sys.exit(-1)
                 else:
                     self.currentMap[key] = r
                     allKeys.keyset.add((key, r.pos))
@@ -135,9 +136,11 @@ if __name__ == '__main__':
                 contigs.append((ss[0].split('=')[-1], l))
             except ValueError:
                 sys.stderr.write('ERROR: Please make sure contig in header has length info, like: ##contig=<ID=chr1,length=248956422>\n')
+                sys.exit(-1)
 
     if not contigs:
         sys.stderr.write('ERROR: Please make sure contig has been deleared in header, like: ##contig=<ID=chr1,length=248956422>\n')
+        sys.exit(-1)
     #print(contigs)
     #sys.exit(-1)
 
