@@ -7,7 +7,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        FormatVCFGeno.py -c col
+        FormatVCFGeno.py -c col [-g]
         FormatVCFGeno.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -17,6 +17,7 @@
 
     Options:
         -c cols        Column indexes for reformat, 1|1,3. 1 based.
+        -g             Only output genotype, genotype should be put at first.
         -h --help      Show this screen.
         -v --version   Show version.
         -f --format    Show input/output file format example.
@@ -46,7 +47,9 @@ class P(object):
     col = []
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='1.0')
+    args = docopt(__doc__, version='1.1')
+    #version 1.1
+    # add option for -g, for only output genotype.
     #print(args)
 
     if(args['--format']):
@@ -63,7 +66,10 @@ if __name__ == '__main__':
             else:
                 ss = line.split()
                 for c in P.col:
-                    ss[c] = ':'.join(ss[c].split(':')[0:2])
+                    if args['-g']:
+                        ss[c] = ss[c].split(':')[0] #genotype should be put at first.
+                    else:
+                        ss[c] = ':'.join(ss[c].split(':')[0:2])
 
                 #print(ss)
                 sys.stdout.write('%s\n'%('\t'.join(ss)))

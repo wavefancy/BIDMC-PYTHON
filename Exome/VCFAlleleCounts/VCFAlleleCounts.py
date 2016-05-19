@@ -2,21 +2,20 @@
 
 """
 
-    Re-format and/or subset format fields for vcf file.
+    Count the number of alleles for VCF.
+    alt, ref allele count, and alt allele frequency.
 
     @Author: wavefancy@gmail.com
 
     Usage:
-        VCFreFORMATGeno.py -t tags
-        VCFreFORMATGeno.py -h | --help | -v | --version | -f | --format
+        VCFAlleleCounts.py
+        VCFAlleleCounts.py -h | --help | -v | --version | -f | --format
 
     Notes:
-        1. Read vcf file from stdin, only output listed tags for FORMAT field.
-            keep output order decleared in -t.
+        1. Read vcf file from stdin.
         3. Output results to stdout.
 
     Options:
-        -t tags         Comma separated tag list.
         -h --help       Show this screen.
         -v --version    Show version.
         -f --format     Show format example.
@@ -29,19 +28,10 @@ signal(SIGPIPE, SIG_DFL)
 def ShowFormat():
     '''Input File format example:'''
     print('''
-    input vcf example(abstracted):
-----------------------
-GT:AD:DP:GQ:PL       1/1:0,9:9:27:258,27,0   ./.     1/1:0,2:2:6:49,6,0
-
-    out vcf example: -t PL,GT,GQ
-----------------------
-PL:GT:GQ        258,27,0:1/1:27      .       49,6,0:1/1:6
     ''');
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='1.1')
-    # version 1.1
-    # Check format at each line. FORMAT may different line by line.
+    args = docopt(__doc__, version='1.0')
     #print(args)
 
     if(args['--format']):
@@ -50,19 +40,18 @@ if __name__ == '__main__':
 
     from pysam import VariantFile
 
-    vcfMetaCols=9       #number of colummns for vcf meta information.
-    tags = args['-t'].upper().split(',')
-    otags = ':'.join(tags)
 
-    def reformat(geno):
-        '''reformat a genotype record'''
+    vcfMetaCols=9       #number of colummns for vcf meta information.
+    tags = ['GT']
+
+    def getGeno(geno):
+        '''get genotype info.'''
         if geno[0] == '.':
-            return '.'
+            return './.'
         else:
             ss = geno.split(':')
             try:
-                out = [ss[x] for x in outGenoArrayIndex]
-                return ':'.join(out)
+                return ss[outGenoArrayIndex[0]]
             except IndexError:
                 sys.stderr.write('ERROR: Index out of range. geno: %s, out index: %s\n'%(geno, str(outGenoArrayIndex)))
                 sys.exit(-1)
@@ -80,18 +69,32 @@ if __name__ == '__main__':
                 sys.exit(-1)
 
     infile = VariantFile('-', 'r')
-    sys.stdout.write(str(infile.header))
+    #sys.stdout.write(str(infile.header))
+    sys.stdout.write('#CHROM\tPOS\tREF\tALT\tTotalCout\tAltCount\tAltFre\n')
     for line in infile:
         ss = str(line).strip().split()
-        out = ss[:vcfMetaCols]
-        out[8] = otags                  #update tags genotyp tags info.
-        setoutGenoArrayIndex(ss[8])     #Check format line by line.
+        out = ss[0:2] + ss[3:5]
+        setoutGenoArrayIndex(ss[8])
+        allels = []
         for x in ss[vcfMetaCols:]:
-            #if not outGenoArrayIndex:
-            #    setoutGenoArrayIndex(ss[8])
-            out.append(reformat(x))
+            genotye = getGeno(x)
+            if genotye[0] != '.':
+                allels.append(genotye[0])
+            if genotye[2] != '.':
+                allels.append(genotye[2])
 
-        sys.stdout.write('%s\n'%('\t'.join(out)))
+        alt = 0
+        ref = 0
+        for x in allels:
+            if x == '0':
+                ref += 1
+            else:
+                alt += 1
+
+        if alt + ref == 0:
+            sys.stdout.write('%s\t%d\t%d\tNA\n'%('\t'.join(out), ref+alt, alt))
+        else:
+            sys.stdout.write('%s\t%d\t%d\t%.4f\n'%('\t'.join(out), ref+alt, alt, alt*1.0/(alt + ref)))
 
     infile.close()
 sys.stdout.flush()

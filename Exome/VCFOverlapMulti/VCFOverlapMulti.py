@@ -7,7 +7,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        VCFOverlapMulti.py -n num [-c cacheLoadnum] <inputs>...
+        VCFOverlapMulti.py -n num [-c cacheLoadnum] [-s] <inputs>...
         VCFOverlapMulti.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -31,6 +31,8 @@
     Options:
         -n num          Output threshold, at least 'num' of inputs have consistence call.
         -c cacheLoadnum The number of lines were pre-loaded for cache, default 1000000.
+        -s              Skip repeated records, only use the first one. otherwise system will exit if met repeated records.
+                        Repeated records defined as same location and same ref and alt allele.
         <inputs>...     Input vcf files.
         -h --help       Show this screen.
         -v --version    Show version.
@@ -105,8 +107,16 @@ class Record:
             else:
                 key = r.contig + str(r.pos) + r.alleles[0] + r.alleles[1]
                 if key in self.currentMap:
-                    sys.stderr.write('ERROR: repeated records detected, same meta info, error record:\n%s\n'%(r))
-                    sys.exit(-1)
+# <<<<<<< HEAD
+#                     sys.stderr.write('ERROR: repeated records detected, same meta info, error record:\n%s\n'%(r))
+#                     sys.exit(-1)
+# =======
+                    if skipRepeat:
+                        sys.stderr.write('Warning: repeated records detected, only keep the first one, same meta info, error record:\n%s\n'%(r))
+                    else:
+                        sys.stderr.write('ERROR: repeated records detected, same meta info, error record:\n%s\n'%(r))
+                        sys.exit(-1)
+# >>>>>>> cc8ce64836c6554aa123819673e8065cfede4394
                 else:
                     self.currentMap[key] = r
                     allKeys.keyset.add((key, r.pos))
@@ -126,6 +136,9 @@ if __name__ == '__main__':
 
     supportNum = int(args['-n'])
     infiles = [VariantFile(f, 'r') for f in args['<inputs>']]
+    skipRepeat = False
+    if args['-s']:
+        skipRepeat = True
     #read contig and its length.
     contigs = [] # [(contigName, len),....]
     for line in str(infiles[0].header).split():

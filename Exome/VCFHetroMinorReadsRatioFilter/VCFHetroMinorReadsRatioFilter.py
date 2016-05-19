@@ -2,13 +2,16 @@
 
 """
 
-    Filter hetero. genotype based on sample AD(read depth) tags.
+    Filter hetero. genotype based on sample minor reads ratio.
+    Minor-read ratio (MRR), which was defined as the ratio of reads for the less
+    covered allele (reference or variant allele) over the total number of reads
+    covering the position at which the variant was called. (Only applied to hetero sites.)
 
     @Author: wavefancy@gmail.com
 
     Usage:
-        VCFHetroADFilter.py -a minDP [-b|-p]
-        VCFHetroADFilter.py -h | --help | -v | --version | -f | --format
+        VCFHetroMinorReadsRatioFilter.py -a cutoff [-b|-p]
+        VCFHetroMinorReadsRatioFilter.py -h | --help | -v | --version | -f | --format
 
     Notes:
         1. Read vcf file from stdin, mask genotype as miss if AD tage value < 'minDP'.
@@ -16,7 +19,7 @@
         3. Output results to stdout.
 
     Options:
-        -a minDP        Minimum value for alt allele read depth,int.
+        -a cutoff       Cutoff for MRR, if MRR < this cutoff, set as missing.
         -b              Input is Freebayes format, read alt allele depth from 'DPR' tag.
         -p              Input is Playtypus format, read alt allele depth from 'NV' tag.
         -h --help       Show this screen.
@@ -55,45 +58,60 @@ if __name__ == '__main__':
     from pysam import VariantFile
 
     vcfMetaCols=9       #number of colummns for vcf meta information.
-    tags = 'AD'
+    tags = ['AD']
     if args['-b']:
-        tags = 'DPR'    #for Freebayes input format.
+        tags = ['DPR']    #for Freebayes input format.
     if args['-p']:
-        tags = 'NV'
+        tags = ['NV','NR']
 
-    altMinDP = int(args['-a'])
+    # gatk, AD: reads coverage for ref and alt allele. ref, alt1, alt2, eg 10,20,0.
+    # DRP: total, alt1, alt2 ..., eg. 34,19,0 | 10,2.
+    # NV: number of reads for alt allele. alt, or alt1, alt2 ...
+    # NR: number of reads for all allele. al11, or all1, all2... *** all1 = all2 = all3 ???.
+
+    cutoff = float(args['-a'])
 
     def reformat(geno):
-        '''mask geno type according DP value.'''
+        '''mask geno type according MRR cutoff.'''
         if geno[0] == '.':
             return '.'
         else:
             if geno[0] != geno[2]: #only check for hetero genotype.
                 ss = geno.split(':')
+                alt = 0
+                total = 0
                 #try:
-                if tags == 'NV': #single value or multiple values for multi-allelic.
-                    tmp = [int(x) for x in ss[ADIndex].split(',') if x != '.']
+                if args['-p']: #Playtypus format.
+                    alt = sum([int(x) for x in ss[ADIndex[0]].split(',')])   #NV
+                    total = sum([int(x) for x in ss[ADIndex[1]].split(',')]) #NR
                 else:
-                    tmp = [int(x) for x in ss[ADIndex].split(',')[1:] if x != '.']
+                    temp = [int(x) for x in ss[ADIndex[0]].split(',')]
+                    alt = sum(temp[1:])
+                    if args['-b']:            #Freebayes format.
+                        total = temp[0]
+                    else:
+                        total = alt + temp[0] #gatk format.
 
-                altDPvalue = sum(tmp) #read depth for alt allele.
-                if altDPvalue < altMinDP:
+                if total == 0:
                     return '.'
                 else:
-                    return geno
-                #except (IndexError,ValueError) as e:
-                #    return '.'
+                    mrr = min(alt*1.0/total, 1- alt*1.0/total)
+                    #sys.stderr.write('%.4f\n'%(mrr))
 
+                    if mrr < cutoff:
+                        return '.'
+                    else:
+                        return geno
             else:
                 return geno
 
-    ADIndex = -1
+    ADIndex = []
     def setADIndex(oldFormatTags):
         global ADIndex
         ss = oldFormatTags.upper().split(':')
         try:
-            y = ss.index(tags)
-            ADIndex = y
+            ADIndex = [ss.index(t) for t in tags]
+            #ADIndex = y
         except ValueError:
             sys.stderr.write('ERROR: can not find tag: "%s", from input vcf FORMAT field.\n'%(tags))
             sys.exit(-1)
@@ -103,9 +121,8 @@ if __name__ == '__main__':
     for line in infile:
         ss = str(line).strip().split()
         out = ss[:vcfMetaCols]
+        setADIndex(ss[8])               #set index line by line.
         for x in ss[vcfMetaCols:]:
-            if ADIndex < 0:
-                setADIndex(ss[8])
             out.append(reformat(x))
 
         sys.stdout.write('%s\n'%('\t'.join(out)))
