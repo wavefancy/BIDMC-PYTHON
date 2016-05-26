@@ -13,7 +13,8 @@
         Add function to remove individuals.
 
     @Version 3.0
-        Change parameter setting, skip set meta info.
+        1. Change parameter setting, skip set meta info.
+        2. Check duplicate ids.
 
 '''
 import sys
@@ -35,7 +36,7 @@ def help():
 
     @Notes:
     1. Read VCF file from stdin and output to stdout.
-    2. Column index starts from 1.
+    2. *** Output will be reordered as the order in the id list file. ***
     -------------------------------------
     \n''')
     sys.stderr.close()
@@ -69,7 +70,10 @@ if __name__ == '__main__':
         line = line.strip()
         if line:
             for x in line.split():
-                ids.append(x)
+                if x in ids:
+                    sys.stderr.write('Warning: duplicate name in id list file, only use the first one: %s\n'%(x))
+                else:
+                    ids.append(x)
 
     #process seq. data.
     output = False
