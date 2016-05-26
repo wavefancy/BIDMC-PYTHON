@@ -107,11 +107,16 @@ class Record:
             else:
                 key = r.contig + str(r.pos) + r.alleles[0] + r.alleles[1]
                 if key in self.currentMap:
+# <<<<<<< HEAD
+#                     sys.stderr.write('ERROR: repeated records detected, same meta info, error record:\n%s\n'%(r))
+#                     sys.exit(-1)
+# =======
                     if skipRepeat:
                         sys.stderr.write('Warning: repeated records detected, only keep the first one, same meta info, error record:\n%s\n'%(r))
                     else:
                         sys.stderr.write('ERROR: repeated records detected, same meta info, error record:\n%s\n'%(r))
                         sys.exit(-1)
+# >>>>>>> cc8ce64836c6554aa123819673e8065cfede4394
                 else:
                     self.currentMap[key] = r
                     allKeys.keyset.add((key, r.pos))

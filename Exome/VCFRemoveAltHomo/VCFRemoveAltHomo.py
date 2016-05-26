@@ -40,7 +40,6 @@ PL:GT:GQ        0/0:11,0:11:33:0,33,484 .       .
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='1.0')
-    #print(args)
     #sys.exit(-1)
 
     if(args['--format']):
@@ -61,21 +60,35 @@ if __name__ == '__main__':
     if keepAltHomoOnMaleX:
         with open(pedfile, 'r') as pfile:
             for line in pfile:
+# <<<<<<< HEAD
+#                 print(line)
+#                 line = line.strip()
+#                 if line:
+#                     ss = line.split()
+#                     if ss[4] != '2' or ss[4] != '1':
+#                         sys.stderr.write('Warning: skip gender related checking for this individual, gender info. error for :%s-%s\n'%(ss[1],ss[4]))
+#                     else:
+# =======
     #            print(line)
                 line = line.strip()
                 if line:
                     ss = line.split()
     #                print(ss)
                     if ss[4] == '2' or ss[4] == '1':
+#>>>>>>> cc8ce64836c6554aa123819673e8065cfede4394
                         if ss[1] in genderMap:
                             sys.stderr.write('ERROR: repeated individual: %s'%(ss[1]))
                             sys.exit(-1)
                         else:
                             genderMap[ss[1]] = ss[4]
+# <<<<<<< HEAD
+#     print(genderMap)
+# =======
     #                        print(genderMap)
                     else:
                         sys.stderr.write('Warning: skip gender related checking for this individual, gender info. error for :%s-%s\n'%(ss[1],ss[4]))
     #print(genderMap)
+# >>>>>>> cc8ce64836c6554aa123819673e8065cfede4394
 
     import vcf
     vcf_reader = vcf.Reader(sys.stdin)
