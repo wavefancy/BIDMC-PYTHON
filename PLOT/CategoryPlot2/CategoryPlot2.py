@@ -37,8 +37,8 @@ def ShowFormat():
     #Output from: FamilyHitByGene.py
     ------------------------
 c1  1   10  1
-c1  2   -5  3
-c1  5   3   2
+c2  2   -5  3
+c3  5   3   2
 COMMAND vl  3
 COMMAND vl  4
 
