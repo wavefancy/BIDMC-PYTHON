@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -20,7 +20,11 @@
         --yerr yecol  Column index for y error bar.
         --yr yrange   Set the yAxis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
+        --vl vline    Add vertical lines: float1, float2...
         --ms msize    Set marker size: float, default 5.
+        --mt mtype    Set marker type: 1 dot(default), 2 line.
+        --lloc lloc   Legend location: 2 right_top, 3 left_bottom.
+        --lfs lfs     Legend font size.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -63,7 +67,7 @@ if __name__ == '__main__':
     xtitle = args['-x']
     ytitle = args['-y']
     outname = args['-o']
-    mode = 'markers'
+    mode = 'markers' #markers or lines
     hlines = [] #location for horizontal lines.
     vlines = []
     msize = 5
@@ -75,8 +79,32 @@ if __name__ == '__main__':
         yrange = list(map(float, args['--yr'].split(',')))
     if args['--hl']:
         hlines = list(map(float, args['--hl'].split(',')))
+    if args['--vl']:
+        vlines = list(map(float, args['--hl'].split(',')))
     if args['--ms']:
         msize = float(args['--ms'])
+    if args['--mt']:
+        if args['--mt'] == '2':
+            mode = 'lines'
+
+    xanchor = 'right'
+    yanchor = 'bottom'
+    xlloc = 0.99
+    ylloc = 0
+    if args['--lloc']:
+        if args['--lloc'] == '2':
+            yanchor = 'top'
+            xlloc = 0.99
+            ylloc = 0.99
+        elif args['--lloc'] == '3':
+            yanchor = 'bottom'
+            xanchor = 'left'
+            xlloc = 0.01
+            ylloc = 0.01
+
+    lfontSize = 10
+    if args['--lfs']:
+        lfontSize = int(args['--lfs'])
 
     from collections import OrderedDict
     xdata = OrderedDict() #{categoryName -> []}
@@ -151,7 +179,7 @@ if __name__ == '__main__':
 
     layout = {
         'margin': {
-            'l' : 40,
+            'l' : 60,
             'b' : 40,
             'r' : 10,
             't' : 10
@@ -182,10 +210,13 @@ if __name__ == '__main__':
 
     legend={
         'legend':{
-            'xanchor': 'right',
-            'x': 0.99,
-            'y': 0,
-            'yanchor': 'bottom'
+            'xanchor': xanchor,
+            'x': xlloc,
+            'y': ylloc,
+            'yanchor': yanchor,
+            'font': {
+                'size' : lfontSize
+            },
         }
     }
     layout.update(legend)
@@ -202,7 +233,8 @@ if __name__ == '__main__':
                     'x1': 1,
                     'y1': y,
                     'line': {
-                        'color': 'rgb(50, 171, 96)',
+                        #'color': 'rgb(50, 171, 96)',
+                        'color': '#E2E2E2',
                         'width': 2,
                         'dash': 'dashdot',
                 }}
