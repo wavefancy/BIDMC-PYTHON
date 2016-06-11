@@ -234,8 +234,9 @@ if __name__ == '__main__':
                     'y1': y,
                     'line': {
                         #'color': 'rgb(50, 171, 96)',
-                        'color': '#E2E2E2',
-                        'width': 2,
+                        #'color': '#E2E2E2',
+                        'color': 'rgba(0, 0, 0, 0.5)',
+                        'width': 1,
                         'dash': 'dashdot',
                 }}
             )
