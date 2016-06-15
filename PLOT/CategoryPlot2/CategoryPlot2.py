@@ -41,8 +41,8 @@ def ShowFormat():
     #Output from: FamilyHitByGene.py
     ------------------------
 c1  1   10  1
-c1  2   -5  3
-c1  5   3   2
+c2  2   -5  3
+c3  5   3   2
 COMMAND vl  3
 COMMAND vl  4
 
@@ -234,8 +234,9 @@ if __name__ == '__main__':
                     'y1': y,
                     'line': {
                         #'color': 'rgb(50, 171, 96)',
-                        'color': '#E2E2E2',
-                        'width': 2,
+                        #'color': '#E2E2E2',
+                        'color': 'rgba(0, 0, 0, 0.5)',
+                        'width': 1,
                         'dash': 'dashdot',
                 }}
             )
