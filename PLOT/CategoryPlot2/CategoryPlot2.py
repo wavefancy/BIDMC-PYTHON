@@ -22,7 +22,7 @@
         --hl hline    Add horizontal lines: float1,float2.
         --vl vline    Add vertical lines: float1, float2...
         --ms msize    Set marker size: float, default 5.
-        --mt mtype    Set marker type: 1 dot(default), 2 line.
+        --mt mtype    Set marker type: 1 dot(default), 2 line, 3 dot + line.
         --lloc lloc   Legend location: 2 right_top, 3 left_bottom.
         --lfs lfs     Legend font size.
         -h --help     Show this screen.
@@ -86,6 +86,8 @@ if __name__ == '__main__':
     if args['--mt']:
         if args['--mt'] == '2':
             mode = 'lines'
+        elif args['--mt'] == '3':
+            mode = 'lines+markers'
 
     xanchor = 'right'
     yanchor = 'bottom'
