@@ -35,6 +35,8 @@ def help():
            ordered by the input file name[Para2].
         3: output the most likely ancestry for each individual at each sites,
            0/1/2 copy of POP1 alleles. Each person one column.
+        4: output the aggregation of hapmix output.
+           Each person three columns, order as input files, Probabilities of 2/1/0 copy of pop1 ancestry.
 
     -------------------------------------
     \n''')
@@ -42,7 +44,7 @@ def help():
     sys.exit(-1)
 
 class P(object):
-    actionMap = {'1':'POP1EPROPORTION', '2' : 'SITELEVELPOP1EPROPORTION', '3': 'MOSTLIKEANCESTRY'}
+    actionMap = {'1':'POP1EPROPORTION', '2' : 'SITELEVELPOP1EPROPORTION', '3': 'MOSTLIKEANCESTRY', '4': 'HAPMIXOUT'}
     action = ''
     flist = ''
 
@@ -101,9 +103,18 @@ if __name__ == '__main__':
                 sys.stderr.write('ERROR: file: "%s" has different line numbers with the first input file: "%s"\n'%(fileList[i], fileList[0]))
                 sys.exit(-1)
 
+    def checkContect2(matrix, fileList):
+        '''Check data integrity of each file.'''
+        indE = matrix
+        #check file content length.
+        for i in range(1, len(indE)):
+            if len(indE[0][0]) != len(indE[i][0]): #different here.#
+                sys.stderr.write('ERROR: file: "%s" has different line numbers with the first input file: "%s"\n'%(fileList[i], fileList[0]))
+                sys.exit(-1)
+
 
     if P.action == 'POP1EPROPORTION':
-        indE = getIndividualLevelPOPProportion()
+        indE = getSiteLevelPOP1Proportion()
 
         for c in range(0, len(indE[0])):
             total = 0
@@ -145,6 +156,28 @@ if __name__ == '__main__':
                 out.append( '%d'%(v[c]) )
 
             sys.stdout.write('%s\n'%('\t'.join(out)))
+
+    elif P.action == 'HAPMIXOUT': #aggregation of hapmix output.
+        Ancestry = [] #[[individual Probabilities of 2/1/0 copy of pop1 ancestry],[]]
+        fileList = [] #input file name list.
+        for fn in open(P.flist):
+            fn = fn.strip()
+            fileList.append(fn)
+            rr = readLOCAL_ANC_PROBFile(fn)
+            ie = []
+            Ancestry.append(rr)
+
+        checkContect2(Ancestry, fileList)
+        #print(Ancestry[0][0])
+        #output results.
+        for c in range(0, len(Ancestry[0][0])):
+            out = []
+            for v in Ancestry:
+                for x in v:
+                    out.append( '%.3f'%(x[c]) )
+
+            sys.stdout.write('%s\n'%('\t'.join(out)))
+
 
 sys.stdout.flush()
 sys.stdout.close()
