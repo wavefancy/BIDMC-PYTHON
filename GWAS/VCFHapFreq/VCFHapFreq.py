@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        VCFHapFreq.py
+        VCFHapFreq.py [-a]
         VCFHapFreq.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -15,6 +15,7 @@
         3. See example by -f.
 
     Options:
+        -a            Code output allele as 0/1, default nuclotides ATGC.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -44,7 +45,9 @@ CHR     POS     ID      0.5000  0.2500  0.2500
     ''');
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='1.0')
+    args = docopt(__doc__, version='2.0')
+    #version 2.0
+    # 1. add function to output allele as 0/1 format
     #print(args)
 
     if(args['--format']):
@@ -52,6 +55,9 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     seqCol = 10 -1 #0 based.
+    reCode = False # whether recode as 01
+    if args['-a']:
+        reCode = True
 
     #load all data.
     data = [] #[[allele code],[allele code] ... ]
@@ -96,13 +102,16 @@ if __name__ == '__main__':
         sys.stdout.write('\t'.join(metaData[i][:3]))
         for h, _ in hap_fre:
             allele = ''
-            if h[i] == '0':
-                allele = metaData[i][3]
-            elif h[i] == '1':
-                allele = metaData[i][4]
+            if not reCode:
+                if h[i] == '0':
+                    allele = metaData[i][3]
+                elif h[i] == '1':
+                    allele = metaData[i][4]
+                else:
+                    sys.stderr.write('ERROR: can not recognize this genotype code: %s\n'%(h[i]))
+                    sys.exit(status=-1)
             else:
-                sys.stderr.write('ERROR: can not recognize this genotype code: %s\n'%(h[i]))
-                sys.exit(status=-1)
+                allele = h[i]
 
             sys.stdout.write('\t%s'%(allele))
         sys.stdout.write('\n')

@@ -47,6 +47,7 @@ if __name__ == '__main__':
     #print(data)
     import numpy
     npData = numpy.array(data)
+    dataMean = numpy.mean(npData)
     means = numpy.empty(ntimes)
     for x in range(ntimes):
         # resampling with replacement.
@@ -54,11 +55,11 @@ if __name__ == '__main__':
         means.put(x, numpy.mean(numpy.random.choice(npData, len(npData), True)))
     sortedMeans = numpy.sort(means)
     # print(sortedMeans)
-    sys.stdout.write('CI\tLeft\tRight\n')
+    sys.stdout.write('InputMean\tCI\tLeft\tRight\n')
     for x in confidence:
         skip = numpy.rint(len(means) * (1-x)/2)
         # print(skip)
-        sys.stdout.write('%.4f\t%.4e\t%.4e\n'%(x, sortedMeans[skip], sortedMeans[len(means)-skip-1]))
+        sys.stdout.write('%.4e\t%.4f\t%.4e\t%.4e\n'%(dataMean, x, sortedMeans[skip], sortedMeans[len(means)-skip-1]))
 
 sys.stdout.flush()
 sys.stdout.close()
