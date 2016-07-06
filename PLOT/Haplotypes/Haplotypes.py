@@ -39,21 +39,17 @@ signal(SIGPIPE, SIG_DFL)
 def ShowFormat():
     '''Input File format example:'''
     print('''
-    #Output from: FamilyHitByGene.py
+    #INPUT:
+    line1: rsID for each position
+    line2: haplotype for color ref, allele different with this hap will be coded as gray.
+    line3-n: other haplotypes.
     ------------------------
-c1  1   10  1
-c2  2   -5  3
-c3  5   3   2
-COMMAND vl  3
-COMMAND vl  4
-
-    #output:
-    ------------------------
-    FamilyName      #SeqMember      #hitGeneNum     GeneList
-    S55     3       5       CHRNA7-chr15-3  NCAM2-chr21-3
-    FGJG1   3       4       JAK3-chr19-2    KRT3-chr12-3    NKD2-chr5-4     MKLN1-chr7-1
-    FGEG    3       21      RET-chr10-2-Auto-Dominant-CAKUT COLEC12-chr18-6 NUDT6-chr4-2    C6or
-    f222-chr6-5
+xname id1 id2 id3 id4
+ANC    L   X   M   X
+HAP1    L   X   M   S
+HAP2    L   X   M   S
+HAP3    L   Y   M   S
+HAP4    L   X   M   S
     ''');
 
 if __name__ == '__main__':
@@ -140,6 +136,9 @@ if __name__ == '__main__':
     y_data = [x[0] for x in data[1:]]
     alleles = [x[1:] for x in data[1:]]
 
+    x_data = x_data[::-1]
+    y_data = y_data[::-1]
+    alleles = alleles[::-1]
     # x_data = [
     #     [1,1,1,1],
     #     [1,1,1,1]
@@ -150,13 +149,21 @@ if __name__ == '__main__':
 
     traces = []
     colors = colors[0:len(x_data)]
-    for xd, yd, cl in zip(x_data, y_data, colors):
+    for xd, yd, cl, al in zip(x_data, y_data, colors, alleles):
+        cls = []
+        for x,y in zip(al, alleles[-1]):  # compare with anc hap
+            if x == y:
+                cls.append(cl)
+            else:
+                cls.append("gray")
+
         traces.append(go.Bar(
             x = xd,
             y = [yd] * len(xd),
             orientation = 'h',
             marker = dict(
-                color = cl,
+                color = cls,
+                #color = colors[0:len(xd)],
                 line = dict(
                     color = 'white',
                     width = 1)
@@ -202,7 +209,12 @@ if __name__ == '__main__':
                 yref = 'y',
                 y = yd,
                 text = t,
-                showarrow=False
+                showarrow=False,
+                font=dict(
+                    #family='Courier New, monospace',
+                    #size=16,
+                    color='white'
+                ),
             ))
 
     # annotations.append(dict(
