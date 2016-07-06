@@ -2,21 +2,21 @@
 
 """
 
-    Plot StackedBarPlot by plotly library.
+    Plot haployptes by plotly library.
     @Author: wavefancy@gmail.com
 
     Usage:
-        StackedBarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin]
-        StackedBarPlot.py -h | --help | -v | --version | -f | --format
+        plotHaplotypes.py [--bm bmargin] [-y ytitle] -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin]
+        plotHaplotypes.py -h | --help | -v | --version | -f | --format
 
     Notes:
         1. Read results from stdin, and output results to stdout.
         2. See example by -f.
 
     Options:
-        -x xtitle
         -y ytitle
         -o outname    Output file name: output.html.
+        --bm bmargin  Bottom margin, default 40.
         --yerr yecol  Column index for y error bar.
         --yr yrange   Set the yAxis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
@@ -61,7 +61,6 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     errYCol = '' #value column for error bar for Y.
-    xtitle = args['-x']
     ytitle = args['-y']
     outname = args['-o']
     mode = 'markers' #markers or lines
@@ -70,6 +69,7 @@ if __name__ == '__main__':
     msize = 5
     lm = 60    #left margin.
     colors = ['#419F8D','#C9E14F','#FCE532','#FC8E32','#31627B']
+    bm = 40
 
     yrange = []
     if args['--yerr']:
@@ -89,6 +89,8 @@ if __name__ == '__main__':
             mode = 'lines+markers'
     if args['--lm']:
         lm = float(args['--lm'])
+    if args['--bm']:
+        bm = float(args['--bm'])
 
     xanchor = 'right'
     yanchor = 'bottom'
@@ -132,95 +134,100 @@ if __name__ == '__main__':
     import plotly.graph_objs as go
 
     xtickName = data[0][1:]
-    groupName = [x[0] for x in data[1:]]
-    y_data = [list(map(float, x[1:])) for x in data[1:]]
+    x_data = [[1]*(len(x)-1) for x in data[1:]]
+    y_data = [x[0] for x in data[1:]]
+    alleles = [x[1:] for x in data[1:]]
+
+    # x_data = x_data[::-1]
+    # y_data = y_data[::-1]
+    # alleles = alleles[::-1]
+    # x_data = [
+    #     [1,1,1,1],
+    #     [1,1,1,1]
+    # ]
+    # y_data = [
+    #     'hap1', 'hap2'
+    # ]
 
     traces = []
-    colors = colors[:len(y_data)]
-    for g, d, cl in zip(groupName, y_data, colors):
+    colors = colors[0:len(x_data)]
+    for xd, yd, cl, al in zip(x_data, y_data, colors, alleles):
+        cls = []
+        for x,y in zip(al, alleles[-1]):  # compare with anc hap
+            if x == y:
+                cls.append(cl)
+            else:
+                cls.append("gray")
+
         traces.append(go.Bar(
-            x = xtickName,
-            y = d,
-            name = g,
-            marker=dict(
-                color=cl,
-            ),
+            x = xd,
+            y = [yd] * len(xd),
+            orientation = 'h',
+            marker = dict(
+                color = cls,
+                #color = colors[0:len(xd)],
+                line = dict(
+                    color = 'white',
+                    width = 1)
+            )
         ))
+    #print(traces)
 
-
-    # traces = []
-    # colors = colors[0:len(x_data)]
-    # for xd, yd, cl, al in zip(x_data, y_data, colors, alleles):
-    #     cls = []
-    #     for x,y in zip(al, alleles[-1]):  # compare with anc hap
-    #         if x == y:
-    #             cls.append(cl)
-    #         else:
-    #             cls.append("gray")
-    #
-    #     traces.append(go.Bar(
-    #         x = xd,
-    #         y = [yd] * len(xd),
-    #         orientation = 'h',
-    #         marker = dict(
-    #             color = cls,
-    #             #color = colors[0:len(xd)],
-    #             line = dict(
-    #                 color = 'white',
-    #                 width = 1)
-    #         )
-    #     ))
-    # print(traces)
-    #
-    # xtickvals = [x + 0.5 for x in range(len(x_data[0]))]
+    xtickvals = [x + 0.5 for x in range(len(x_data[0]))]
 
     layout = go.Layout(
         barmode='stack',
-        # xaxis=dict(
-        #     tickfont=dict(
-        #         color='#ff7f0e'
-        #     ),
-        #     tickangle = -90,
-        #     position=0,
-        #     ticktext = xtickName,
-        #     tickvals = xtickvals,
-        #     zeroline=False,
-        # ),
-        yaxis = dict(
-            title =  ytitle,
-            dtick = 0.25
-            # showgrid=False,
-            # showline=False,
-            # showticklabels=False,
-            # zeroline=False,
+        xaxis=dict(
+            # tickfont=dict(
+            #     color='#ff7f0e'
+            # ),
+            tickangle = -60,
+            position=0,
+            ticktext = xtickName,
+            tickvals = xtickvals,
+            zeroline=False,
         ),
-        showlegend = True,
+        yaxis = dict(
+            showgrid=False,
+            showline=False,
+            # showticklabels=False,
+            zeroline=False,
+        ),
+        showlegend = False,
         margin= dict(
-            l = 45,
-            b = 20,
+            l = 40,
+            b = bm,
             r = 0,
-            t = 0
+            t = 10
         ),
     )
 
-    # annotations = []
-    # for text, yd in zip(alleles, y_data):
-    #     for t, x in zip(text, xtickvals):
-    #         annotations.append(dict(
-    #             xref = 'x',
-    #             x = x,
-    #             yref = 'y',
-    #             y = yd,
-    #             text = t,
-    #             showarrow=False,
-    #             font=dict(
-    #                 #family='Courier New, monospace',
-    #                 #size=16,
-    #                 color='white'
-    #             ),
-    #         ))
-    #
-    # layout['annotations'] = annotations
+    annotations = []
+    for text, yd in zip(alleles, y_data):
+        for t, x in zip(text, xtickvals):
+            annotations.append(dict(
+                xref = 'x',
+                x = x,
+                yref = 'y',
+                y = yd,
+                text = t,
+                showarrow=False,
+                font=dict(
+                    #family='Courier New, monospace',
+                    #size=16,
+                    color='white'
+                ),
+            ))
+
+    # annotations.append(dict(
+    #     xref = 'x',
+    #     yref = 'paper',
+    #     x = xtickvals,
+    #     y = ['rs1','rs2','rs3','rs4'],
+    #     text = ['rs1','rs2','rs3','rs4'],
+    # ))
+
+    layout['annotations'] = annotations
 
     #output the last one
     plotly.offline.plot({'data': traces,'layout': layout}

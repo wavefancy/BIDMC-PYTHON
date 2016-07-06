@@ -1,0 +1,6 @@
+xname id1 id2 id3 id4
+ANC    L   X   M   X
+HAP1    L   X   M   S
+HAP2    L   X   M   S
+HAP3    L   Y   M   S
+HAP4    L   X   M   S
