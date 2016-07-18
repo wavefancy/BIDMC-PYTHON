@@ -1,0 +1,7 @@
+##meta
+#CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  CH012
+chr1    494515  .       T       A       3404.42 PASS    Annotation=OR4F29,OR4F16,OR4F3  GT:AD:DP:GQ:PL:PP       .:.:.:.:.:.
+chr1    926133  .       G       A       110.07  PASS    Annotation=SAMD11       GT:AD:DP:GQ:PL:PP       .:.:.:.:.:.
+chr1    972540  .       C       G       4280.95 PASS    LEN=1;TYPE=snp;Annotation=PLEKHN1       GT      0|0 
+chr1    972540  .       C       T       4280.95 PASS    LEN=1;TYPE=snp;Annotation=PLEKHN1       GT      0|0 
+chr1    972790  .       C       G       11113.8 PASS    Annotation=PLEKHN1      GT:AD:DP:GQ:PL:PP       0/0:5,0:5:22:0,12,180:0,22,206 
