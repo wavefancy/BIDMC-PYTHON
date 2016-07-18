@@ -1,0 +1,79 @@
+{
+    "__default__":
+    {
+      "mem"  : "rusage[mem=2000]",
+      "queue": "short",
+      "comments": "Time record is the single cpu time. Effective memory on cluster is CPU_Num * MEM"
+    },
+    "fastqc4Raw":
+    {
+      "time" : "5:00",
+      "queue": "short",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=2000]",
+      "comments": "10mins on a single cpu can finish 1 job."
+    },
+    "trimmomatic_rgTagFile":
+    {
+      "time" : "11:58",
+      "queue": "short",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=10000]",
+      "comments" : "less than 2hours single cpu time."
+    },
+    "fastqc4trimed":
+    {
+      "time" : "3:00",
+      "queue": "short",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=2100]",
+      "comments": "less than 10mins single cpu time."
+    },
+    "bwamen_align_sort_markduplicate":
+    {
+      "time" : "30:00",
+      "queue": "mcore",
+      "cpus" : "3",
+      "mem"  : "rusage[mem=10000]",
+      "comments": "BWAMEM: Mem6G, 400mins=7h, around 500mins, Single CPU. sambamba: 20mins. Requsted: 2*10=20G."
+    },
+    "localRealignment_gatk":
+    {
+      "time" : "11:30",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=21000]",
+      "comments" : "Total 75mins, each step about 6G."
+    },
+    "BQSR_gatk":
+    {
+      "time" : "11:30",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=21000]",
+      "comments": "Maxmen: 10G, Total: less than 250mins."
+    },
+    "HaplotypeCaller4Sample_gatk":
+    {
+      "time" : "11:58",
+      "cpus" : "2",
+      "mem"  : "rusage[mem=20000]",
+      "comments" : "Mem: 40G, 10.16h single cpus."
+    },
+
+
+    "CombineGVCF":
+    {
+      "time" : "30:00",
+      "queue": "mcore",
+      "cpus" : "2",
+      "mem"  : "rusage[mem=10000]",
+      "comments" : "Combine 2gvcf, 112m. MEM: less than 20G"
+    },
+    "JointlyCallVCF_gatk":
+    {
+      "time" : "11:58",
+      "cpus" : "2",
+      "mem"  : "rusage[mem=10000]",
+      "comments": "2 individual, less than 10G mem, 94min"
+    }
+
+}

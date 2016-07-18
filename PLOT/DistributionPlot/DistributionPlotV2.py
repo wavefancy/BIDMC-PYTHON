@@ -6,8 +6,8 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BoxPlot.py -o outname -x xtitle [-t]
-        BoxPlot.py -h | --help | -v | --version | -f | --format
+        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange]
+        DistributionPlotV2.py -h | --help | -v | --version | -f | --format
 
     Notes:
         1. Read results from stdin, and output results to stdout.
@@ -17,10 +17,14 @@
         -x xtitle
         -t            In test mode.
         -o outname    Output file name: output.html.
+        --bs binsize  Set binsize, float, default 0.2
+        --an anno     Vertical arrow annotation, pattern as: x_y_text_color[_arrowLen],x_y_text_color...
+                      [_arrowLen] is optional, default 100.
         --yerr yecol  Column index for y error bar.
-        --yr yrange   Set the yAxis plot range: float1,float2.
+        --xr xrange   Set the xAxis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
         --ms msize    Set marker size: float, default 5.
+        .
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -44,7 +48,14 @@ c3  5   3   2
     ''');
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='1.0')
+    args = docopt(__doc__, version='2.1')
+    #verison 2.0
+    # 1. add function to change bin_size
+    # 2. add function to add arrow annotation.
+
+    #version 2.1
+    # 1. add function to change arrow length for annotation.
+
     print(args)
 
     if(args['--format']):
@@ -60,12 +71,18 @@ if __name__ == '__main__':
     hlines = [] #location for horizontal lines.
     vlines = []
     msize = 5
+    binsize = 0.2
+    if args['--bs']:
+        binsize = float(args['--bs'])
+    arowAnnotation = ''
+    if args['--an']:
+        arowAnnotation = args['--an']
 
-    yrange = []
+    xrange = []
     # if args['--yerr']:
     #     errYCol = int(args['--yerr']) -1
-    # if args['--yr']:
-    #     yrange = list(map(float, args['--yr'].split(',')))
+    if args['--xr']:
+        xrange = list(map(float, args['--xr'].split(',')))
     # if args['--hl']:
     #     hlines = list(map(float, args['--hl'].split(',')))
     # if args['--ms']:
@@ -96,7 +113,7 @@ if __name__ == '__main__':
 
     if args['-t']:
         import numpy as np
-        dataMap = {'test': np.random.randn(200)}
+        dataMap = {'test': np.random.randn(400)}
 
     hist_data = []
     group_labels = []
@@ -106,99 +123,45 @@ if __name__ == '__main__':
 
     # Create distplot
     colors = ['#37AA9C', '#2BCDC1','#F66095','#393E46']
-    fig = FF.create_distplot(hist_data, group_labels,bin_size=0.2,
+    fig = FF.create_distplot(hist_data, group_labels,bin_size=binsize,
     curve_type='normal',
     colors=colors,
     show_rug=False)
 
     afsize = 10 #annotation font size.
+    #arrow annotation
+    annoArray = []
+    if arowAnnotation:
+        for x in arowAnnotation.split(','):
+            ss = x.split('_')
+            arrowLen = -100
+            if len(ss) == 5:
+                arrowLen = -1 * int(ss[4])
+
+            annoArray.append(
+                dict(
+                    x=float(ss[0]),
+                    y=float(ss[1]),
+                    xref='x',
+                    yref='y',
+                    #yref='paper',
+                    text=ss[2],
+                    showarrow=True,
+                    arrowhead=2,
+                    arrowcolor=ss[3],
+                    font=dict(
+                        color=ss[3],
+                        size = afsize,
+                    ),
+                    ax=0,
+                    ay=arrowLen
+                ))
+
+    annoLayout = go.Layout(
+        annotations = annoArray
+    )
+
     layout = go.Layout(
-        annotations=[
-            dict(
-                x=3.14,
-                y=0.01,
-                xref='x',
-                yref='paper',
-                text='FSGS_UBD',
-                showarrow=True,
-                arrowhead=2,
-                arrowcolor='#D62728',
-                font=dict(
-                    color='#D62728',
-                    size = afsize,
-                ),
-                ax=0,
-                ay=-100
-            ),
-            dict(
-                x=1.82,
-                y=0.15,
-                xref='x',
-                # yref='y',
-                yref='paper',
-                text='ESRD_UBD',
-                showarrow=True,
-                arrowhead=2,
-                arrowcolor='#3886BC',
-                font=dict(
-                    color='#3886BC',
-                    size = afsize,
-                ),
-                ax=0,
-                ay=-100
-            ),
-            dict(
-                x=1.08,
-                y=0.5,
-                xref='x',
-                # yref='y',
-                yref='paper',
-                text='DukG60_UBD',
-                showarrow=True,
-                arrowcolor='#FF7F0E',
-                font=dict(
-                    color='#FF7F0E',
-                    size = afsize,
-                ),
-                arrowhead=2,
-                ax=0,
-                ay=-100
-            ),
-            dict(
-                x=1.31,
-                y=0.4,
-                xref='x',
-                # yref='y',
-                yref='paper',
-                text='ImpG1G2_UBD',
-                showarrow=True,
-                arrowhead=2,
-                arrowcolor='#2CA02C',
-                font=dict(
-                    color='#2CA02C',
-                    size = afsize,
-                ),
-                ax=0,
-                ay=-100
-            ),
-            dict(
-                x=1.28,
-                y=0.4,
-                xref='x',
-                # yref='y',
-                yref='paper',
-                text='ImpNonG1G2_UBD',
-                showarrow=True,
-                arrowhead=2,
-                arrowcolor='#9467BD',
-                font=dict(
-                    color='#9467BD',
-                    size = afsize,
-                ),
-                ax=0,
-                ay=-100
-            ),
-        ],
         #title='Points Scored by the Top 9 Scoring NBA Players in 2012',
         yaxis=dict(
             title=ytitle,
@@ -213,6 +176,7 @@ if __name__ == '__main__':
         ),
         xaxis=dict(
             title = xtitle,
+            range=xrange,
         )
         ,
         margin=dict(
@@ -227,6 +191,8 @@ if __name__ == '__main__':
     )
 
     fig['layout'].update(layout)
+    if annoArray:
+        fig['layout'].update(annoLayout)
     #fig = go.Figure(data=traces, layout=layout)
     #py.iplot(fig)
     #output the last one
