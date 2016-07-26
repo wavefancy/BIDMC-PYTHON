@@ -1,0 +1,5 @@
+sgRNA   GENE    ctrl    treatment
+A1  A   2   10
+A2  A   3   30
+B1  B   30  2
+B2  B   10  5
