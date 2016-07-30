@@ -19,12 +19,13 @@ sample = config["sample"]
 #sample = "M_FG-NL113"
 
 SAMPLES = [sample]
-#mthreads = "2"
+#mthreads = "1"
 mthreads = config["mthreads"]
+#number of threads for HaplotypeCaller
+hcthreads = config["hcthreads"]
 #number of threads for bwa_mem
-#memthreads="3"
 memthreads = config["memthreads"]
-#removeTemp=True
+
 removeTemp=config["removeTemp"]
 #print(removeTemp)
 
@@ -55,7 +56,7 @@ trimDir=orootDir + "/02_trim/"
 trimQCDir=orootDir + "/03_fastqcTrim/"
 bwaDir=orootDir + "/04_bwa/"
 gatkDir=orootDir + "/05_gatk/"
-vcfDir=orootDir + "/06_vcf/"
+vcfDir= "06_vcf/"   #put gvcf at current location
 logDir="10_logs/"
 
 trimmomaticJar="~/jars/trimmomatic-0.36.jar"
@@ -86,15 +87,15 @@ rule all_output_gVCF:
         #Generate QC summaries for trimed reads.
         expand(trimQCDir + "{sample}" + "/done_flag.txt", sample=SAMPLES),
         #aligned reads by bwa, and sort and mark duplicate by sambamba
-        expand(bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam",sample=SAMPLES),
+        #expand(bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam",sample=SAMPLES),
 
         #gatk local realignment.
-        expand(gatkDir + "{sample}" + "/realigned_{sample}.cram", sample=SAMPLES),
+        #expand(gatkDir + "{sample}" + "/realigned_{sample}.cram", sample=SAMPLES),
         #gatk bqsr
-        #expand(gatkDir + "{sample}" + "/remove_bqsr_{sample}.bam", sample=SAMPLES),
+        #expand(gatkDir + "{sample}" + "/bqsr_{sample}.cram", sample=SAMPLES),
 
         #gatk call vcf.
-        #expand(gatkDir + "{sample}" + "/{sample}.g.vcf.gz", sample=SAMPLES),
+        expand(vcfDir + "{sample}" + "/{sample}.g.vcf.gz", sample=SAMPLES),
 
 import glob
 def fastq4Sample(wildcards):
@@ -294,9 +295,9 @@ rule localRealignment_gatk:
         " -L {exregion}" +
         " -R {refGenome} -I {input} -known {knownIndel} -o {params.tlist}" +
         " && java -Xmx20G -jar {gatkJar} -T IndelRealigner -R {refGenome} -I {input} -known {knownIndel} -targetIntervals {params.tlist} -o {output}" +
-        #" && rm {params.tlist}"
         " && gzip -f {params.tlist}"
-        +" && rm {input}"
+        #*** do not remote input, cause snake tracting problem, move to next step.
+        #+" && rm -f {input}"
 
 rule BQSR_gatk:
     #105min,
@@ -309,33 +310,37 @@ rule BQSR_gatk:
         gatkDir + "{sample}" + "/bqsr_{sample}.cram"
         #gatkDir + "{sample}" + "/{sample}.g.vcf"
 
-    shell:
-        "java -Xmx20G -jar {gatkJar} -T BaseRecalibrator -R {refGenome}"
-        + " -L {exregion}"
-        + " -I {input} -knownSites {knownSites} -knownSites {knownIndel}"
-        + " -o {params.dir}/bqsr_table"
-        # Generate post reports
-        #+ " && java -Xmx20G -jar {gatkJar} -T BaseRecalibrator -nct 5 -R {refGenome}"
-        #+ " -I {input} -knownSites {knownSites} -knownSites {knownIndel}"
-        #+ " -BQSR {params.dir}/bqsr_table"
-        #+ " -o {params.dir}/post_bqsr_table"
-        #+ " && java -Xmx20G -jar {gatkJar} -T AnalyzeCovariates -R {refGenome}"
-        #+ " -before {params.dir}/bqsr_table"
-        #+ " -after {params.dir}/post_bqsr_table"
-        #+ " -plots {params.pdf}"
-        # BQSR on bam data
-        + " && java -Xmx20G -jar {gatkJar} -T PrintReads -R {refGenome}"
-        + " -I {input}"
-        + " --disable_indel_quals "
-        #+ " --bam_compression 5"
-        + " -BQSR {params.dir}/bqsr_table"
-        + " -o {output}"
-        #less than one hour.
-        #+ " | samtools view -C /dev/stdin -T "+refGenome+" -o {output}"
-        # Individual level all sites calling, generate gvcf.
-        # Remove input files
-        + " && rm {params.dir}/realigned_*"
-        + " && gzip -f {params.dir}/bqsr_table"
+    run:
+        if removeTemp:
+            shell(
+                "rm " + bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam"
+                + " && rm " + bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam.bai"
+            )
+
+        shell(
+            "java -Xmx20G -jar {gatkJar} -T BaseRecalibrator -R {refGenome}"
+            + " -L {exregion}"
+            + " -I {input} -knownSites {knownSites} -knownSites {knownIndel}"
+            + " -o {params.dir}/bqsr_table"
+            # Generate post reports
+            #+ " && java -Xmx20G -jar {gatkJar} -T BaseRecalibrator -nct 5 -R {refGenome}"
+            #+ " -I {input} -knownSites {knownSites} -knownSites {knownIndel}"
+            #+ " -BQSR {params.dir}/bqsr_table"
+            #+ " -o {params.dir}/post_bqsr_table"
+            #+ " && java -Xmx20G -jar {gatkJar} -T AnalyzeCovariates -R {refGenome}"
+            #+ " -before {params.dir}/bqsr_table"
+            #+ " -after {params.dir}/post_bqsr_table"
+            #+ " -plots {params.pdf}"
+            # BQSR on bam data
+            + " && java -Xmx20G -jar {gatkJar} -T PrintReads -R {refGenome}"
+            + " -I {input}"
+            + " --disable_indel_quals "
+            #+ " --bam_compression 5"
+            + " -BQSR {params.dir}/bqsr_table"
+            + " -o {output}"
+            #+ " && rm -f {params.dir}/realigned_*"
+            + " && gzip -f {params.dir}/bqsr_table"
+            )
 
 rule HaplotypeCaller4Sample_gatk:
     #10G,
@@ -343,18 +348,25 @@ rule HaplotypeCaller4Sample_gatk:
     input:
         gatkDir + "{sample}" + "/bqsr_{sample}.cram"
     output:
-        gatkDir + "{sample}" + "/{sample}.g.vcf.gz"
+        vcfDir + "{sample}" + "/{sample}.g.vcf.gz"
     #log:
     #    logDir + "HCaller.{sample}" + ".log.txt"
-    shell:
-        " java -Xmx35G -jar {gatkJar} -T HaplotypeCaller -R {refGenome}"
-        +" -nct " +mthreads
-        +" -L {exregion}"
-        #+" --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000"
-        +" --emitRefConfidence GVCF"
-        #+" -I {input} -o {output}"
-        +" -I {input} -o {output}"
-        #+" -I {input} -o /dev/stdout | bgzip > {output}"
-        #+" ;tabix -p vcf {output}) &> {log}"
-        # remove bqsrbam
-        #+" && rm {params.dir}/remove*"
+    run:
+        if removeTemp:
+            shell(
+                "rm " + gatkDir + "{sample}" + "/realigned_*"
+            )
+
+        shell(
+            " java -Xmx35G -jar {gatkJar} -T HaplotypeCaller -R {refGenome}"
+            +" -nct " +hcthreads
+            +" -L {exregion}"
+            #+" --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000"
+            +" --emitRefConfidence GVCF"
+            #+" -I {input} -o {output}"
+            +" -I {input} -o {output}"
+            #+" -I {input} -o /dev/stdout | bgzip > {output}"
+            #+" ;tabix -p vcf {output}) &> {log}"
+            # remove bqsrbam
+            #+" && rm {params.dir}/remove*"
+        )

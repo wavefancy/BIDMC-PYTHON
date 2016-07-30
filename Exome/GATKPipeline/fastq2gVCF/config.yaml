@@ -34,6 +34,10 @@ TOPHRED33:
 
 # String: how many threads(cpus) used for parallel computing.
 mthreads:
+    "1"
+
+#threads for HaplotypeCaller:
+hcthreads:
     "2"
 
 # String: how many threads(cpus) used for BWA_MEM parallel computing.
