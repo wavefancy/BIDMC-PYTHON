@@ -9,7 +9,7 @@ sampleDir:
 
 # output root dir.
 orootDir:
-    ""
+    "/n/scratch2/wallace/excallV3/ex_yale"
 
 # True|False : whether remove intermediate files or not.
 removeTemp:

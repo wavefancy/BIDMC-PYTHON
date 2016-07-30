@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize]
+        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over]
         BoxPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -20,7 +20,8 @@
         --yerr yecol  Column index for y error bar.
         --yr yrange   Set the yAxis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
-        --ms msize    Set marker size: float, default 5.
+        --ms msize    Set marker size: float, default 2.
+        --over        Overlap dot with box.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -56,7 +57,8 @@ if __name__ == '__main__':
     mode = 'markers'
     hlines = [] #location for horizontal lines.
     vlines = []
-    msize = 5
+    msize = 2
+    overBoxDot = False #overlap box with dots.
 
     yrange = []
     if args['--yerr']:
@@ -67,6 +69,8 @@ if __name__ == '__main__':
         hlines = list(map(float, args['--hl'].split(',')))
     if args['--ms']:
         msize = float(args['--ms'])
+    if args['--over']:
+        overBoxDot = True
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -94,18 +98,30 @@ if __name__ == '__main__':
 
     colors = colors[:len(x_data)]
     for xd, yd, cls in zip(x_data, y_data, colors):
-            traces.append(go.Box(
-                y=yd,
-                name=xd,
-                boxpoints='all',
-                jitter=0.5,
-                whiskerwidth=0.2,
-                fillcolor=cls,
-                marker=dict(
-                    size=2,
-                ),
-                line=dict(width=1),
-            ))
+            if overBoxDot:
+                traces.append(go.Box(
+                    y=yd,
+                    name=xd,
+                    whiskerwidth=0.2,
+                    fillcolor=cls,
+                    marker=dict(
+                        size=msize,
+                    ),
+                    line=dict(width=1),
+                ))
+            else:
+                traces.append(go.Box(
+                    y=yd,
+                    name=xd,
+                    boxpoints='all',
+                    jitter=0.5,
+                    whiskerwidth=0.2,
+                    fillcolor=cls,
+                    marker=dict(
+                        size=msize,
+                    ),
+                    line=dict(width=1),
+                ))
 
     layout = go.Layout(
         #title='Points Scored by the Top 9 Scoring NBA Players in 2012',

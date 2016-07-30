@@ -92,8 +92,6 @@ rule all_output_gVCF:
         #gatk local realignment.
         #expand(gatkDir + "{sample}" + "/realigned_{sample}.cram", sample=SAMPLES),
         #gatk bqsr
-        #expand(gatkDir + "{sample}" + "/bqsr_{sample}.cram", sample=SAMPLES),
-
         #gatk call vcf.
         expand(vcfDir + "{sample}" + "/{sample}.g.vcf.gz", sample=SAMPLES),
 
@@ -250,12 +248,17 @@ rule bwamen_align_sort_markduplicate:
         for f in infiles:
             f2=f.replace('_r1.fastq.gz', '_r2.fastq.gz')
             nbase = f.split('/')[-1].split('_r1.fastq.gz')[0]
-            shell("seqtk mergepe " + f +" " + f2
-            +" | bwa mem -t " + memthreads
-            +" -M -p " + refGenome
-            +" -"
-            +" | gzip >{params.dir}/" + "paried_" + nbase + ".sam.gz"
+            shell("bwa mem -t " + memthreads
+            + " -M " + refGenome
+            + " " + f + " " + f2
+            + " | gzip >{params.dir}/" + "paried_" + nbase + ".sam.gz"
             )
+            # shell("seqtk mergepe " + f +" " + f2
+            # +" | bwa mem -t " + memthreads
+            # +" -M -p " + refGenome
+            # +" -"
+            # +" | gzip >{params.dir}/" + "paried_" + nbase + ".sam.gz"
+            # )
 
         #post bwa process, combine sam, add tags, sort and convert to bam.
         shell("python3 "+ comSamPy +" {params.dir}/*.sam.gz"
