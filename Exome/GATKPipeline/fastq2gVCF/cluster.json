@@ -29,7 +29,7 @@
       "mem"  : "rusage[mem=2100]",
       "comments": "less than 10mins single cpu time."
     },
-    "bwamen_align_sort_markduplicate":
+    "bwamenTag":
     {
       "time" : "30:00",
       "queue": "mcore",
@@ -37,21 +37,35 @@
       "mem"  : "rusage[mem=10000]",
       "comments": "BWAMEM: Mem6G, 400mins=7h, around 500mins, Single CPU. sambamba: 20mins. Requsted: 2*10=20G."
     },
-    "localRealignment_gatk":
+    "picard_sortbam":
+    {
+      "time" : "11:30",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=21000]",
+      "comments" : "less 2h, less 20G."
+    },
+    "picard_duplicatemark":
+    {
+      "time" : "11:30",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=21000]",
+      "comments" : "less 2h, less 20G."
+    },
+    "localRealignment":
     {
       "time" : "11:30",
       "cpus" : "1",
       "mem"  : "rusage[mem=21000]",
       "comments" : "Total 75mins, each step about 6G."
     },
-    "BQSR_gatk":
+    "BQSR":
     {
       "time" : "11:30",
       "cpus" : "1",
       "mem"  : "rusage[mem=21000]",
       "comments": "Maxmen: 10G, Total: less than 250mins."
     },
-    "HaplotypeCaller4Sample_gatk":
+    "HaplotypeCaller":
     {
       "time" : "11:58",
       "cpus" : "2",

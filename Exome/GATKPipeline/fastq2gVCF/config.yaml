@@ -5,15 +5,15 @@ sample:
 
 # String : location for sequence fastq file.
 sampleDir:
-    "/groups/pollak/mxw_data/exomes/yale"
+    "/groups/pollak/mxw_data/excallV3/testdata"
 
 # output root dir.
 orootDir:
-    "/n/scratch2/wallace/excallV3/ex_yale"
+    "/n/scratch2/wallace/excallV3/ex_test"
 
 # True|False : whether remove intermediate files or not.
 removeTemp:
-    False
+    True
 
 # True|False : whether check all reads name for rg tag.
 # set this as true if input has single end reads.

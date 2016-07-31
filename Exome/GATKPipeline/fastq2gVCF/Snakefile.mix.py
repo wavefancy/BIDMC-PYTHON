@@ -2,6 +2,7 @@
 #--------------------------
 # Remove intermediate files, only keep results for
 # 1.QC
+# 2.bwa men mapping
 # 2.BQSR cram
 # 3.gVCF
 #
@@ -18,8 +19,8 @@ print(config)
 sample = config["sample"]
 #sample = "M_FG-NL113"
 
-SAMPLES = [sample]
-#mthreads = "1"
+#SAMPLES = [sample]
+#mthreads = "1", the number of threads for majority of works.
 mthreads = config["mthreads"]
 #number of threads for HaplotypeCaller
 hcthreads = config["hcthreads"]
@@ -44,12 +45,13 @@ phredCoding = config["phredCoding"]
 TOPHRED33 = config["TOPHRED33"]
 #print(SAMPLES)
 
+#whether remove final step cram file [after bqsr].
+removeFinalCram = False
 ###### ----- DIR configuration ----- ########
-#rootDir="/groups/pollak/mxw_data/exCall"
-#sampleDir="../exomes/yale/"
-#set sample variable by --config sample=NAME when run snakemake, each run one sample.
+#fastq file location.
 sampleDir = config["sampleDir"]
 
+# output root dir.
 orootDir = config["orootDir"]
 fastqcDIR=orootDir + "/01_fastqc/"
 trimDir=orootDir + "/02_trim/"
@@ -75,30 +77,26 @@ addTagPy="~/python/AddRGTag4Sam.py"
 cramJar="~/jars/cramtools-3.0.jar"
 exregion="/groups/pollak/mxw_data/gatk/b38/exomeIntervalP100/exon.p100.refSeq.interval_list"
 
-
-
 localrules: all_output
 
 # All final files need to be outputed.
 rule all_output_gVCF:
     input:
         #Generate QC summaries for raw reads.
-        expand(fastqcDIR + "{sample}" + "/done_flag.txt", sample=SAMPLES),
+        expand(fastqcDIR + "{sample}" + "/done_flag.txt", sample=sample),
         #Generate QC summaries for trimed reads.
-        expand(trimQCDir + "{sample}" + "/done_flag.txt", sample=SAMPLES),
-        #aligned reads by bwa, and sort and mark duplicate by sambamba
-        #expand(bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam",sample=SAMPLES),
-
-        #gatk local realignment.
-        #expand(gatkDir + "{sample}" + "/realigned_{sample}.cram", sample=SAMPLES),
-        #gatk bqsr
-        #gatk call vcf.
-        expand(vcfDir + "{sample}" + "/{sample}.g.vcf.gz", sample=SAMPLES),
+        expand(trimQCDir + "{sample}" + "/done_flag.txt", sample=sample),
+        expand(bwaDir + "{sample}" + "/done_bwaTag.txt", sample=sample),
+        expand(gatkDir + "{sample}" + "/done_sort.txt", sample=sample),
+        expand(gatkDir + "{sample}" + "/done_mark.txt", sample=sample),
+        expand(gatkDir + "{sample}" + "/done_localRealign.txt",sample=sample),
+        expand(gatkDir + "{sample}" + "/done_BQSR.txt", sample=sample),
+        expand(vcfDir + "{sample}" + "/done_HaplotypeCaller.txt", sample=sample)
 
 import glob
 def fastq4Sample(wildcards):
     """get fastq file list for sample."""
-    return sorted(glob.glob(sampleDir +"/"+ wildcards.sample + "/*.fastq.gz"))
+    return sorted(glob.glob(sampleDir +"/"+ sample + "/*.fastq.gz"))
 
 #### ----- Quality Check by fastqc for raw reads ----- #####
 rule fastqc4Raw:
@@ -119,7 +117,7 @@ def fastqR1files(wildcards):
     """Get all the fastq R1 files"""
     #print(sampleDir + "/" +wildcards.sample)
     #print(sorted(glob.glob(sampleDir + "/" + wildcards.sample + "/*_R1_*.fastq.gz")))
-    return sorted(glob.glob(sampleDir + "/" + wildcards.sample + "/*_R1_*.fastq.gz"))
+    return sorted(glob.glob(sampleDir + "/" + sample + "/*_R1_*.fastq.gz"))
 
 outputSuffix = ['_r1.fastq.gz','_r1_unpair.fastq.gz','_r2.fastq.gz','_r2_unpair.fastq.gz']
 rule trimmomatic_rgTagFile:
@@ -129,6 +127,7 @@ rule trimmomatic_rgTagFile:
         outDir=trimDir + "{sample}"
     input:
         fastqR1files
+        #sorted(glob.glob(sampleDir + "/" + sample + "/*_R1_*.fastq.gz"))
     output:
         trimDir + "{sample}" + "/rgTags.txt"
     run:
@@ -206,15 +205,17 @@ rule fastqc4trimed:
     shell:
         "fastqc {params.inDir}/*.fastq.gz -o {params.prefix} && touch {output}"
 
-def trimedR1files(wildcards):
-    """Get all the fastq R1 files"""
-    #print(sorted(glob.glob(sampleDir + wildcards.sample + "/*_R1_*.fastq.gz")))
-    return sorted(glob.glob(trimDir + wildcards.sample + "/*_r1.fastq.gz"))
+# def trimedR1files(wildcards):
+#     """Get all the fastq R1 files"""
+#     #print(sorted(glob.glob(sampleDir + wildcards.sample + "/*_R1_*.fastq.gz")))
+#     return sorted(glob.glob(trimDir + wildcards.sample + "/*_r1.fastq.gz"))
 #### ----- Align reads by bwamen, and sort and markdup by sambamba ----- #####
-rule bwamen_align_sort_markduplicate:
+#rule bwamen_align_sort_markduplicate:
+#do alignment and add tags.
+rule bwamenTag:
     params: sample = "{sample}",
             hla = bwaDir + "{sample}" + "/hla_{sample}",
-            stemp = bwaDir + "{sample}" + "/sorted.bam",
+            stemp = bwaDir + "{sample}" + "/allTaged.sam.gz",
             dir=bwaDir + "{sample}",
             inDir=trimDir + "{sample}"
 
@@ -223,15 +224,14 @@ rule bwamen_align_sort_markduplicate:
         # if removeTemp=True, after BWA_MEM, trimed files will be removed.
         trimDir + "{sample}" + "/rgTags.txt",
         trimQCDir + "{sample}" + "/done_flag.txt"
-        #trimDir + wildcards.sample + "/*_r1.fastq.gz"
-        #trimedR1files
     output:
-        bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam"
+        bwaDir + "{sample}" + "/done_bwaTag.txt"
         #bwaDir + "{sample}" + "/hla_{sample}"
     run:
         #print(trimDir + params.sample + "/*_r1.fastq.gz")
         #direct reference for scripts.
-        infiles = sorted(glob.glob(trimDir + params.sample + "/*_r1.fastq.gz"))
+        #infiles = sorted(glob.glob(trimDir + params.sample + "/*_r1.fastq.gz"))
+        infiles = sorted(glob.glob(trimDir + sample + "/*_r1.fastq.gz"))
         #print(infiles)
 
         #mapping single end reads.
@@ -241,7 +241,7 @@ rule bwamen_align_sort_markduplicate:
             +" -t " + memthreads
             +" -M " + refGenome
             +" -"
-            +" | gzip >{params.dir}/unpaired.sam.gz"
+            +" | gzip >{params.dir}/unparied.sam.gz"
             )
 
         #mapping paired end
@@ -253,26 +253,19 @@ rule bwamen_align_sort_markduplicate:
             + " " + f + " " + f2
             + " | gzip >{params.dir}/" + "paried_" + nbase + ".sam.gz"
             )
-            # shell("seqtk mergepe " + f +" " + f2
-            # +" | bwa mem -t " + memthreads
-            # +" -M -p " + refGenome
-            # +" -"
-            # +" | gzip >{params.dir}/" + "paried_" + nbase + ".sam.gz"
-            # )
 
         #post bwa process, combine sam, add tags, sort and convert to bam.
-        shell("python3 "+ comSamPy +" {params.dir}/*.sam.gz"
+        shell("python3 "+ comSamPy +" --rpg {params.dir}/*paried*.sam.gz"
         +" | k8 " + bwaPostaltJS + " -p {params.hla} " + refGenomeAlt
         +" | python3 " + addTagPy + " -r {params.inDir}/rgTags.txt"
-        +" | sambamba view -f bam -S -l 0 -t 1 /dev/stdin"
-        +" | sambamba sort -m 8G -o /dev/stdout -l 5 -t "+memthreads+" /dev/stdin "
-        +" > {params.stemp}"
+        +" | pigz -p {memthreads} "
+        +" > {params.stemp} && touch {output}"
         )
         #compress hla seqs.
         shell("gzip -f {params.hla}*")
 
         #MarkDuplicates
-        shell("sambamba markdup -t "+memthreads+" -l 5 {params.stemp} {output}")
+        #shell("sambamba markdup -t "+memthreads+" -l 5 {params.stemp} {output}")
         #***IMPORTANT*** Strange problem to process converted cram in next step for GATK.
         # shell("sambamba markdup -t "+mthreads+" -l 0 {params.stemp} /dev/stdout"
         # +" | java -Xmx5G -jar " + cramJar + " cram -R " + refGenome
@@ -281,95 +274,130 @@ rule bwamen_align_sort_markduplicate:
         # )
         #remove files:
         if removeTemp:
-            shell("rm {params.stemp}"
-            +" && rm {params.dir}/*.sam.gz"
-            #remove trimmomatic files
-            +" && rm -r " + trimDir + "{params.sample}"
+            shell(
+            #"rm {params.stemp}"
+            "rm {params.dir}/*paried*.sam.gz"
+            #remove trimmomatic files, but keep done flag files.
+            + " && rm -r " + trimDir + "{params.sample}" + "/*.gz"
             )
 
-rule localRealignment_gatk:
-    params: tlist = gatkDir + "{sample}" + "/realign_target.list"
+rule picard_sortbam:
+    params:
+        #remove = expand(" && rm " + bwaDir + sample + "/allTaged.sam.gz" if removeTemp == True else "")
+        remove = " && rm " + bwaDir + sample + "/allTaged.sam.gz" if removeTemp == True else ""
     input:
-        bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam",
+        bwaDir + "{sample}" + "/done_bwaTag.txt"
     output:
-        gatkDir + "{sample}" + "/realigned_{sample}.cram"
+        gatkDir + "{sample}" + "/done_sort.txt"
     shell:
-        "java -Xmx20G -jar {gatkJar} -T RealignerTargetCreator" +
-        " -L {exregion}" +
-        " -R {refGenome} -I {input} -known {knownIndel} -o {params.tlist}" +
-        " && java -Xmx20G -jar {gatkJar} -T IndelRealigner -R {refGenome} -I {input} -known {knownIndel} -targetIntervals {params.tlist} -o {output}" +
-        " && gzip -f {params.tlist}"
-        #*** do not remote input, cause snake tracting problem, move to next step.
-        #+" && rm -f {input}"
+        "  java -jar -Xmx20G {picardJar} SortSam "
+        +" INPUT=" + bwaDir + "{sample}" + "/allTaged.sam.gz"
+        +" OUTPUT=" + gatkDir + "{sample}" + "/sorted.bam"
+        +" SORT_ORDER=coordinate"
+        +" && touch {output}"
+        +" {params.remove}"
 
-rule BQSR_gatk:
+rule picard_duplicatemark:
+    params:
+        #remove = expand(" && rm " + bwaDir + sample + "/allTaged.sam.gz" if removeTemp == True else "")
+        remove = " && rm " + gatkDir + sample + "/sorted.bam" if removeTemp == True else "",
+        metrics = gatkDir + "{sample}"  + "/metrics.txt",
+        out = gatkDir + "{sample}" + "/dup_marked.bam"
+    input:
+        gatkDir + "{sample}" + "/done_sort.txt"
+    output:
+        gatkDir + "{sample}" + "/done_mark.txt"
+    shell:
+        "  java -jar -Xmx20G {picardJar} MarkDuplicates "
+        +" INPUT=" + gatkDir + "{sample}" + "/sorted.bam"
+        +" OUTPUT=" + "{params.out}"
+        +" METRICS_FILE=" + "{params.metrics}"
+        +" && java -jar -Xmx20G {picardJar} BuildBamIndex INPUT={params.out}"
+        +" && touch {output} && gzip -f {params.metrics}"
+        +" {params.remove}"
+
+rule localRealignment:
+    params:
+        tlist = gatkDir + "{sample}" + "/realign_target.list",
+        inf= gatkDir + "{sample}" + "/dup_marked.bam",
+        out= gatkDir + "{sample}" + "/realigned_{sample}.cram",
+        remove = " && rm " + gatkDir + sample + "/dup_marked.ba?" if removeTemp == True else ""
+    input:
+        gatkDir + "{sample}" + "/done_mark.txt"
+        #bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam",
+    output:
+        gatkDir + "{sample}" + "/done_localRealign.txt"
+        #gatkDir + "{sample}" + "/realigned_{sample}.cram"
+    shell:
+        "java -Xmx20G -jar {gatkJar} -T RealignerTargetCreator"
+        +" -L {exregion}"
+        +" -R {refGenome} -I {params.inf} -known {knownIndel} -o {params.tlist}"
+        +" && java -Xmx20G -jar {gatkJar} -T IndelRealigner -R {refGenome}"
+        +" -I {params.inf} -known {knownIndel} -targetIntervals {params.tlist}"
+        +" -o {params.out}"
+        +" && gzip -f {params.tlist}"
+        +" && touch {output}"
+        +" {params.remove}"
+
+rule BQSR:
     #105min,
-    params: dir= gatkDir + "{sample}",
-            #pdf= gatkDir + "{sample}" + "/bqsr_plots_{sample}.pdf",
-            #bqsrbam = gatkDir + "{sample}" + "/remove_bqsr_{sample}.bam"
+    params:
+        dir= gatkDir + "{sample}",
+        inf = gatkDir + "{sample}" + "/realigned_{sample}.cram",
+        out = gatkDir + "{sample}" + "/bqsr_{sample}.cram",
+        remove = " && rm " + gatkDir + "{sample}" + "/realigned_{sample}.cram*" if removeTemp == True else ""
     input:
-        gatkDir + "{sample}" + "/realigned_{sample}.cram"
+        gatkDir + "{sample}" + "/done_localRealign.txt"
+        #gatkDir + "{sample}" + "/realigned_{sample}.cram"
     output:
-        gatkDir + "{sample}" + "/bqsr_{sample}.cram"
-        #gatkDir + "{sample}" + "/{sample}.g.vcf"
+        gatkDir + "{sample}" + "/done_BQSR.txt"
+        #gatkDir + "{sample}" + "/bqsr_{sample}.cram"
 
-    run:
-        if removeTemp:
-            shell(
-                "rm " + bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam"
-                + " && rm " + bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam.bai"
-            )
+    shell:
+        "java -Xmx20G -jar {gatkJar} -T BaseRecalibrator -R {refGenome}"
+        + " -L {exregion}"
+        + " -I {params.inf} -knownSites {knownSites} -knownSites {knownIndel}"
+        + " -o {params.dir}/bqsr_table"
+        # Generate post reports
+        #+ " && java -Xmx20G -jar {gatkJar} -T BaseRecalibrator -nct 5 -R {refGenome}"
+        #+ " -I {input} -knownSites {knownSites} -knownSites {knownIndel}"
+        #+ " -BQSR {params.dir}/bqsr_table"
+        #+ " -o {params.dir}/post_bqsr_table"
+        #+ " && java -Xmx20G -jar {gatkJar} -T AnalyzeCovariates -R {refGenome}"
+        #+ " -before {params.dir}/bqsr_table"
+        #+ " -after {params.dir}/post_bqsr_table"
+        #+ " -plots {params.pdf}"
+        # BQSR on bam data
+        + " && java -Xmx20G -jar {gatkJar} -T PrintReads -R {refGenome}"
+        + " -I {params.inf}"
+        + " --disable_indel_quals "
+        #+ " --bam_compression 5"
+        + " -BQSR {params.dir}/bqsr_table"
+        + " -o {params.out}"
+        + " && gzip -f {params.dir}/bqsr_table"
+        + " && touch {output}"
+        + " {params.remove}"
 
-        shell(
-            "java -Xmx20G -jar {gatkJar} -T BaseRecalibrator -R {refGenome}"
-            + " -L {exregion}"
-            + " -I {input} -knownSites {knownSites} -knownSites {knownIndel}"
-            + " -o {params.dir}/bqsr_table"
-            # Generate post reports
-            #+ " && java -Xmx20G -jar {gatkJar} -T BaseRecalibrator -nct 5 -R {refGenome}"
-            #+ " -I {input} -knownSites {knownSites} -knownSites {knownIndel}"
-            #+ " -BQSR {params.dir}/bqsr_table"
-            #+ " -o {params.dir}/post_bqsr_table"
-            #+ " && java -Xmx20G -jar {gatkJar} -T AnalyzeCovariates -R {refGenome}"
-            #+ " -before {params.dir}/bqsr_table"
-            #+ " -after {params.dir}/post_bqsr_table"
-            #+ " -plots {params.pdf}"
-            # BQSR on bam data
-            + " && java -Xmx20G -jar {gatkJar} -T PrintReads -R {refGenome}"
-            + " -I {input}"
-            + " --disable_indel_quals "
-            #+ " --bam_compression 5"
-            + " -BQSR {params.dir}/bqsr_table"
-            + " -o {output}"
-            #+ " && rm -f {params.dir}/realigned_*"
-            + " && gzip -f {params.dir}/bqsr_table"
-            )
-
-rule HaplotypeCaller4Sample_gatk:
+rule HaplotypeCaller:
     #10G,
-    params: dir= gatkDir + "{sample}",
+    params:
+        dir= gatkDir + "{sample}",
+        inf = gatkDir + "{sample}" + "/bqsr_{sample}.cram",
+        out = vcfDir + "{sample}" + "/{sample}.g.vcf.gz",
+        remove = " && rm " + gatkDir + "{sample}" + "/bqsr_{sample}.cram*" if removeFinalCram == True else ""
     input:
-        gatkDir + "{sample}" + "/bqsr_{sample}.cram"
+        gatkDir + "{sample}" + "/done_BQSR.txt"
+        #gatkDir + "{sample}" + "/bqsr_{sample}.cram"
     output:
-        vcfDir + "{sample}" + "/{sample}.g.vcf.gz"
-    #log:
-    #    logDir + "HCaller.{sample}" + ".log.txt"
-    run:
-        if removeTemp:
-            shell(
-                "rm " + gatkDir + "{sample}" + "/realigned_*"
-            )
-
-        shell(
-            " java -Xmx35G -jar {gatkJar} -T HaplotypeCaller -R {refGenome}"
-            +" -nct " +hcthreads
-            +" -L {exregion}"
-            #+" --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000"
-            +" --emitRefConfidence GVCF"
-            #+" -I {input} -o {output}"
-            +" -I {input} -o {output}"
-            #+" -I {input} -o /dev/stdout | bgzip > {output}"
-            #+" ;tabix -p vcf {output}) &> {log}"
-            # remove bqsrbam
-            #+" && rm {params.dir}/remove*"
-        )
+        vcfDir + "{sample}" + "/done_HaplotypeCaller.txt"
+        #vcfDir + "{sample}" + "/{sample}.g.vcf.gz"
+    shell:
+        " java -Xmx35G -jar {gatkJar} -T HaplotypeCaller -R {refGenome}"
+        + " -nct " +hcthreads
+        + " -L {exregion}"
+        #+" --emitRefConfidence GVCF --variant_index_type LINEAR --variant_index_parameter 128000"
+        + " --emitRefConfidence GVCF"
+        #+" -I {input} -o {output}"
+        + " -I {params.inf} -o {params.out}"
+        + " && touch {output}"
+        + " {params.remove}"
