@@ -100,13 +100,13 @@ def fastq4Sample(wildcards):
 
 #### ----- Quality Check by fastqc for raw reads ----- #####
 rule fastqc4Raw:
-    params: prefix = fastqcDIR + sample
+    params: prefix = fastqcDIR + "{sample}"
     input:
         #lambda wildcards: glob.glob(sampleDir + wildcards.sample + "/*.fastq.gz")
         fastq4Sample
     output:
         #at least one wildcard match.
-        fastqcDIR + sample + "/done_flag.txt"
+        fastqcDIR + "{sample}" + "/done_flag.txt"
         #expand(fastqcDIR + "{sample}", sample=SAMPLES)
     shell:
         "fastqc {input} -o {params.prefix} && touch {output}"
@@ -123,13 +123,13 @@ outputSuffix = ['_r1.fastq.gz','_r1_unpair.fastq.gz','_r2.fastq.gz','_r2_unpair.
 rule trimmomatic_rgTagFile:
     #50min, 1G mem.
     params:
-        sample=sample,
-        outDir=trimDir + sample
+        sample="{sample}",
+        outDir=trimDir + "{sample}"
     input:
         fastqR1files
         #sorted(glob.glob(sampleDir + "/" + sample + "/*_R1_*.fastq.gz"))
     output:
-        trimDir + sample + "/rgTags.txt"
+        trimDir + "{sample}" + "/rgTags.txt"
     run:
         #default parameters setting: http://www.usadellab.org/cms/index.php?page=trimmomatic
         phred = phredCoding.strip()  #set phred format.
@@ -192,16 +192,16 @@ rule trimmomatic_rgTagFile:
 rule fastqc4trimed:
     #1G Mem, 5min.better local run.
     params:
-        prefix = trimQCDir + sample,
-        inDir  = trimDir + sample
+        prefix = trimQCDir + "{sample}",
+        inDir  = trimDir + "{sample}"
     input:
-        trimDir + sample + "/rgTags.txt"
+        trimDir + "{sample}" + "/rgTags.txt"
         #[trimDir + "{sample}" + f.split('/')[-1].split('.fastq.gz')[0] + x for f in sorted(glob.glob(sampleDir + "{sample}" + "/*_R1_*.fastq.gz")) for x in outputSuffix]
         #sorted(glob.glob(trimDir + "{sample}" + "/*.fastq.gz"))
         #trimDir + "{sample}" + "/trim_{sample}_r1.fastq.gz",
         #trimDir + "{sample}" + "/trim_{sample}_r2.fastq.gz"
     output:
-        trimQCDir + sample + "/done_flag.txt"
+        trimQCDir + "{sample}" + "/done_flag.txt"
     shell:
         "fastqc {params.inDir}/*.fastq.gz -o {params.prefix} && touch {output}"
 
@@ -213,19 +213,19 @@ rule fastqc4trimed:
 #rule bwamen_align_sort_markduplicate:
 #do alignment and add tags.
 rule bwamenTag:
-    params: sample = sample,
-            hla = bwaDir + sample + "/hla_"+sample+"",
-            stemp = bwaDir + sample + "/allTaged.sam.gz",
-            dir=bwaDir + sample,
-            inDir=trimDir + sample
+    params: sample = "{sample}",
+            hla = bwaDir + "{sample}" + "/hla_{sample}",
+            stemp = bwaDir + "{sample}" + "/allTaged.sam.gz",
+            dir=bwaDir + "{sample}",
+            inDir=trimDir + "{sample}"
 
     input:
         # Control BWA_MEM start after trim and QC for trimed file.
         # if removeTemp=True, after BWA_MEM, trimed files will be removed.
-        trimDir + sample + "/rgTags.txt",
-        trimQCDir + sample + "/done_flag.txt"
+        trimDir + "{sample}" + "/rgTags.txt",
+        trimQCDir + "{sample}" + "/done_flag.txt"
     output:
-        bwaDir + sample + "/done_bwaTag.txt"
+        bwaDir + "{sample}" + "/done_bwaTag.txt"
         #bwaDir + "{sample}" + "/hla_{sample}"
     run:
         #print(trimDir + params.sample + "/*_r1.fastq.gz")
@@ -286,9 +286,9 @@ rule picard_sortbam:
         #remove = expand(" && rm " + bwaDir + sample + "/allTaged.sam.gz" if removeTemp == True else "")
         remove = " && rm " + bwaDir + sample + "/allTaged.sam.gz" if removeTemp == True else ""
     input:
-        bwaDir + sample + "/done_bwaTag.txt"
+        bwaDir + "{sample}" + "/done_bwaTag.txt"
     output:
-        gatkDir + sample + "/done_sort.txt"
+        gatkDir + "{sample}" + "/done_sort.txt"
     shell:
         "  java -jar -Xmx20G {picardJar} SortSam "
         +" INPUT=" + bwaDir + "{sample}" + "/allTaged.sam.gz"
@@ -301,15 +301,15 @@ rule picard_duplicatemark:
     params:
         #remove = expand(" && rm " + bwaDir + sample + "/allTaged.sam.gz" if removeTemp == True else "")
         remove = " && rm " + gatkDir + sample + "/sorted.bam" if removeTemp == True else "",
-        metrics = gatkDir + sample  + "/metrics.txt",
-        out = gatkDir + sample + "/dup_marked.bam"
+        metrics = gatkDir + "{sample}"  + "/metrics.txt",
+        out = gatkDir + "{sample}" + "/dup_marked.bam"
     input:
-        gatkDir + sample + "/done_sort.txt"
+        gatkDir + "{sample}" + "/done_sort.txt"
     output:
-        gatkDir + sample + "/done_mark.txt"
+        gatkDir + "{sample}" + "/done_mark.txt"
     shell:
         "  java -jar -Xmx20G {picardJar} MarkDuplicates "
-        +" INPUT=" + gatkDir + sample + "/sorted.bam"
+        +" INPUT=" + gatkDir + "{sample}" + "/sorted.bam"
         +" OUTPUT=" + "{params.out}"
         +" METRICS_FILE=" + "{params.metrics}"
         +" && java -jar -Xmx20G {picardJar} BuildBamIndex INPUT={params.out}"
@@ -318,15 +318,15 @@ rule picard_duplicatemark:
 
 rule localRealignment:
     params:
-        tlist = gatkDir + sample + "/realign_target.list",
-        inf= gatkDir + sample + "/dup_marked.bam",
-        out= gatkDir + sample + "/realigned_"+sample+".cram",
+        tlist = gatkDir + "{sample}" + "/realign_target.list",
+        inf= gatkDir + "{sample}" + "/dup_marked.bam",
+        out= gatkDir + "{sample}" + "/realigned_{sample}.cram",
         remove = " && rm " + gatkDir + sample + "/dup_marked.ba?" if removeTemp == True else ""
     input:
-        gatkDir + sample + "/done_mark.txt"
+        gatkDir + "{sample}" + "/done_mark.txt"
         #bwaDir + "{sample}" + "/mdup_sorted_{sample}.bam",
     output:
-        gatkDir + sample + "/done_localRealign.txt"
+        gatkDir + "{sample}" + "/done_localRealign.txt"
         #gatkDir + "{sample}" + "/realigned_{sample}.cram"
     shell:
         "java -Xmx20G -jar {gatkJar} -T RealignerTargetCreator"
@@ -342,15 +342,15 @@ rule localRealignment:
 rule BQSR:
     #105min,
     params:
-        dir= gatkDir + sample,
-        inf = gatkDir + sample + "/realigned_"+sample+".cram",
-        out = gatkDir + sample + "/bqsr_"+sample+".cram",
-        remove = " && rm " + gatkDir + sample + "/realigned_"+sample+".cram*" if removeTemp == True else ""
+        dir= gatkDir + "{sample}",
+        inf = gatkDir + "{sample}" + "/realigned_{sample}.cram",
+        out = gatkDir + "{sample}" + "/bqsr_{sample}.cram",
+        remove = " && rm " + gatkDir + "{sample}" + "/realigned_{sample}.cram*" if removeTemp == True else ""
     input:
-        gatkDir + sample + "/done_localRealign.txt"
+        gatkDir + "{sample}" + "/done_localRealign.txt"
         #gatkDir + "{sample}" + "/realigned_{sample}.cram"
     output:
-        gatkDir + sample + "/done_BQSR.txt"
+        gatkDir + "{sample}" + "/done_BQSR.txt"
         #gatkDir + "{sample}" + "/bqsr_{sample}.cram"
 
     shell:
@@ -381,15 +381,15 @@ rule BQSR:
 rule HaplotypeCaller:
     #10G,
     params:
-        dir= gatkDir + sample,
-        inf = gatkDir + sample + "/bqsr_"+sample+".cram",
-        out = vcfDir + sample + "/"+sample+".g.vcf.gz",
-        remove = " && rm " + gatkDir + sample + "/bqsr_"+sample+".cram*" if removeFinalCram == True else ""
+        dir= gatkDir + "{sample}",
+        inf = gatkDir + "{sample}" + "/bqsr_{sample}.cram",
+        out = vcfDir + "{sample}" + "/{sample}.g.vcf.gz",
+        remove = " && rm " + gatkDir + "{sample}" + "/bqsr_{sample}.cram*" if removeFinalCram == True else ""
     input:
-        gatkDir + sample + "/done_BQSR.txt"
+        gatkDir + "{sample}" + "/done_BQSR.txt"
         #gatkDir + "{sample}" + "/bqsr_{sample}.cram"
     output:
-        vcfDir + sample + "/done_HaplotypeCaller.txt"
+        vcfDir + "{sample}" + "/done_HaplotypeCaller.txt"
         #vcfDir + "{sample}" + "/{sample}.g.vcf.gz"
     shell:
         " java -Xmx35G -jar {gatkJar} -T HaplotypeCaller -R {refGenome}"
