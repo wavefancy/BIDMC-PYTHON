@@ -1,0 +1,16 @@
+{
+    "__default__":
+    {
+      "mem"  : "rusage[mem=2000]",
+      "queue": "short",
+      "comments": "Time record is the single cpu time. Effective memory on cluster is CPU_Num * MEM"
+    },
+    "CombineGVCF":
+    {
+      "time" : "11:30",
+      "queue": "short",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=20000]",
+      "comments" : "Combine 2gvcf, 112m. MEM: less than 20G, 10 ids, 7.8h, less than 20G. Can not run in parallel."
+    },
+}

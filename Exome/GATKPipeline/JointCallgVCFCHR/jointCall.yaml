@@ -1,0 +1,5 @@
+---
+region: chr1
+mthreads: "2"
+gvcfDir:
+- /n/scratch2/wallace/excallV3/excall1/05_gatk

@@ -1,0 +1,1 @@
+1. jointly call all vcf directly. 

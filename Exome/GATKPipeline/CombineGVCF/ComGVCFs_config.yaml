@@ -1,0 +1,5 @@
+---
+outname: example.g.vcf.gz
+samples:
+- Sample_C0701-index2
+- Sample_C0801-index4
