@@ -7,8 +7,8 @@ OUTNAME = config["outname"]
 #OUTNAME='combined1.g.vcf.gz'
 
 ###### ----- DIR configuration ----- ########
-vcfDir="06_vcf/"
-inputDir="07_gvcf/"
+vcfDir="07_gvcf/"
+inputDir="06_vcf/"
 refGenome="/groups/pollak/mxw_data/hg38/1kgGRCH38Ref/GRCh38_full_analysis_set_plus_decoy_hla.fa"
 refGenomeAlt="/groups/pollak/mxw_data/hg38/1kgGRCH38Ref/GRCh38_full_analysis_set_plus_decoy_hla.fa.alt"
 gatkJar="~/jars/GenomeAnalysisTK.jar"
