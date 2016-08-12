@@ -44,3 +44,8 @@ hcthreads:
 # This seting only affect BWA_MEM.
 memthreads:
     "3"
+
+# whether open smart pairing model for bwa mem.
+# True | False
+smartPairBwa:
+    False

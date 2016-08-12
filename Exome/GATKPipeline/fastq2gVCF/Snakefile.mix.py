@@ -8,6 +8,9 @@
 #
 # mix(Version)
 # 1. handle mixture of single end and pair end reads.
+# @Data 08/12/2016.
+# 2. add option to select smart pairing of pair end input.
+# 3. limit picard garbage gc resource use. -XX:ParallelGCThreads=2
 #--------------------------
 
 configfile: "config.yaml"
@@ -47,6 +50,9 @@ TOPHRED33 = config["TOPHRED33"]
 
 #whether remove final step cram file [after bqsr].
 removeFinalCram = False
+#fire smart pairing function for bwa.
+smartPairBwa = config["smartPairBwa"]
+
 ###### ----- DIR configuration ----- ########
 #fastq file location.
 sampleDir = config["sampleDir"]
@@ -248,11 +254,19 @@ rule bwamenTag:
         for f in infiles:
             f2=f.replace('_r1.fastq.gz', '_r2.fastq.gz')
             nbase = f.split('/')[-1].split('_r1.fastq.gz')[0]
-            shell("bwa mem -t " + memthreads
-            + " -M " + refGenome
-            + " " + f + " " + f2
-            + " | gzip >{params.dir}/" + "paried_" + nbase + ".sam.gz"
-            )
+            if smartPairBwa:
+                shell("seqtk mergepe " + f +" " + f2
+                +" | bwa mem -t " + memthreads
+                +" -M -p " + refGenome
+                +" -"
+                +" | gzip >{params.dir}/" + "paried_" + nbase + ".sam.gz"
+                )
+            else:
+                shell("bwa mem -t " + memthreads
+                + " -M " + refGenome
+                + " " + f + " " + f2
+                + " | gzip >{params.dir}/" + "paried_" + nbase + ".sam.gz"
+                )
 
         #post bwa process, combine sam, add tags, sort and convert to bam.
         shell("python3 "+ comSamPy +" --rpg {params.dir}/*paried*.sam.gz"
@@ -290,7 +304,7 @@ rule picard_sortbam:
     output:
         gatkDir + sample + "/done_sort.txt"
     shell:
-        "  java -jar -Xmx20G {picardJar} SortSam "
+        "  java -jar -XX:ParallelGCThreads=2 -Xmx20G {picardJar} SortSam "
         +" INPUT=" + bwaDir + "{sample}" + "/allTaged.sam.gz"
         +" OUTPUT=" + gatkDir + "{sample}" + "/sorted.bam"
         +" SORT_ORDER=coordinate"
@@ -308,7 +322,7 @@ rule picard_duplicatemark:
     output:
         gatkDir + sample + "/done_mark.txt"
     shell:
-        "  java -jar -Xmx20G {picardJar} MarkDuplicates "
+        "  java -jar -XX:ParallelGCThreads=2 -Xmx20G {picardJar} MarkDuplicates "
         +" INPUT=" + gatkDir + sample + "/sorted.bam"
         +" OUTPUT=" + "{params.out}"
         +" METRICS_FILE=" + "{params.metrics}"
