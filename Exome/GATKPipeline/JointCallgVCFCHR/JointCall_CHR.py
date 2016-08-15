@@ -27,7 +27,8 @@ def gvcfs(wildcards):
     '''Get all gvcf files from input dir[gvcfDir]'''
     files = []
     for x in gvcfDir:
-        for f in sorted(glob.glob(x + "/*/*.g.vcf.gz")):
+        #for f in sorted(glob.glob(x + "/*/*.g.vcf.gz")):
+        for f in sorted(glob.glob(x + "/*.g.vcf.gz")):
             files.append(f)
     return files
 
