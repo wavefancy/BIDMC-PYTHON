@@ -11,6 +11,6 @@
       "cpus" : "2",
       "queue": "mcore",
       "mem"  : "rusage[mem=25000]",
-      "comments": "all cases[673 individuals], 40G, chr1 10 hours[4cups], chr2 about 12 hours[4cups]. 1295, 50G[actually java use 48.7G, -Xmx45000m.]"
+      "comments": "1295 exome region: 18058M (2cpus)5.5h chr2, all cases[673 individuals], 40G, chr1 10 hours[4cups], chr2 about 12 hours[4cups]. 1295, 50G[actually java use 48.7G, -Xmx45000m.]"
     },
 }

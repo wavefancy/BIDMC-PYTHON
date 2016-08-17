@@ -1,1 +1,1 @@
-1. jointly call all vcf directly. 
+1. jointly call all vcf directly, chromosome by chromosome.
