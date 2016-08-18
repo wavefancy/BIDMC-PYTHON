@@ -20,6 +20,7 @@
                        nlog: negative log. val --> -1.0 * math.log10(float(val))
                        nint: nearst int value.
                        1sub: val -> 1-val
+                       plus1int: val -> val+1 (parse value as int, output also int, only work for int value.)
         -h --help      Show this screen.
         -v --version   Show version.
         -f --format    Show input/output file format example.
@@ -48,7 +49,7 @@ if __name__ == '__main__':
 
     P.col = int(args['-c']) -1
     P.action = args['-t']
-    tMap = {'maf','nlog','nint','1sub'}
+    tMap = {'maf','nlog','nint','1sub', 'plus1int'}
     if P.action not in tMap:
         sys.stderr.write('Transformer "%s" not supported! Please check!\n'%(P.action))
 
@@ -83,6 +84,13 @@ if __name__ == '__main__':
                     ss[P.col] = '%.4f'%(1-val)
                 except ValueError:
                     ss[P.col] = 'NA'
+
+            elif P.action == 'plus1int':
+                try:
+                    val = int(ss[P.col])
+                    ss[P.col] = '%d'%(val+1)
+                except ValueError:
+                    pass #directly copy to stdout.
 
             sys.stdout.write('%s\n'%('\t'.join(ss)))
 
