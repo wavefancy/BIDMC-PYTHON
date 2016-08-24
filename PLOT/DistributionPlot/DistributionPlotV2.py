@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange]
+        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange] [--yr yrange] [--xdt xdtick] [--ydt ydtick] [--nc]
         DistributionPlotV2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -20,11 +20,15 @@
         --bs binsize  Set binsize, float, default 0.2
         --an anno     Vertical arrow annotation, pattern as: x_y_text_color[_arrowLen],x_y_text_color...
                       [_arrowLen] is optional, default 100.
+        --xdt float   Distance between x ticks.
+        --ydt float   Distance between y ticks.
         --yerr yecol  Column index for y error bar.
         --xr xrange   Set the xAxis plot range: float1,float2.
+        --yr yrange   Set the yAxis plot range: float1,float2,
+                      *** Please set this parameter to fix the bug of two horizontal lines for xAxis.
+        --nc          Do not display fitting curve.
         --hl hline    Add horizontal lines: float1,float2.
         --ms msize    Set marker size: float, default 5.
-        .
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -77,16 +81,26 @@ if __name__ == '__main__':
     arowAnnotation = ''
     if args['--an']:
         arowAnnotation = args['--an']
+    xdt = ''
+    if args['--xdt']:
+        xdt = float(args['--xdt'])
+    ydt = ''
+    if args['--ydt']:
+        ydt = float(args['--ydt'])
 
     xrange = []
-    # if args['--yerr']:
-    #     errYCol = int(args['--yerr']) -1
     if args['--xr']:
         xrange = list(map(float, args['--xr'].split(',')))
+    yrange = []
+    if args['--yr']:
+        yrange = list(map(float, args['--yr'].split(',')))
     # if args['--hl']:
     #     hlines = list(map(float, args['--hl'].split(',')))
     # if args['--ms']:
     #     msize = float(args['--ms'])
+    show_curve = True
+    if [args['--nc']]:
+        show_curve = False
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -126,6 +140,7 @@ if __name__ == '__main__':
     fig = FF.create_distplot(hist_data, group_labels,bin_size=binsize,
     curve_type='normal',
     colors=colors,
+    show_curve= show_curve,
     show_rug=False)
 
     afsize = 10 #annotation font size.
@@ -165,7 +180,8 @@ if __name__ == '__main__':
         #title='Points Scored by the Top 9 Scoring NBA Players in 2012',
         yaxis=dict(
             title=ytitle,
-        #     autorange=True,
+            dtick = ydt,
+            range=yrange
         #     showgrid=True,
         #     zeroline=False,
         #     #dtick=5,
@@ -177,6 +193,9 @@ if __name__ == '__main__':
         xaxis=dict(
             title = xtitle,
             range=xrange,
+            dtick = xdt,
+            ticks='outside',
+            showline=True
         )
         ,
         margin=dict(
