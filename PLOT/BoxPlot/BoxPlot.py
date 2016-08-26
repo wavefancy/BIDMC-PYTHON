@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over]
+        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over] [--bm bmargin]
         BoxPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -21,6 +21,7 @@
         --yr yrange   Set the yAxis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
         --ms msize    Set marker size: float, default 2.
+        --bm bmargin  Bottom margin, default 40.
         --over        Overlap dot with box.
         -h --help     Show this screen.
         -v --version  Show version.
@@ -59,6 +60,7 @@ if __name__ == '__main__':
     vlines = []
     msize = 2
     overBoxDot = False #overlap box with dots.
+    bmargin = 40 #  bottom margin.
 
     yrange = []
     if args['--yerr']:
@@ -71,6 +73,8 @@ if __name__ == '__main__':
         msize = float(args['--ms'])
     if args['--over']:
         overBoxDot = True
+    if args['--bm']:
+        bmargin = int(args['--bm'])
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -136,10 +140,14 @@ if __name__ == '__main__':
             zerolinecolor='rgb(255, 255, 255)',
             zerolinewidth=2,
         ),
+        xaxis=dict(
+            ticks='outside',
+            showline=True
+        ),
         margin=dict(
             l=40,
             r=30,
-            b=40,
+            b=bmargin,
             t=10,
         ),
         paper_bgcolor='rgb(243, 243, 243)',
