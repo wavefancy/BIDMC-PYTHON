@@ -58,8 +58,7 @@ COMMAND vl  4
     ''');
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='2.2')
-    # version 2.2: add the option for abline.
+    args = docopt(__doc__, version='1.0')
     print(args)
 
     if(args['--format']):
@@ -109,12 +108,6 @@ if __name__ == '__main__':
             xanchor = 'left'
             xlloc = 0.01
             ylloc = 0.01
-
-    ablines = []
-    abcolor = '#EA3232' #line color for ablines, if not set from command line.
-    if args['--ab']:
-        for x in args['--ab'].split(','):
-            ablines.append(x.split('_'))
 
     lfontSize = 10
     if args['--lfs']:
@@ -257,32 +250,6 @@ if __name__ == '__main__':
         #h = {'shapes':hl_data}
         #layout.update(h)
 
-    #add for ablines
-    ab_data = []
-    if ablines:
-        for y in ablines:
-            #print(y)
-            cc = abcolor
-            if len(y) == 5:
-                cc = y[4]
-
-            ab_data.append(
-                {
-                    'type': 'line',
-                    # 'xref': 'paper',
-                    'x0': y[0],
-                    'y0': y[1],
-                    'x1': y[2],
-                    'y1': y[3],
-                    'line': {
-                        'color': cc,
-                        #'color': 'rgba(0, 0, 0, 0.5)',
-                        'width': 2,
-                        # 'dash': 'dashdot',
-                    }
-                }
-            )
-
     vl_data = []
     if vlines:
         for y in vlines:
@@ -302,7 +269,7 @@ if __name__ == '__main__':
             )
         #h = {'shapes':vl_data}
         #layout.update(h)
-    alllines = hl_data + vl_data + ab_data
+    alllines = hl_data + vl_data
     if alllines:
         h = {'shapes':alllines}
         layout.update(h)
