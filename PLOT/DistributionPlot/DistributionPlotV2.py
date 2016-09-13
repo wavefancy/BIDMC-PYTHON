@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange] [--yr yrange] [--xdt xdtick] [--ydt ydtick] [--nc]
+        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange] [--yr yrange] [--xdt xdtick] [--ydt ydtick] [--nc] [-l] [-p]
         DistributionPlotV2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -18,6 +18,7 @@
         -t            In test mode.
         -o outname    Output file name: output.html.
         --bs binsize  Set binsize, float, default 0.2
+        -l            Show legned, default False.
         --an anno     Vertical arrow annotation, pattern as: x_y_text_color[_arrowLen],x_y_text_color...
                       [_arrowLen] is optional, default 100.
         --xdt float   Distance between x ticks.
@@ -29,6 +30,7 @@
         --nc          Do not display fitting curve.
         --hl hline    Add horizontal lines: float1,float2.
         --ms msize    Set marker size: float, default 5.
+        -p            Set histnorm as 'probability', default: 'probability density'
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -76,6 +78,7 @@ if __name__ == '__main__':
     vlines = []
     msize = 5
     binsize = 0.2
+
     if args['--bs']:
         binsize = float(args['--bs'])
     arowAnnotation = ''
@@ -99,8 +102,15 @@ if __name__ == '__main__':
     # if args['--ms']:
     #     msize = float(args['--ms'])
     show_curve = True
-    if [args['--nc']]:
+    if args['--nc']:
         show_curve = False
+    showlegend = False
+    if args['-l']:
+        showlegend = True
+    histnorm = 'probability density'
+    if args['-p']:
+        histnorm = 'probability'
+        ytitle = 'Probability'
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -136,12 +146,13 @@ if __name__ == '__main__':
         group_labels.append(k)
 
     # Create distplot
-    colors = ['#37AA9C', '#2BCDC1','#F66095','#393E46']
+    colors = ['#37AA9C', '#E26868','#FFA556','#2BCDC1','#F66095','#393E46']
     fig = FF.create_distplot(hist_data, group_labels,bin_size=binsize,
-    curve_type='normal',
-    colors=colors,
-    show_curve= show_curve,
-    show_rug=False)
+        histnorm=histnorm,
+        curve_type='normal',
+        colors=colors,
+        show_curve= show_curve,
+        show_rug=False)
 
     afsize = 10 #annotation font size.
     #arrow annotation
@@ -206,7 +217,7 @@ if __name__ == '__main__':
         ),
         paper_bgcolor='rgb(243, 243, 243)',
         plot_bgcolor='rgb(243, 243, 243)',
-        showlegend=False
+        showlegend=showlegend
     )
 
     fig['layout'].update(layout)
