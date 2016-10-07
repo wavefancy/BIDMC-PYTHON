@@ -20,10 +20,10 @@ def help():
     -------------------------------------
 
     @Author: wavefancy@gmail.com
-    @Version: 1.0
+    @Version: 2.0
 
     @Usages:
-    para1: case input file.
+    para1: case input file
     para2: control input file.
 
     @Notes:
@@ -35,6 +35,9 @@ def help():
 
     4. Find an matching individual for case by minimize D = [(x_i-x_case)^2 + (y_i - y_case)^2 + ....],
         Iterate i for all controls.
+    5. If weights have been assigned, use weighted distance.
+        D = [(x_i-x_case)^2*w1 + (y_i - y_case)^2*w2 + ....]/(sum(w))
+
     -------------------------------------
     \n''')
     sys.stderr.close()
@@ -43,13 +46,17 @@ def help():
 class P(object):
     case_f = '' # case file
     control_f = '' # control file.
+    weight_f = '' #weight file
 
 if __name__ == '__main__':
-    if len(sys.argv) != 3:
+    if len(sys.argv) != 3 and len(sys.argv) != 4:
         help()
 
     P.case_f = sys.argv[1]
     P.control_f = sys.argv[2]
+
+    if len(sys.argv) == 4:
+        P.weight_f = sys.argv[3]
 
     controls = [] #[(name, [val1, val2]) , (name, [val1, val2])  ...]
     for line in open(P.control_f):
@@ -59,6 +66,12 @@ if __name__ == '__main__':
             vals = list(map(float, ss[1:]))
             controls.append((ss[0], vals))
 
+    weights = [] #weight for each demention, like the proportion of variance explained by each pc.
+    if P.weight_f:
+        with open(P.weight_f, 'r') as f:
+            for line in f:
+                [weights.append(float(x)) for x in line.strip().split()]
+
     def distance(vals1, vals2):
         '''Compute the sequared distance between point1 and point2'''
         if len(vals1) != len(vals2):
@@ -67,7 +80,15 @@ if __name__ == '__main__':
             sys.stderr.write('%s\n'%('\t'.join(map(str, vals2))))
             sys.exit(-1)
 
-        return sum( [(x-y)*(x-y) for x,y in zip(vals1, vals2)])
+        if weights:
+            if len(vals1) != len(weights):
+                sys.stderr.write('Error: PCA and weight have different dimension:\n')
+                sys.exit(-1)
+            else:
+                return sum([(x-y)*(x-y)*z for x,y,z in zip(vals1, vals2, weights)])/sum(weights)
+
+        else:
+            return sum( [(x-y)*(x-y) for x,y in zip(vals1, vals2)])
 
     matchIds = set()
     def findMatch(case_values):
