@@ -37,7 +37,6 @@ def help():
         Iterate i for all controls.
     5. If weights have been assigned, use weighted distance.
         D = [(x_i-x_case)^2*w1 + (y_i - y_case)^2*w2 + ....]/(sum(w))
-
     -------------------------------------
     \n''')
     sys.stderr.close()
@@ -54,7 +53,6 @@ if __name__ == '__main__':
 
     P.case_f = sys.argv[1]
     P.control_f = sys.argv[2]
-
     if len(sys.argv) == 4:
         P.weight_f = sys.argv[3]
 
