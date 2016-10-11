@@ -1,0 +1,6 @@
+chr1	13200	G	T   G1
+chr1	13273	G	T   G2
+chr1	13289	CCT	C   G2
+chr1	13417	C	CGAGA   G2
+chr1	13649	G	C   G2
+chr2	13649	G	C   G3
