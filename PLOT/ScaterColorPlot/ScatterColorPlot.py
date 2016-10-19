@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        ScatterColorPlot.py -y ytitle -o outname [-x xtitle ] [--lr] [--colorscale] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize]
+        ScatterColorPlot.py -y ytitle -o outname [-x xtitle ] [--lr] [--colorscale] [--cmax int] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize]
         ScatterColorPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -19,6 +19,7 @@
         -o outname    Output file name: output.html.
         --lr          Add a linear-fits regression line.
         --colorscale  Color dot by local density.
+        --cmax int    Color scale max value.
 
         --yerr yecol  Column index for y error bar.
         --yr yrange   Set the yAxis plot range: float1,float2.
@@ -121,6 +122,15 @@ if __name__ == '__main__':
         # zcolor = gaussian_kde(xy)(xy)
         zcolor = [x*y for x,y in zip(x_data, y_data)]
 
+    #print(zcolor)
+    #color max
+    cmax = max(zcolor)
+    if args['--cmax']:
+        cmax = int(args['--cmax'])
+        zcolor = [ cmax if x >= cmax else x for x in zcolor]
+
+    #print(zcolor)
+
     if colorByDensity:
         trace1 = go.Scatter(
                   x=x_data,
@@ -132,6 +142,7 @@ if __name__ == '__main__':
                         reversescale=True,
                         #colorscale=[[0.0, 'rgb(165,0,38)'], [0.0011111111111111, 'rgb(215,48,39)'], [0.2222222222222222, 'rgb(244,109,67)'], [0.3333333333333333, 'rgb(253,174,97)'], [0.4444444444444444, 'rgb(254,224,144)'], [0.5555555555555556, 'rgb(224,243,248)'], [0.6666666666666666, 'rgb(171,217,233)'], [0.7777777777777778, 'rgb(116,173,209)'], [0.8888888888888888, 'rgb(69,117,180)'], [1.0, 'rgb(49,54,149)']]
                         size = msize,
+                        cmax = cmax,
                         line = dict(
                             width = 0.01,
                             color = 'rgba(0, 0, 0, 0.1)',

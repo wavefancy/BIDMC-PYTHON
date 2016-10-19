@@ -91,6 +91,8 @@ if __name__ == '__main__':
         if x:
             for y in x.splitlines():
                 y = y.strip()
+                #compatible with bash line breaker.
+                y = y.strip('\\')
                 if not y.startswith(linecomment): #skip line commented line.
                     arr1.append(y)
 
