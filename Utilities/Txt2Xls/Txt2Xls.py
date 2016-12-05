@@ -91,14 +91,14 @@ if __name__ == '__main__':
 
 
 
-    for x in range(row-1):
-        lcell = xl_rowcol_to_cell(x, 0)
-        rcell = xl_rowcol_to_cell(x, maxCol)
-        mcell = xl_rowcol_to_cell(x, 1)
-        worksheet.conditional_format(lcell + ':' + rcell, {'type': 'cell',
-                                            'criteria': '>=',
-                                            'value':    mcell,
-                                            'format':   format1})
+    # for x in range(row-1):
+    #     lcell = xl_rowcol_to_cell(x, 0)
+    #     rcell = xl_rowcol_to_cell(x, maxCol)
+    #     mcell = xl_rowcol_to_cell(x, 1)
+    #     worksheet.conditional_format(lcell + ':' + rcell, {'type': 'cell',
+    #                                         'criteria': '>=',
+    #                                         'value':    mcell,
+    #                                         'format':   format1})
 
     workbook.close()
 
