@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryStats.py -c cindex -k vindex [-d]
+        CategoryStats.py -c cindex -k vindex (-d|-s)
         CategoryStats.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -17,6 +17,7 @@
         -c cindex      Column index for category name (column index starts from 1).
         -k vindex      Column index for value of each category.
         -d             Output category value diversity, NumberOfDifferentTypeOfValues/TotalNumberOfValues.
+        -s             Output category value set.
         -h --help      Show this screen.
         -v --version   Show version.
         -f --format    Show input/output file format example.
@@ -40,6 +41,11 @@ C2  X
 --------------------
 C1      1.0000
 C2      0.5000
+
+#cat test.txt | python3 CategoryStats.py -c 1 -k 2 -s
+--------------------
+C1      X1;Y1
+C2      X
     ''');
 
 if __name__ == '__main__':
@@ -77,6 +83,9 @@ if __name__ == '__main__':
     if args['-d']:
         for k,v in gMap.items():
             sys.stdout.write('%s\t%.4f\n'%(k,len(set(v))*1.0/len(v)))
+    elif args['-s']:
+        for k,v in gMap.items():
+            sys.stdout.write('%s\t%s\n'%(k,';'.join(set(v))))
 
 sys.stdout.flush()
 sys.stdout.close()
