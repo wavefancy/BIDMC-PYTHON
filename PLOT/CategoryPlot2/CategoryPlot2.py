@@ -24,7 +24,8 @@
         --ab abline   Add ablines: x1_y1_x2_y2_color,...
         --ms msize    Set marker size: float, default 5.
         --mt mtype    Set marker type: 1 dot(default), 2 line, 3 dot + line.
-        --lloc lloc   Legend location: 2 right_top, 3 left_bottom.
+        --lloc lloc   Legend location:
+                        1 left_top, 2 right_top, 3 left_bottom, 4 right_bottom.
         --lfs lfs     Legend font size.
         --lm lmargin  Left margin, default 60.
         -h --help     Show this screen.
@@ -100,7 +101,12 @@ if __name__ == '__main__':
     xlloc = 0.99
     ylloc = 0
     if args['--lloc']:
-        if args['--lloc'] == '2':
+        if args['--lloc'] == '1':
+            yanchor = 'top'
+            xanchor = 'left'
+            xlloc = 0.01
+            ylloc = 0.99
+        elif args['--lloc'] == '2':
             yanchor = 'top'
             xlloc = 0.99
             ylloc = 0.99
@@ -108,6 +114,11 @@ if __name__ == '__main__':
             yanchor = 'bottom'
             xanchor = 'left'
             xlloc = 0.01
+            ylloc = 0.01
+        elif args['--lloc'] == '4':
+            yanchor = 'bottom'
+            xanchor = 'right'
+            xlloc = 0.99
             ylloc = 0.01
 
     ablines = []
