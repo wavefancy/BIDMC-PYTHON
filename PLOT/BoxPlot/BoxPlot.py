@@ -145,7 +145,7 @@ if __name__ == '__main__':
             showline=True
         ),
         margin=dict(
-            l=40,
+            l=50,
             r=30,
             b=bmargin,
             t=10,
