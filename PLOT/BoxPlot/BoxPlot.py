@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over] [--bm bmargin]
+        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over] [--bm bmargin] [--ha hanno] [--ady ady]
         BoxPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -23,10 +23,17 @@
         --ms msize    Set marker size: float, default 2.
         --bm bmargin  Bottom margin, default 40.
         --over        Overlap dot with box.
+        --ha hanno    Add horizontal line annotation with text.
+                        foramt: x1_x2_y_text,x1_x2_y_text.
+                        Example: 1_2_0.5_**
+                        Each category for the box plot with x-coordinate as 0,1,2...n-1.
+        --ady ady     Set the distance between horizontal annotation line and text (default 0.025).
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
 
+        https://plot.ly/python/text-and-annotations/
+        (API)https://plot.ly/python/reference/#layout-annotations
 """
 import sys
 from docopt import docopt
@@ -36,11 +43,6 @@ signal(SIGPIPE, SIG_DFL)
 def ShowFormat():
     '''Input File format example:'''
     print('''
-    #input example
-    ------------------------
-c1  1   10  1
-c2  2   -5  3
-c3  5   3   2
     ''');
 
 if __name__ == '__main__':
@@ -61,6 +63,8 @@ if __name__ == '__main__':
     msize = 2
     overBoxDot = False #overlap box with dots.
     bmargin = 40 #  bottom margin.
+    arowAnnotation = ''
+    ady = 0.025
 
     yrange = []
     if args['--yerr']:
@@ -75,6 +79,10 @@ if __name__ == '__main__':
         overBoxDot = True
     if args['--bm']:
         bmargin = int(args['--bm'])
+    if args['--ha']:
+        arowAnnotation = args['--ha']
+    if args['--ady']:
+        ady = float(args['--ady'])
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -155,10 +163,77 @@ if __name__ == '__main__':
         showlegend=False
     )
 
+
+    #https://plot.ly/python/text-and-annotations/
+    #(API)https://plot.ly/python/reference/#layout-annotations
+    # Each category for the box plot with x-coordinate as 0,1,2...n-1.
+    annoArray = []
+    # arowAnnotation="1_2_0.8_*"
+    annoColor='black'
+    # ady = 0.025
+    if arowAnnotation:
+        for x in arowAnnotation.split(','):
+            ss = x.split('_')
+            x1 = float(ss[0])
+            x2 = float(ss[1])
+            y  = float(ss[2])
+            t  = ss[3]
+            #draw a horizontal line
+            annoArray.append(
+                dict(
+                    x=x1,
+                    y=y,
+                    xref='x',
+                    yref='y',
+                    #yref='paper',
+                    text='',
+                    showarrow=True,
+                    arrowhead=0,
+                    arrowcolor=annoColor,
+                    font=dict(
+                        color=annoColor,
+                        size = 12,
+                    ),
+                    # If `axref` is an axis, this is an absolute value on that axis, like `x`, NOT a relative value.
+                    axref='x',
+                    ax=x2,
+                    ay=0
+                ))
+            #draw Font text.
+            annoArray.append(dict(
+                    x=(x1+x2)/2.0,
+                    y=y + ady,
+                    xref='x',
+                    yref='y',
+                    #yref='paper',
+                    text=t,
+                    showarrow=False,
+                    arrowhead=0,
+                    arrowcolor=annoColor,
+                    font=dict(
+                        color= annoColor,
+                        size = 12,
+                    ),
+                    # # If `axref` is an axis, this is an absolute value on that axis, like `x`, NOT a relative value.
+                    # axref='x',
+                    # ax=float(ss[0])+1,
+                    # ay=0
+                ))
+
+    annoLayout = go.Layout(
+        annotations = annoArray
+    )
+
+    #fig['layout'].update(layout)
+    fig = go.Figure(data=traces, layout=layout)
+    if annoArray:
+        fig['layout'].update(annoLayout)
+
     #fig = go.Figure(data=traces, layout=layout)
     #py.iplot(fig)
     #output the last one
-    plotly.offline.plot({'data': traces,'layout': layout}
+    # plotly.offline.plot({'data': traces,'layout': layout}
+    plotly.offline.plot(fig
          ,show_link=False
          ,auto_open=False
          ,filename=outname
