@@ -192,11 +192,12 @@ if __name__ == '__main__':
         yaxis=dict(
             title=ytitle,
             dtick = ydt,
-            range=yrange
+            range=yrange,
         #     showgrid=True,
         #     zeroline=False,
         #     #dtick=5,
-        #     gridcolor='rgb(255, 255, 255)',
+            #white grid line
+            gridcolor='rgb(255, 255, 255)',
         #     #gridwidth=1,
         #     zerolinecolor='rgb(255, 255, 255)',
         #     zerolinewidth=2,
