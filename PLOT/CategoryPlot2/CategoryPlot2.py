@@ -25,7 +25,7 @@
         --ms msize    Set marker size: float, default 5.
         --mt mtype    Set marker type: 1 dot(default), 2 line, 3 dot + line.
         --lloc lloc   Legend location:
-                        1 left_top, 2 right_top, 3 left_bottom, 4 right_bottom.
+                        1 left_top, 2 right_top, 3 left_bottom, 4 right_bottom, 0 no legend.
         --lfs lfs     Legend font size.
         --lm lmargin  Left margin, default 60.
         -h --help     Show this screen.
@@ -232,18 +232,23 @@ if __name__ == '__main__':
             'zeroline':False
         },
     }
-
-    legend={
-        'legend':{
-            'xanchor': xanchor,
-            'x': xlloc,
-            'y': ylloc,
-            'yanchor': yanchor,
-            'font': {
-                'size' : lfontSize
-            },
+    # update legend info.
+    legend = go.Layout(
+        showlegend=False
+    )
+    if args['--lloc'] != '0':
+        legend={
+            'legend':{
+                'xanchor': xanchor,
+                'x': xlloc,
+                'y': ylloc,
+                'yanchor': yanchor,
+                'font': {
+                    'size' : lfontSize
+                },
+            }
         }
-    }
+
     layout.update(legend)
 
     hl_data = []
