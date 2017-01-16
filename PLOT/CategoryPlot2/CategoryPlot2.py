@@ -167,13 +167,21 @@ if __name__ == '__main__':
     import plotly.plotly as py
     import plotly.graph_objs as go
 
-    marker = dict(
-        size = msize,
-        # line = dict(
-        #     width = 1,
-        #     color = 'white'
-        # )
-     )
+    # print(msize)
+    line = dict()
+    if args['--mt'] == '2':
+        marker = dict(
+            # size = msize,
+            line = dict(
+                width = msize
+                # color = 'white'
+            )
+         )
+        line = dict(width = msize)
+    else:
+        marker = dict(
+            size = msize
+         )
 
     for k in xdata.keys():
         if k in errY:
@@ -184,6 +192,7 @@ if __name__ == '__main__':
                 name = k,
                 mode = mode,
                 marker = marker,
+                line = line,
                 error_y=dict(
                     type='data',
                     array=errY[k],
@@ -198,6 +207,7 @@ if __name__ == '__main__':
                 x=xdata[k],
                 y=ydata[k],
                 marker = marker,
+                line = line,
                 name=k,
                 mode = mode,
             ))
