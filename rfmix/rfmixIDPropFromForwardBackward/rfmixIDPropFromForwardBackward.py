@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-
+    *****Legency version 1.0, please use updated versioin****
     Estimate expected individual level ancestry from rfmix ForwardBackword output.
     @Author: wavefancy@gmail.com
 
