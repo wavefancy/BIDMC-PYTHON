@@ -228,7 +228,12 @@ if __name__ == '__main__':
             'ticks'   : 'outside',
             'showticklabels' : True,
             'title'   : xtitle,
-            'zeroline':False
+            'zeroline':False,
+            #'titlefont': {
+                #family: 'Courier New, monospace',
+            #    'size': 18,
+                #color: '#7f7f7f'
+            #}
         },
         'yaxis':{
             'autotick': True,
@@ -239,7 +244,12 @@ if __name__ == '__main__':
             'ticks'   : 'outside',
             'showticklabels' : True,
             'title'   : ytitle,
-            'zeroline':False
+            'zeroline':False,
+            #'titlefont': {
+                #family: 'Courier New, monospace',
+            #    'size': 18,
+                #color: '#7f7f7f'
+            #}
         },
     }
     # update legend info.
