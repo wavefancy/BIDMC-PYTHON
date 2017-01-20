@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--clr int] [--xta int]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -28,11 +28,14 @@
                         1 left_top, 2 right_top, 3 left_bottom, 4 right_bottom, 0 no legend.
         --lfs lfs     Legend font size.
         --lm lmargin  Left margin, default 60.
+        --clr int     Column index for color, 1 based.
+        --xta int     X ticks angle (rotate x ticks), eg 45.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
-
 """
+# plotly api:
+# chang xticks : https://plot.ly/python/axes/
 import sys
 from docopt import docopt
 from signal import signal, SIGPIPE, SIG_DFL
@@ -48,6 +51,8 @@ c2  2   -5  3
 c3  5   3   2
 COMMAND vl  3
 COMMAND vl  4
+COMMAND xticktext       chr1    chr2
+COMMAND xtickvals       150     550
 
     #output:
     ------------------------
@@ -75,7 +80,9 @@ if __name__ == '__main__':
     hlines = [] #location for horizontal lines.
     vlines = []
     msize = 5
-    lm = 60    #left margin.
+    lm = 60    #left margin
+    clrClm = ''  #value column for parse point color.
+    xtickangle = ''
 
     yrange = []
     if args['--yerr']:
@@ -95,6 +102,10 @@ if __name__ == '__main__':
             mode = 'lines+markers'
     if args['--lm']:
         lm = float(args['--lm'])
+    if args['--clr']:
+        clrClm = int(args['--clr']) -1
+    if args['--xta']:
+        xtickangle = int(args['--xta'])
 
     xanchor = 'right'
     yanchor = 'bottom'
@@ -131,11 +142,19 @@ if __name__ == '__main__':
     if args['--lfs']:
         lfontSize = int(args['--lfs'])
 
+    # https://plot.ly/python/axes/
+    # change x ticks
+    #ticktext=labels,
+    #tickvals=[i * step for i in range(len(labels))]
+    xticktext = ''
+    xtickvals = ''
+
     from collections import OrderedDict
     xdata = OrderedDict() #{categoryName -> []}
     ydata = OrderedDict() #{categoryName -> []}
     errY  = {} #{categoryName -> []} error bar for Y.ss
-    commands = {'vl'}
+    pcolors = {} # {categoryName -> []} error bar for point colors.
+    commands = {'vl','xticktext','xtickvals'}
 
     def addData(dictName,keyName,val):
         '''add data to a dict'''
@@ -150,6 +169,11 @@ if __name__ == '__main__':
             if ss[0]=='COMMAND' and ss[1] in commands:
                 if ss[1] == 'vl':
                     vlines.append(float(ss[2]))
+                if ss[1] == 'xticktext':
+                    xticktext = ss[2:]
+                if ss[1] == 'xtickvals':
+                    xtickvals = [float(x) for x in ss[2:]]
+
             else:
                 try:
                     x = float(ss[1])
@@ -157,6 +181,10 @@ if __name__ == '__main__':
                     if errYCol and len(ss) >= errYCol +1:
                         z = float(ss[errYCol])
                         addData(errY,ss[0],z)
+
+                    if clrClm:
+                        addData(pcolors,ss[0], ss[clrClm])
+
                     addData(xdata, ss[0], x)
                     addData(ydata, ss[0] ,y)
                 except ValueError:
@@ -183,6 +211,7 @@ if __name__ == '__main__':
             size = msize
          )
 
+    #print(pcolors)
     for k in xdata.keys():
         if k in errY:
             plotData.append(
@@ -202,6 +231,9 @@ if __name__ == '__main__':
                     )
             ))
         else:
+            if k in pcolors:
+                marker['color'] = pcolors[k]
+            #print(marker)
             plotData.append(
                 go.Scatter(
                 x=xdata[k],
@@ -212,6 +244,8 @@ if __name__ == '__main__':
                 mode = mode,
             ))
 
+    #print(xticktext)
+    #print(xtickvals)
     layout = {
         'margin': {
             'l' : lm,
@@ -220,7 +254,7 @@ if __name__ == '__main__':
             't' : 10
         },
         'xaxis':{
-            'autotick': True,
+            #'autotick': True,
             'mirror'  :True,
             #       range=[0, 500],
             'showgrid':True,
@@ -229,6 +263,9 @@ if __name__ == '__main__':
             'showticklabels' : True,
             'title'   : xtitle,
             'zeroline':False,
+            'ticktext':xticktext,
+            'tickvals':xtickvals,
+            'tickangle': xtickangle,
             #'titlefont': {
                 #family: 'Courier New, monospace',
             #    'size': 18,

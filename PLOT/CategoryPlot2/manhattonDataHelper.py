@@ -27,7 +27,7 @@ signal(SIGPIPE, SIG_DFL)
 def ShowFormat():
     '''Input File format example:'''
     print('''
-    #Output from: FamilyHitByGene.py
+    #in each chromosome, pos should be sorted.
     ------------------------
 chr1 100 10
 chr1 200 5
@@ -47,24 +47,25 @@ chr2 500 15
 if __name__ == '__main__':
     args = docopt(__doc__, version='2.2')
     # version 2.2: add the option for abline.
-    print(args)
+    #print(args)
 
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
 
     colors = ['#2678B2','#FD7F28','#339F34','#D42A2F']
-    colorIndex = 0
+    colorIndex = -1
     def getColor():
         'Rotately get the color code.'
-        return colors[colorIndex++%len(colors)]
+        global colorIndex
+        colorIndex += 1
+        return colors[(colorIndex) % len(colors)]
 
     chrs = []
+    xlabelPos = []
     shif = 0
-    currentMinPos = 0
-    outPos = []
-    outValues = []
-    outColors = []
+    currentColor = getColor()
+    lastPos = 0
     for line in sys.stdin:
         line = line.strip()
         if line:
@@ -72,19 +73,29 @@ if __name__ == '__main__':
             try:
                 pos = int(ss[1])
                 val = float(ss[2])
-                if len(chrs) ==0 or chrs[-1] != ss[0]:
+                #first records
+                if len(chrs) == 0:
                     chrs.append(ss[0])
-                    currentMinPos = pos
-                    shif =
+
+                if chrs[-1] != ss[0]: #different chromosomes.
+                    chrs.append(ss[0])
+                    xlabelPos.append((shif+lastPos)/2)
+                    shif = lastPos
+                    currentColor = getColor()
+
+                lastPos = pos + shif
+                sys.stdout.write('G\t%d\t%.4f\t%s\n'%(lastPos, val, currentColor))
+                #outPos.append(pos - shif)
+                #outValues.append(val)
+                #outColors.append(currentColor)
 
             except ValueError:
                 sys.stdout.write('Can not parse value at line (skipped):%s\n'%(line))
 
-
-
-
-
-
+    #post process
+    xlabelPos.append((shif+lastPos)/2)
+    sys.stdout.write('COMMAND\txticktext\t%s\n'%('\t'.join(chrs)))
+    sys.stdout.write('COMMAND\txtickvals\t%s\n'%('\t'.join(['%d'%(x) for x in xlabelPos])))
 
 sys.stdout.flush()
 sys.stdout.close()
