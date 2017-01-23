@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--clr int] [--xta int]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -19,6 +19,8 @@
         -o outname    Output file name: output.html.
         --yerr yecol  Column index for y error bar.
         --yr yrange   Set the yAxis plot range: float1,float2.
+        --xr xrange   Set the xAxis plot range: float1,float2 | tight
+                      tight: set the xrange as [xmin, xmax]
         --hl hline    Add horizontal lines: float1,float2.
         --vl vline    Add vertical lines: float1,float2...
         --ab abline   Add ablines: x1_y1_x2_y2_color,...
@@ -26,7 +28,9 @@
         --mt mtype    Set marker type: 1 dot(default), 2 line, 3 dot + line.
         --lloc lloc   Legend location:
                         1 left_top, 2 right_top, 3 left_bottom, 4 right_bottom, 0 no legend.
-        --lfs lfs     Legend font size.
+        --lfs lfs     Legend font size, default 10.
+        --tfs int     X Y tick font size, default 12.
+        --ifs int     X Y title font size, default 12.
         --lm lmargin  Left margin, default 60.
         --clr int     Column index for color, 1 based.
         --xta int     X ticks angle (rotate x ticks), eg 45.
@@ -56,11 +60,6 @@ COMMAND xtickvals       150     550
 
     #output:
     ------------------------
-    FamilyName      #SeqMember      #hitGeneNum     GeneList
-    S55     3       5       CHRNA7-chr15-3  NCAM2-chr21-3
-    FGJG1   3       4       JAK3-chr19-2    KRT3-chr12-3    NKD2-chr5-4     MKLN1-chr7-1
-    FGEG    3       21      RET-chr10-2-Auto-Dominant-CAKUT COLEC12-chr18-6 NUDT6-chr4-2    C6or
-    f222-chr6-5
     ''');
 
 if __name__ == '__main__':
@@ -85,6 +84,7 @@ if __name__ == '__main__':
     xtickangle = ''
 
     yrange = []
+    Xrange = []
     if args['--yerr']:
         errYCol = int(args['--yerr']) -1
     if args['--yr']:
@@ -106,6 +106,11 @@ if __name__ == '__main__':
         clrClm = int(args['--clr']) -1
     if args['--xta']:
         xtickangle = int(args['--xta'])
+    if args['--xr']:
+        if args['--xr'] == 'tight':
+            Xrange = 'tight'
+        else:
+            Xrange = list(map(float, args['--xr'].split(',')))
 
     xanchor = 'right'
     yanchor = 'bottom'
@@ -141,6 +146,12 @@ if __name__ == '__main__':
     lfontSize = 10
     if args['--lfs']:
         lfontSize = int(args['--lfs'])
+    tickfontsize = 12
+    if args['--tfs']:
+        tickfontsize = int(args['--tfs'])
+    titlefontsize = 12
+    if args['--ifs']:
+        titlefontsize = int(args['--ifs'])
 
     # https://plot.ly/python/axes/
     # change x ticks
@@ -162,6 +173,8 @@ if __name__ == '__main__':
             dictName[keyName] = []
         dictName[keyName].append(val)
 
+    xmin = 1000000000
+    xmax = -100000000
     for line in sys.stdin:
         line = line.strip()
         if line:
@@ -187,8 +200,16 @@ if __name__ == '__main__':
 
                     addData(xdata, ss[0], x)
                     addData(ydata, ss[0] ,y)
+                    if Xrange == 'tight':
+                        if x < xmin:
+                            xmin = x
+                        if x > xmax:
+                            xmax = x
                 except ValueError:
                     sys.stderr.write('Warning: parse value error: %s\n'%(line))
+
+    if Xrange == 'tight':
+        Xrange = [xmin,xmax]
 
     plotData = []
     import plotly
@@ -256,6 +277,7 @@ if __name__ == '__main__':
         'xaxis':{
             #'autotick': True,
             'mirror'  :True,
+            'range'   :Xrange,
             #       range=[0, 500],
             'showgrid':True,
             'showline':True,
@@ -266,11 +288,16 @@ if __name__ == '__main__':
             'ticktext':xticktext,
             'tickvals':xtickvals,
             'tickangle': xtickangle,
-            #'titlefont': {
+            'tickfont': {
                 #family: 'Courier New, monospace',
-            #    'size': 18,
+                'size': tickfontsize,
                 #color: '#7f7f7f'
-            #}
+            },
+            'titlefont': {
+                #family: 'Courier New, monospace',
+                'size': titlefontsize,
+                #color: '#7f7f7f'
+            },
         },
         'yaxis':{
             'autotick': True,
@@ -282,11 +309,16 @@ if __name__ == '__main__':
             'showticklabels' : True,
             'title'   : ytitle,
             'zeroline':False,
-            #'titlefont': {
+            'tickfont': {
                 #family: 'Courier New, monospace',
-            #    'size': 18,
+                'size': tickfontsize,
                 #color: '#7f7f7f'
-            #}
+            },
+            'titlefont': {
+                #family: 'Courier New, monospace',
+                'size': titlefontsize,
+                #color: '#7f7f7f'
+            },
         },
     }
     # update legend info.
