@@ -1,0 +1,4 @@
+ID_1 ID_2 missing father mother sex plink_pheno
+0 0 0 D D D B
+2 23116433 0 0 0 2 -9
+3 23116434 0 0 0 2 -9
