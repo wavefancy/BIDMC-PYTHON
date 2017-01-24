@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--ydt float]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -19,6 +19,7 @@
         -o outname    Output file name: output.html.
         --yerr yecol  Column index for y error bar.
         --yr yrange   Set the yAxis plot range: float1,float2.
+        --ydt float   Distance between y ticks.
         --hl hline    Add horizontal lines: float1,float2.
         --vl vline    Add vertical lines: float1,float2...
         --ab abline   Add ablines: x1_y1_x2_y2_color,...
@@ -78,6 +79,7 @@ if __name__ == '__main__':
     lm = 60    #left margin.
 
     yrange = []
+    ydt = '' # Distance between y ticks.
     if args['--yerr']:
         errYCol = int(args['--yerr']) -1
     if args['--yr']:
@@ -95,6 +97,8 @@ if __name__ == '__main__':
             mode = 'lines+markers'
     if args['--lm']:
         lm = float(args['--lm'])
+    if args['--ydt']:
+        ydt = float(args['--ydt'])
 
     xanchor = 'right'
     yanchor = 'bottom'
@@ -235,22 +239,22 @@ if __name__ == '__main__':
                 #color: '#7f7f7f'
             #}
         },
-        'yaxis':{
-            'autotick': True,
-            'mirror'  :True,
-            'range'   :yrange,
-            'showgrid':True,
-            'showline':True,
-            'ticks'   : 'outside',
-            'showticklabels' : True,
-            'title'   : ytitle,
-            'zeroline':False,
-            #'titlefont': {
-                #family: 'Courier New, monospace',
-            #    'size': 18,
-                #color: '#7f7f7f'
-            #}
-        },
+        # 'yaxis':{
+        #     'autotick': True,
+        #     'mirror'  :True,
+        #     'range'   :yrange,
+        #     'showgrid':True,
+        #     'showline':True,
+        #     'ticks'   : 'outside',
+        #     'showticklabels' : True,
+        #     'title'   : ytitle,
+        #     'zeroline':False,
+        #     #'titlefont': {
+        #         #family: 'Courier New, monospace',
+        #     #    'size': 18,
+        #         #color: '#7f7f7f'
+        #     #}
+        # },
     }
     # update legend info.
     legend = go.Layout(
@@ -343,6 +347,21 @@ if __name__ == '__main__':
         h = {'shapes':alllines}
         layout.update(h)
 
+    yupdate = go.Layout(
+        yaxis=dict(
+            dtick = ydt, # '' empty string means auto ticks
+            # autotick = True,
+            mirror  = True,
+            range   =yrange,
+            # showgrid = True,
+            showline = True,
+            ticks =  'outside',
+            # showticklabels = True,
+            title = ytitle,
+            zeroline = False,
+        )
+    )
+    layout.update(yupdate)
     #output the last one
     plotly.offline.plot({'data': plotData,'layout': layout}
          ,show_link=False
