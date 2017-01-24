@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--ydt float]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--ydt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -20,6 +20,8 @@
         --yerr yecol  Column index for y error bar.
         --yr yrange   Set the yAxis plot range: float1,float2.
         --ydt float   Distance between y ticks.
+        --xr xrange   Set the xAxis plot range: float1,float2 | tight
+                      tight: set the xrange as [xmin, xmax]
         --hl hline    Add horizontal lines: float1,float2.
         --vl vline    Add vertical lines: float1,float2...
         --ab abline   Add ablines: x1_y1_x2_y2_color,...
@@ -27,13 +29,18 @@
         --mt mtype    Set marker type: 1 dot(default), 2 line, 3 dot + line.
         --lloc lloc   Legend location:
                         1 left_top, 2 right_top, 3 left_bottom, 4 right_bottom, 0 no legend.
-        --lfs lfs     Legend font size.
+        --lfs lfs     Legend font size, default 10.
+        --tfs int     X Y tick font size, default 12.
+        --ifs int     X Y title font size, default 12.
         --lm lmargin  Left margin, default 60.
+        --clr int     Column index for color, 1 based.
+        --xta int     X ticks angle (rotate x ticks), eg 45.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
-
 """
+# plotly api:
+# chang xticks : https://plot.ly/python/axes/
 import sys
 from docopt import docopt
 from signal import signal, SIGPIPE, SIG_DFL
@@ -49,14 +56,11 @@ c2  2   -5  3
 c3  5   3   2
 COMMAND vl  3
 COMMAND vl  4
+COMMAND xticktext       chr1    chr2
+COMMAND xtickvals       150     550
 
     #output:
     ------------------------
-    FamilyName      #SeqMember      #hitGeneNum     GeneList
-    S55     3       5       CHRNA7-chr15-3  NCAM2-chr21-3
-    FGJG1   3       4       JAK3-chr19-2    KRT3-chr12-3    NKD2-chr5-4     MKLN1-chr7-1
-    FGEG    3       21      RET-chr10-2-Auto-Dominant-CAKUT COLEC12-chr18-6 NUDT6-chr4-2    C6or
-    f222-chr6-5
     ''');
 
 if __name__ == '__main__':
@@ -76,10 +80,13 @@ if __name__ == '__main__':
     hlines = [] #location for horizontal lines.
     vlines = []
     msize = 5
-    lm = 60    #left margin.
+    lm = 60    #left margin
+    clrClm = ''  #value column for parse point color.
+    xtickangle = ''
 
     yrange = []
     ydt = '' # Distance between y ticks.
+    Xrange = []
     if args['--yerr']:
         errYCol = int(args['--yerr']) -1
     if args['--yr']:
@@ -99,6 +106,15 @@ if __name__ == '__main__':
         lm = float(args['--lm'])
     if args['--ydt']:
         ydt = float(args['--ydt'])
+    if args['--clr']:
+        clrClm = int(args['--clr']) -1
+    if args['--xta']:
+        xtickangle = int(args['--xta'])
+    if args['--xr']:
+        if args['--xr'] == 'tight':
+            Xrange = 'tight'
+        else:
+            Xrange = list(map(float, args['--xr'].split(',')))
 
     xanchor = 'right'
     yanchor = 'bottom'
@@ -134,12 +150,26 @@ if __name__ == '__main__':
     lfontSize = 10
     if args['--lfs']:
         lfontSize = int(args['--lfs'])
+    tickfontsize = 12
+    if args['--tfs']:
+        tickfontsize = int(args['--tfs'])
+    titlefontsize = 12
+    if args['--ifs']:
+        titlefontsize = int(args['--ifs'])
+
+    # https://plot.ly/python/axes/
+    # change x ticks
+    #ticktext=labels,
+    #tickvals=[i * step for i in range(len(labels))]
+    xticktext = ''
+    xtickvals = ''
 
     from collections import OrderedDict
     xdata = OrderedDict() #{categoryName -> []}
     ydata = OrderedDict() #{categoryName -> []}
     errY  = {} #{categoryName -> []} error bar for Y.ss
-    commands = {'vl'}
+    pcolors = {} # {categoryName -> []} error bar for point colors.
+    commands = {'vl','xticktext','xtickvals'}
 
     def addData(dictName,keyName,val):
         '''add data to a dict'''
@@ -147,6 +177,8 @@ if __name__ == '__main__':
             dictName[keyName] = []
         dictName[keyName].append(val)
 
+    xmin = 1000000000
+    xmax = -100000000
     for line in sys.stdin:
         line = line.strip()
         if line:
@@ -154,6 +186,11 @@ if __name__ == '__main__':
             if ss[0]=='COMMAND' and ss[1] in commands:
                 if ss[1] == 'vl':
                     vlines.append(float(ss[2]))
+                if ss[1] == 'xticktext':
+                    xticktext = ss[2:]
+                if ss[1] == 'xtickvals':
+                    xtickvals = [float(x) for x in ss[2:]]
+
             else:
                 try:
                     x = float(ss[1])
@@ -161,10 +198,22 @@ if __name__ == '__main__':
                     if errYCol and len(ss) >= errYCol +1:
                         z = float(ss[errYCol])
                         addData(errY,ss[0],z)
+
+                    if clrClm:
+                        addData(pcolors,ss[0], ss[clrClm])
+
                     addData(xdata, ss[0], x)
                     addData(ydata, ss[0] ,y)
+                    if Xrange == 'tight':
+                        if x < xmin:
+                            xmin = x
+                        if x > xmax:
+                            xmax = x
                 except ValueError:
                     sys.stderr.write('Warning: parse value error: %s\n'%(line))
+
+    if Xrange == 'tight':
+        Xrange = [xmin,xmax]
 
     plotData = []
     import plotly
@@ -187,6 +236,7 @@ if __name__ == '__main__':
             size = msize
          )
 
+    #print(pcolors)
     for k in xdata.keys():
         if k in errY:
             plotData.append(
@@ -206,6 +256,9 @@ if __name__ == '__main__':
                     )
             ))
         else:
+            if k in pcolors:
+                marker['color'] = pcolors[k]
+            #print(marker)
             plotData.append(
                 go.Scatter(
                 x=xdata[k],
@@ -216,6 +269,8 @@ if __name__ == '__main__':
                 mode = mode,
             ))
 
+    #print(xticktext)
+    #print(xtickvals)
     layout = {
         'margin': {
             'l' : lm,
@@ -224,8 +279,9 @@ if __name__ == '__main__':
             't' : 10
         },
         'xaxis':{
-            'autotick': True,
+            #'autotick': True,
             'mirror'  :True,
+            'range'   :Xrange,
             #       range=[0, 500],
             'showgrid':True,
             'showline':True,
@@ -233,28 +289,42 @@ if __name__ == '__main__':
             'showticklabels' : True,
             'title'   : xtitle,
             'zeroline':False,
-            #'titlefont': {
+            'ticktext':xticktext,
+            'tickvals':xtickvals,
+            'tickangle': xtickangle,
+            'tickfont': {
                 #family: 'Courier New, monospace',
-            #    'size': 18,
+                'size': tickfontsize,
                 #color: '#7f7f7f'
-            #}
+            },
+            'titlefont': {
+                #family: 'Courier New, monospace',
+                'size': titlefontsize,
+                #color: '#7f7f7f'
+            },
         },
-        # 'yaxis':{
-        #     'autotick': True,
-        #     'mirror'  :True,
-        #     'range'   :yrange,
-        #     'showgrid':True,
-        #     'showline':True,
-        #     'ticks'   : 'outside',
-        #     'showticklabels' : True,
-        #     'title'   : ytitle,
-        #     'zeroline':False,
-        #     #'titlefont': {
-        #         #family: 'Courier New, monospace',
-        #     #    'size': 18,
-        #         #color: '#7f7f7f'
-        #     #}
-        # },
+
+        'yaxis':{
+            'autotick': True,
+            'mirror'  :True,
+            'range'   :yrange,
+            'showgrid':True,
+            'showline':True,
+            'ticks'   : 'outside',
+            'showticklabels' : True,
+            'title'   : ytitle,
+            'zeroline':False,
+            'tickfont': {
+                #family: 'Courier New, monospace',
+                'size': tickfontsize,
+                #color: '#7f7f7f'
+            },
+            'titlefont': {
+                #family: 'Courier New, monospace',
+                'size': titlefontsize,
+                #color: '#7f7f7f'
+            },
+        },
     }
     # update legend info.
     legend = go.Layout(
