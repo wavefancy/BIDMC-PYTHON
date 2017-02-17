@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        ATCGVariantsV2.py -a int -b int [-c]
+        ATCGVariantsV2.py -a int -b int [-c] [-r]
         ATCGVariantsV2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -18,6 +18,8 @@
         -a int        Column index for the first(ref) allele, index starts from 1.
         -b int        Column index for the second(alt) allele.
         -c            Skip comment line, comment line started by '#'
+        -r            Remove AT, GC sites, while keep all the other content.
+                      *** Including comment lines ***.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -58,6 +60,10 @@ if __name__ == '__main__':
     SkipComment = False
     if args['-c']:
         SkipComment = True
+    RemoveATGC = False
+    if args['-r']:
+        RemoveATGC = True
+        SkipComment = False
 
     AT=['A', 'T']
     CG=['C', 'G']
@@ -72,8 +78,12 @@ if __name__ == '__main__':
             alleles.append(ss[col2].upper())
             alleles = sorted(alleles)
 
-            if alleles == AT or alleles == CG:
-                sys.stdout.write('%s\n'%(line))
+            if RemoveATGC:
+                if not(alleles == AT or alleles == CG):
+                    sys.stdout.write('%s\n'%(line))
+            else:
+                if alleles == AT or alleles == CG:
+                    sys.stdout.write('%s\n'%(line))
 
 sys.stdout.flush()
 sys.stdout.close()
