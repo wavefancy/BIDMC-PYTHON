@@ -52,6 +52,7 @@ def ShowFormat():
 
 # plotly api: multiple axes
 # https://plot.ly/python/multiple-axes/
+# *** plotly will plot y1 first and then y2.
 if __name__ == '__main__':
     args = docopt(__doc__, version='3.0')
     #version
