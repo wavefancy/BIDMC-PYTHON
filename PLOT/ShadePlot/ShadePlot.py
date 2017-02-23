@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        ShadePlot.py -x xtitle -y ytitle -o outname --sa sa [--y2 y2title] [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lm] [--lw lw] [--y1d y1dtick] [--y2d y2dtick]
+        ShadePlot.py -x xtitle -y ytitle -o outname --sa sa [--y2 y2title] [--yerr ycol] [--yr yrange] [[--y2r yrange]] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lm] [--rm rm] [--lw lw] [--y1d y1dtick] [--y2d y2dtick] [--y2c color]
         ShadePlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -21,6 +21,7 @@
         --y2 y2title  Y title for the second Y axis.
         --yerr yecol  Column index for y error bar.
         --yr yrange   Set the yAxis plot range: float1,float2.
+        --y2r yrange  Set the y2Axis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
         --vl vline    Add vertical lines: float1, float2...
         --ms msize    Set marker size: float, default 5.
@@ -28,9 +29,11 @@
         --lloc lloc   Legend location: 2 right_top, 3 left_bottom.
         --lfs lfs     Legend font size.
         --lm lm       Left margin, default 40.
+        --rm rm       Right margin, default 40.
         --lw lw       Shade line width, default 2.
         --y1d y1dtick Tick distance for y1 axis.
         --y2d y2dtick Tick distance for y2 axis.
+        --y2c color   Color for y2 data, support hex and rgba.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -68,6 +71,7 @@ if __name__ == '__main__':
     msize = 5
     y2title = ''
     lm = 40 #left margin
+    rm = 40 #right margin
     lw = 2  #line width for shade line
     y1d = ''#tick distance for y1 axis.
     y2d = ''
@@ -75,10 +79,14 @@ if __name__ == '__main__':
         y2title = args['--y2']
 
     yrange = []
+    y2range = []
+    dotColor = 'rgba(203, 1, 1, 0.5)' # color for y2 data.
     if args['--yerr']:
         errYCol = int(args['--yerr']) -1
     if args['--yr']:
         yrange = list(map(float, args['--yr'].split(',')))
+    if args['--y2r']:
+        y2range = list(map(float, args['--y2r'].split(',')))
     if args['--hl']:
         hlines = list(map(float, args['--hl'].split(',')))
     if args['--vl']:
@@ -92,6 +100,8 @@ if __name__ == '__main__':
             mode = 'lines+markers'
     if args['--lm']:
         lm = int(args['--lm'])
+    if args['--rm']:
+        rm = int(args['--rm'])
     if args['--lw']:
         lw = int(args['--lw'])
     if args['--y1d']:
@@ -99,6 +109,8 @@ if __name__ == '__main__':
     if args['--y2d']:
         y2d = float(args['--y2d'])
     # print(y2d)
+    if args['--y2c']:
+        dotColor = args['--y2c']
 
     ci = []
     if args['--sa']:
@@ -184,20 +196,6 @@ if __name__ == '__main__':
         # )
      )
     color = '#1F77B4'
-    dotColor = '#CB1222'
-    if y2Xdata:
-         plotData.append(
-            go.Scatter(
-            x=y2Xdata,
-            y=y2Ydata,
-            marker = marker,
-            mode = 'markers',
-            line=dict(
-                color=dotColor,
-            ),
-            yaxis='y2'
-         ))
-    #print(plotData)
 
     if dataLeftX:
          plotData.append(
@@ -209,7 +207,8 @@ if __name__ == '__main__':
                 line=dict(
                     color=color,
                     width = lw,
-                )
+                ),
+                yaxis='y2'
             ))
     if dataRightX:
         plotData.append(
@@ -221,7 +220,8 @@ if __name__ == '__main__':
                line=dict(
                    color=color,
                    width = lw,
-               )
+               ),
+               yaxis='y2'
            ))
 
     plotData.append(
@@ -235,14 +235,30 @@ if __name__ == '__main__':
                width = lw,
            ),
            fill='tozeroy',
+           yaxis='y2'
        ))
+
+    # draw dots at the first.
+    if y2Xdata:
+         plotData.append(
+            go.Scatter(
+            x=y2Xdata,
+            y=y2Ydata,
+            marker = marker,
+            mode = 'markers',
+            line=dict(
+                color=dotColor,
+            ),
+            # yaxis='y2'
+         ))
+    #print(plotData)
 
     # print(y2d)
     layout = {
         'margin': {
             'l' : lm,
             'b' : 40,
-            'r' : 50,
+            'r' : rm,
             't' : 10
         },
         'xaxis':{
@@ -256,6 +272,20 @@ if __name__ == '__main__':
             'title'   : xtitle,
             'zeroline':False
         },
+        'yaxis2':{
+            # 'autotick': True,
+            # 'mirror'  :True,
+            'range'   : y2range,
+            'showgrid': False,
+            # 'showline':True,
+            'ticks'   : 'outside',
+            'showticklabels' : True,
+            'title'   : y2title,
+            # 'zeroline':False,
+            'side'    : 'right',
+            'overlaying':'y',
+            'dtick'   : y2d,
+        },
         'yaxis':{
             # 'autotick': True,
             'mirror'  :True,
@@ -267,20 +297,6 @@ if __name__ == '__main__':
             'title'   : ytitle,
             'zeroline':False,
             'dtick'   : y1d,
-        },
-        'yaxis2':{
-            # 'autotick': True,
-            # 'mirror'  :True,
-            #'range'   :yrange,
-            'showgrid': False,
-            # 'showline':True,
-            'ticks'   : 'outside',
-            'showticklabels' : True,
-            'title'   : y2title,
-            # 'zeroline':False,
-            'side'    : 'right',
-            'overlaying':'y',
-            'dtick'   : y2d,
         },
     }
 
