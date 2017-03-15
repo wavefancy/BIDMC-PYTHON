@@ -3,7 +3,7 @@
 """
     Convert impute2 legend format to merlin frequency format.
     Usage:
-        Impute2Legend2MerlinFreq.py -c cname
+        Impute2Legend2MerlinFreq.py -c cname -m maf
         Impute2Legend2MerlinFreq.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -12,6 +12,7 @@
 
     Options:
         -c cname       Chromosome name.
+        -m maf         Minor allele frequency filter, only output sites with MAF > this value.
         -h --help      Show this screen.
         -v --version   Show version.
         -f --format    Show input/output file format example.
@@ -24,8 +25,19 @@ signal(SIGPIPE,SIG_DFL) #prevent IOError: [Errno 32] Broken pipe. If pipe closed
 def ShowFormat():
     '''Input File format example:'''
     print('''
-    1. input: plink PED/MAP file.
-    2. output file: ProbABEL manual.
+# input 4 column: pos ref alt altFre
+------------------------------------
+60086 G C 0.00102249488752556
+60105 G A 0.5
+
+# output:
+------------------------------------
+M chr19:60086
+A G 0.9990
+A C 0.0010
+M chr19:60105
+A G 0.5000
+A A 0.5000
     ''');
 
 
@@ -39,6 +51,7 @@ if __name__ == '__main__':
 
     #pedfile = args['-p']
     cname = args['-c']
+    maf = float(args['-m'])
 
     for line in sys.stdin:
         line = line.strip()
@@ -46,6 +59,9 @@ if __name__ == '__main__':
             ss = line.split()
             try:
                 altFre = float(ss[3])
+                m = min(altFre, 1-altFre)
+                if m <= maf:
+                    continue
 
                 sys.stdout.write('M %s:%s\n'%(cname,ss[0]))
                 sys.stdout.write('A %s %.4f\n'%(ss[1], 1-altFre))
