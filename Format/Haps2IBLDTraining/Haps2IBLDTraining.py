@@ -3,7 +3,7 @@
 """
     Convert haps/samples haps file to IBDLD training file.
     Usage:
-        Haps2IBLDTraining.py
+        Haps2IBLDTraining.py [-s]
         Haps2IBLDTraining.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -11,6 +11,7 @@
         2. See example by -f.
 
     Options:
+        -s             Only keep SNP sites, ref/alt allele length 1.
         -h --help      Show this screen.
         -v --version   Show version.
         -f --format    Show input/output file format example.
@@ -55,11 +56,19 @@ if __name__ == '__main__':
             sys.stderr.write('ERROR: unrecognized code for "%s" at line: %s\n'%(code, '\t'.join(ss)))
             sys.exit(-1)
 
+    snpOnly = False
+    if args['-s']:
+        snpOnly = True
+
     title = []
     for line in sys.stdin:
         line = line.strip()
         if line:
             ss = line.split()
+            if snpOnly:
+                if len(ss[3]) != 1 or len(ss[4]) != 1:
+                    continue
+
             out = []
             out.append(ss[0])
             out.append('%s:%s:%s:%s'%(ss[0], ss[2], ss[3], ss[4]))
