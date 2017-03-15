@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        HapsSampleSubset.py (-r|-k) --sample sampleFile --subset subset --out-sample outSample
+        HapsSampleSubset.py (-r|-k) --sample sampleFile --subset subset --out-sample outSample [-n]
         HapsSampleSubset.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -17,10 +17,14 @@
         -v --version               Show version.
         -f --format                Show input/output file format example.
         --subset <subset>          File name for ID list file, see example.
+                                   *** FamilyName and IndiviudalName,
+                                   if -n is on: only read the fist column as indiviudal name.
+
         --sample <sampleFile>      File name for sample file corresponding to input haps file.
         --out-sample <outSample>   File name for sample file corresponding to output haps file.
         -k                         Keep samples indicated in --out-sample file
         -r                         Remove samples indicated in --out-sample file
+        -n                         Only check indiviudal name, default check family name and indiviudal name.
 
 """
 import sys
@@ -62,13 +66,19 @@ if __name__ == '__main__':
         ShowFormat()
         sys.exit(-1)
 
+    idNameOnly = False
+    if args['-n']:
+        idNameOnly = True  #only check individual name
     #out id list
     ids=set()
     for line in open(args['--subset']):
         line = line.strip()
         if line:
             ss = line.split()
-            ids.add(ss[0] + ss[1])
+            if idNameOnly:
+                ids.add(ss[0])
+            else:
+                ids.add(ss[0] + ss[1])
 
     keep = True
     if args['-r']:
@@ -84,7 +94,13 @@ if __name__ == '__main__':
             index += 1
             if index > 2: #skip two title line
                 ss = line.split()
-                name = ss[0] + ss[1]
+
+                name = ''
+                if idNameOnly:
+                    name = ss[1]
+                else:
+                    name = ss[0] + ss[1]
+
                 if keep:
                     if name in ids:
                         outIDs.append(index -3) # 0 based.
