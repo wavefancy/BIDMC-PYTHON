@@ -29,7 +29,6 @@
         --mt mtype    Set marker type: 1 dot(default), 2 line, 3 dot + line.
         --lloc lloc   Legend location:
                         1 left_top, 2 right_top, 3 left_bottom, 4 right_bottom, 0 no legend.
-                        5 right_top out of box.
         --lfs lfs     Legend font size, default 10.
         --tfs int     X Y tick font size, default 12.
         --ifs int     X Y title font size, default 12.
@@ -98,7 +97,7 @@ if __name__ == '__main__':
     if args['--hl']:
         hlines = list(map(float, args['--hl'].split(',')))
     if args['--vl']:
-        vlines = list(map(float, args['--vl'].split(',')))
+        vlines = list(map(float, args['--hl'].split(',')))
     if args['--ms']:
         msize = float(args['--ms'])
     if args['--mt']:
@@ -372,26 +371,19 @@ if __name__ == '__main__':
     legend = go.Layout(
         showlegend=False
     )
-    # api: https://plot.ly/python/legend/
     if args['--lloc'] != '0':
-        if args['--lloc'] == '5':
-            legend = go.Layout(
-                showlegend=True
-            )
-        else:
-            legend={
-                'legend':{
-                    'xanchor': xanchor,
-                    'x': xlloc,
-                    'y': ylloc,
-                    'yanchor': yanchor,
-                    'font': {
-                        'size' : lfontSize
-                    },
-                }
+        legend={
+            'legend':{
+                'xanchor': xanchor,
+                'x': xlloc,
+                'y': ylloc,
+                'yanchor': yanchor,
+                'font': {
+                    'size' : lfontSize
+                },
             }
+        }
 
-    #print(legend)
     layout.update(legend)
 
     hl_data = []
