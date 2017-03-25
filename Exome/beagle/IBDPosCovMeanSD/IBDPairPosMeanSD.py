@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        IBDPairPosMeanSD.py <infiles>...
+        IBDPairPosMeanSD.py <infiles>... [-m]
         IBDPairPosMeanSD.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -15,6 +15,7 @@
         3. See example by -f.
 
     Options:
+        -m            Output min and max number of IBD sharing.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -64,6 +65,10 @@ if __name__ == '__main__':
         ShowFormat()
         sys.exit(-1)
 
+    minmax = False
+    if args['-m']:
+        minmax = True
+
     covMap = {} #{pos -> [cov1, cov2 ... ]}
     for file in args['<infiles>']:
         with open(file,'r') as input:
@@ -85,9 +90,15 @@ if __name__ == '__main__':
     #output results:
     from numpy import mean, std
     out = sorted(covMap.items(), key=lambda x: x[0])
-    sys.stdout.write('Pos\tMean\tStd\n')
+    if minmax:
+        sys.stdout.write('Pos\tMean\tStd\tMin\tMax\n')
+    else:
+        sys.stdout.write('Pos\tMean\tStd\n')
     for k,v in out:
-        sys.stdout.write('%d\t%.4f\t%.4f\n'%(k+1, mean(v), std(v)))
+        if minmax:
+            sys.stdout.write('%d\t%.4f\t%.4f\t%d\t%d\n'%(k+1, mean(v), std(v), min(v), max(v)))
+        else:
+            sys.stdout.write('%d\t%.4f\t%.4f\n'%(k+1, mean(v), std(v)))
 
 sys.stdout.flush()
 sys.stdout.close()
