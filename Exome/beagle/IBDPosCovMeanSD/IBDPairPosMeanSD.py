@@ -15,7 +15,8 @@
         3. See example by -f.
 
     Options:
-        -m            Output min and max number of IBD sharing.
+        -m            Output the number of IBD sharing of min and max shifting from mean.
+                      mean - min, max - mean.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -91,12 +92,13 @@ if __name__ == '__main__':
     from numpy import mean, std
     out = sorted(covMap.items(), key=lambda x: x[0])
     if minmax:
-        sys.stdout.write('Pos\tMean\tStd\tMin\tMax\n')
+        sys.stdout.write('Pos\tMean\tStd\tMean-Min\tMax-Mean\n')
     else:
         sys.stdout.write('Pos\tMean\tStd\n')
     for k,v in out:
         if minmax:
-            sys.stdout.write('%d\t%.4f\t%.4f\t%d\t%d\n'%(k+1, mean(v), std(v), min(v), max(v)))
+            m = mean(v)
+            sys.stdout.write('%d\t%.4f\t%.4f\t%.4f\t%.4f\n'%(k+1, m, std(v), m - min(v), max(v) -m ))
         else:
             sys.stdout.write('%d\t%.4f\t%.4f\n'%(k+1, mean(v), std(v)))
 
