@@ -1,0 +1,4 @@
+Sample_M_FS-H1_012_012        Sample_M_FS-H1_012_012        21  1031  0.4672
+M_FG-MH12                     M_FG-MH12                     21  1031  0.29
+Sample_M_FS-H1_012_012        Sample_M_FS-H1_012_012        22  1031  0.4672
+M_FG-MH12                     M_FG-MH12                     22  1031  0.29
