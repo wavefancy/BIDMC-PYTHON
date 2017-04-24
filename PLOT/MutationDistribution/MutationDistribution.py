@@ -16,7 +16,7 @@
     Options:
         -s style      Style file.
         -g gff3       Input gff3 file
-        -o filename   Output file name: output.png[|.pdf.jpg].
+        -o filename   Output file name: output.pdf.
         --start int   Range start, int.
         --end int     Range end, int.
         --intron      add intron feature.
@@ -211,7 +211,8 @@ if __name__ == "__main__":
     height = layout.get_height()
 
   # create canvas
-    canvas = CanvasCairoFile(style, canvas_width, height)
+    #canvas = CanvasCairoFile(style, canvas_width, height)
+    canvas = CanvasCairoFilePDF(style, canvas_width, height)
 
   # sketch layout on canvas
     layout.sketch(canvas)
