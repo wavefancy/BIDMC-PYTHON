@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        MutationDistribution.py -s style -g gff3 -o filename [--start int] [--end int] [-w int] [--intron] [--snp file]
+        MutationDistribution.py -s style -g gff3 -o filename [--start int] [--end int] [-w int] [--intron] [--snp file] [-r]
         MutationDistribution.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -21,6 +21,7 @@
         --end int     Range end, int.
         --intron      add intron feature.
         --snp file    Add snp annotation.
+        -r            Plot data in reverse oder, default ordered by color.
         -w int        Figure width, default 600.
         -h --help     Show this screen.
         -v --version  Show version.
@@ -33,6 +34,7 @@ from gt.annotationsketch import *
 from gt.core.gtrange import Range
 from gt.core import *
 from gt.extended import *
+import webcolors
 import sys
 from docopt import docopt
 from signal import signal, SIGPIPE, SIG_DFL
@@ -44,13 +46,23 @@ class CustomTrackInsertions(CustomTrack):
         super(CustomTrackInsertions, self).__init__()
         self.sidelength = sidelength #triangle side length.
         self.data = data
-        self.mheight = 15
+        self.mheight = 5
+        self.color = Color(1, 0, 0, 0.7)
+        self.title = "Variants"
+
+    def set_color(self, hexColor):
+        '''set ploting colors'''
+        rgb = webcolors.hex_to_rgb(hexColor)
+        self.color = Color(rgb[0]/255.0, rgb[1]/255.0, rgb[2]/255.0, 0.7)
 
     def get_height(self):
         return (self.sidelength + self.mheight)* len(self.data)
 
     def get_title(self):
-        return "Variants"
+        return self.title
+
+    def set_title(self, title):
+        self.title = title
 
     def free(self):
         return 0
@@ -59,7 +71,8 @@ class CustomTrackInsertions(CustomTrack):
         #ypos = ypos - 10 #shift annotation a little bit up.
         height = (self.sidelength*math.sqrt(3))/2
         margins = graphics.get_xmargins()
-        red = Color(1, 0, 0, 0.7)
+        #red = Color(1, 0, 0, 0.7)
+        red = self.color
         #for pos, desc in self.data.iteritems():
         for pos, desc in self.data.items():
             drawpos = margins + (float(pos)-rng.start)/(rng.end-rng.start+1) * (graphics.get_image_width()-2*margins)
@@ -74,19 +87,38 @@ class CustomTrackInsertions(CustomTrack):
                 drawpos+self.sidelength/2, ypos + height,red, 1)
 
             #graphics.draw_text_centered(drawpos, ypos + height + 13, str(desc))
-            graphics.draw_text_centered(drawpos, ypos + height + 8, str(desc))
+            #graphics.draw_text_centered(drawpos, ypos + height + 8, str(desc))
+            #right of triangle.
+            graphics.draw_text(drawpos + 0.8*height, ypos + height*3.0/4 , str(desc))
 
             #shift 20
             ypos += (self.sidelength+self.mheight)
         return 0
 
+def ShowFormat():
+    '''Input File format example:'''
+    print('''
+    #Input format:
+    #position mutationLabel Color groupLabel.
+    ------------------------
+105169501       p.Cys151Arg     #F00D0A AFFECTED
+105169520       p.Gly157Asp     #F00D0A AFFECTED
+105169653       p.Arg177Cys     #F00D0A AFFECTED
+105169666       p.Val181Gly     #F00D0A AFFECTED
+105169776       p.Arg218Trp     #F00D0A AFFECTED
+105169777       p.Arg218Gln     #F00D0A AFFECTED
+105175020       p.Asp634Asn     #0A56F0 CONTROL
+105176023       p.Leu707Phe     #0A56F0 CONTROL
+105181113       p.Gly1205Asp    #F00D0A AFFECTED
+    ''');
+
 if __name__ == "__main__":
     args = docopt(__doc__, version='1.0')
     print(args)
 
-    # if(args['--format']):
-    #     ShowFormat()
-    #     sys.exit(-1)
+    if(args['--format']):
+        ShowFormat()
+        sys.exit(-1)
 
     # if len(sys.argv) != 4:
     #     sys.stderr.write("Usage: " + (sys.argv)[0] +
@@ -132,16 +164,42 @@ if __name__ == "__main__":
 
     diagram = Diagram.from_index(feature_index, seqid, range, style)
 
-    snpdata = {}
+    snpdata = {} #color -> {loc:name}
+    color = '#E40A00' #default red
+    inclr = color
     if args['--snp']:
         with open(args['--snp']) as ifile:
             for line in ifile:
                 line = line.strip()
                 if line:
                     ss = line.split()
-                    snpdata[ss[0]] = ss[1]
-        ctt = CustomTrackInsertions(15, snpdata)
-        diagram.add_custom_track(ctt)
+                    # group data by color.
+                    if len(ss) >= 3:
+                        inclr = ss[2]
+                    else:
+                        inclr = color
+
+                    if inclr not in snpdata:
+                        if len(ss) >= 4:
+                            snpdata[inclr] = ({}, ss[3])
+                        else:
+                            snpdata[inclr] = ({}, 'Variants')
+
+                    snpdata[inclr][0][ss[0]] = ss[1]
+                    #snpdata[ss[0]] = ss[1]
+
+        keys = sorted(snpdata.keys())
+        if args['-r']:
+            keys = sorted(snpdata.keys(), reverse=True)
+
+        for color in keys:
+            ctt = CustomTrackInsertions(13, snpdata[color][0])
+            ctt.set_color(color)
+            ctt.set_title(snpdata[color][1])
+            diagram.add_custom_track(ctt)
+
+        #ctt = CustomTrackInsertions(15, snpdata)
+        #diagram.add_custom_track(ctt)
     #ctt = CustomTrackInsertions(15, {105177703:"foo", 105180703:"bar", 105182703:"baz"})
     #diagram.add_custom_track(ctt)
 
