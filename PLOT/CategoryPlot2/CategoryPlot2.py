@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--ydt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bmargin] [--ydt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int] [--ctxt int]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -34,7 +34,10 @@
         --tfs int     X Y tick font size, default 12.
         --ifs int     X Y title font size, default 12.
         --lm lmargin  Left margin, default 60.
+        --bm bmargin  Bottom margin, default 40.
         --clr int     Column index for color, 1 based.
+        --ctxt int    Column index for text. This column can be empty for some group if it's the last column.
+                      But all the points in non-empyt group should have text value, example: in.text.txt.
         --xta int     X ticks angle (rotate x ticks), eg 45.
         -h --help     Show this screen.
         -v --version  Show version.
@@ -84,6 +87,7 @@ if __name__ == '__main__':
     vlines = []
     msize = 5
     lm = 60    #left margin
+    bm = 40
     clrClm = ''  #value column for parse point color.
     xtickangle = ''
 
@@ -108,6 +112,8 @@ if __name__ == '__main__':
             mode = 'lines+markers'
     if args['--lm']:
         lm = float(args['--lm'])
+    if args['--bm']:
+        bm = float(args['--bm'])
     if args['--ydt']:
         ydt = float(args['--ydt'])
     if args['--clr']:
@@ -154,12 +160,16 @@ if __name__ == '__main__':
     lfontSize = 10
     if args['--lfs']:
         lfontSize = int(args['--lfs'])
-    tickfontsize = 12
+    tickfontsize = 11
     if args['--tfs']:
         tickfontsize = int(args['--tfs'])
     titlefontsize = 12
     if args['--ifs']:
         titlefontsize = int(args['--ifs'])
+
+    ctxt = '' #column index for display text.
+    if args['--ctxt']:
+        ctxt = int(args['--ctxt']) -1
 
     # https://plot.ly/python/axes/
     # change x ticks
@@ -173,6 +183,7 @@ if __name__ == '__main__':
     ydata = OrderedDict() #{categoryName -> []}
     errY  = {} #{categoryName -> []} error bar for Y.ss
     pcolors = {} # {categoryName -> []} error bar for point colors.
+    ptxt = {} #for display text.
     commands = {'vl','xticktext','xtickvals','groupAnnotation'}
 
     def addData(dictName,keyName,val):
@@ -212,6 +223,9 @@ if __name__ == '__main__':
                     if clrClm:
                         addData(pcolors,ss[0], ss[clrClm])
 
+                    if ctxt and len(ss) > ctxt:
+                        addData(ptxt, ss[0], ss[ctxt])
+
                     addData(xdata, ss[0], x)
                     addData(ydata, ss[0] ,y)
                     if Xrange == 'tight':
@@ -248,7 +262,7 @@ if __name__ == '__main__':
 
     #print(pcolors)
     #print(xdata)
-    for k in xdata.keys():
+    for k in xdata.keys(): #data category.
         if k in errY:
             color = 'dark'
             size = '1'
@@ -301,22 +315,37 @@ if __name__ == '__main__':
                     line['width'] = groupAnnotation[k]['ms']
             #print(marker)
             #print(line)
-            plotData.append(
-                go.Scatter(
-                x=xdata[k],
-                y=ydata[k],
-                marker = marker,
-                line = line,
-                name=k,
-                mode = mode,
-            ))
+            if k in ptxt:
+                plotData.append(
+                    go.Scatter(
+                    x=xdata[k],
+                    y=ydata[k],
+                    marker = marker,
+                    text = ptxt[k],
+                    line = line,
+                    name=k,
+                    mode = mode + '+text',
+                    textfont=dict(size=10),
+                    textposition='top',
+                ))
+
+            else:
+                plotData.append(
+                    go.Scatter(
+                    x=xdata[k],
+                    y=ydata[k],
+                    marker = marker,
+                    line = line,
+                    name=k,
+                    mode = mode,
+                ))
 
     #print(xticktext)
     #print(xtickvals)
     layout = {
         'margin': {
             'l' : lm,
-            'b' : 40,
+            'b' : bm,
             'r' : 10,
             't' : 10
         },
@@ -346,27 +375,27 @@ if __name__ == '__main__':
             },
         },
 
-        'yaxis':{
-            'autotick': True,
-            'mirror'  :True,
-            'range'   :yrange,
-            'showgrid':True,
-            'showline':True,
-            'ticks'   : 'outside',
-            'showticklabels' : True,
-            'title'   : ytitle,
-            'zeroline':False,
-            'tickfont': {
-                #family: 'Courier New, monospace',
-                'size': tickfontsize,
-                #color: '#7f7f7f'
-            },
-            'titlefont': {
-                #family: 'Courier New, monospace',
-                'size': titlefontsize,
-                #color: '#7f7f7f'
-            },
-        },
+        # 'yaxis':{
+        #     'autotick': True,
+        #     'mirror'  :True,
+        #     'range'   :yrange,
+        #     'showgrid':True,
+        #     'showline':True,
+        #     'ticks'   : 'outside',
+        #     'showticklabels' : True,
+        #     'title'   : ytitle,
+        #     'zeroline':False,
+        #     'tickfont': {
+        #         #family: 'Courier New, monospace',
+        #         'size': tickfontsize,
+        #         #color: '#7f7f7f'
+        #     },
+        #     'titlefont': {
+        #         #family: 'Courier New, monospace',
+        #         'size': titlefontsize,
+        #         #color: '#7f7f7f'
+        #     },
+        # },
     }
     # update legend info.
     legend = go.Layout(
@@ -478,6 +507,7 @@ if __name__ == '__main__':
             # showticklabels = True,
             title = ytitle,
             zeroline = False,
+            titlefont=dict(size=titlefontsize)
         )
     )
     layout.update(yupdate)
