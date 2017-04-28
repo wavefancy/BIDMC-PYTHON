@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        Value2Color.py -k int [--cmax int] [-r]
+        Value2Color.py -k int [--cmax int] [-r] [-n cname]
         Value2Color.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -17,6 +17,8 @@
         -k int        Color index for input value.
         --cmax int    Color scale max value, set all the input value larger than this as this value.
         -r            Replace the value as color, otherwise append the color value at the line end.
+        -n cname      Color scale name, default YlOrRd, full list:
+                      https://plot.ly/ipython-notebooks/color-scales/
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -77,6 +79,8 @@ if __name__ == '__main__':
     #https://plot.ly/ipython-notebooks/color-scales/
     #define color map.
     colorName = 'YlOrRd'
+    if args['-n']:
+        colorName = args['-n']
     color = cl.scales['9']['seq'][colorName]
 
     #map color to 500 bins, convert to rgb and then to numberic format of rgb.
