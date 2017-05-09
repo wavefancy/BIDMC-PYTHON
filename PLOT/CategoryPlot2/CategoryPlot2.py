@@ -36,7 +36,8 @@
         --lm lmargin  Left margin, default 60.
         --bm bmargin  Bottom margin, default 40.
         --clr int     Column index for color, 1 based.
-        --ctxt int    Column index for text.
+        --ctxt int    Column index for text. This column can be empty for some group if it's the last column.
+                      But all the points in non-empyt group should have text value, example: in.text.txt.
         --xta int     X ticks angle (rotate x ticks), eg 45.
         -h --help     Show this screen.
         -v --version  Show version.
