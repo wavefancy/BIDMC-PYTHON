@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-    Extract guide-RNA for CRISPR screening
+    Extract guide-RNA for CRISPR screening, only use the left U6 promoter anchor.
     @Author: wavefancy@gmail.com
 
     Usage:
@@ -13,8 +13,7 @@
         3. See example by -f.
 
     Options:
-        -a string     Anchor string for guide-RNA, default(GTGGAAAGGACGAAACACCG,GTTTTAGAGCTAGAAATAGC)
-                      Define the left and righ anchor.
+        -a string     Anchor string for guide-RNA, default(GTGGAAAGGACGAAACACCG), U6 promoter.
         -l int        Length for guide-RNA, default 20.
         -s int        Start number for haplotype index, default 1.
         -h --help     Show this screen.
@@ -48,7 +47,8 @@ if __name__ == '__main__':
         '''get reverse complement string for x'''
         return str(Seq(x).reverse_complement())
 
-    Anchors = ['GTGGAAAGGACGAAACACCG','GTTTTAGAGCTAGAAATAGC']
+    #Anchors = ['GTGGAAAGGACGAAACACCG','GTTTTAGAGCTAGAAATAGC']
+    Anchors = 'GTGGAAAGGACGAAACACCG'
     if args['-a']:
         Anchors = args['-a'].split(',')
     gRNALen = 20
@@ -64,29 +64,31 @@ if __name__ == '__main__':
             : False, error raised, should be output to stdout.
         '''
         #print(data)
-        indexs = [data[1].find(x) for x in Anchors]
+        indexs = data[1].find(Anchors) #for x in Anchors
         rc = ''
         error = ''
-        if min(indexs) < 0: #failed to find anchor string in input.
+        if indexs < 0: #failed to find anchor string in input.
             rc = getReverse_complement(data[1])
-            indexs = [rc.find(x) for x in Anchors]
-            if min(indexs) < 0: #failed even reverse and complement string.
+            indexs = rc.find(Anchors)
+            if indexs < 0: #failed even reverse and complement string.
                 error = 'NO_ANCHOR'
                 #print('NO_ANCHOR')
                 #output
                 return '%s\n%s\n%s\n%s\n'%(data[0]+' ' + error, data[1], data[2], data[3]), False
 
-        #find index successfully.
-        if indexs[0] >= indexs[1]:
-            error = 'INDEX_ERROR'
-            return '%s\n%s\n%s\n%s\n'%(data[0]+' ' + error, data[1], data[2], data[3]), False
+            #find index successfully.
+            # if indexs[0] >= indexs[1]:
+            #     error = 'INDEX_ERROR'
+            #     return '%s\n%s\n%s\n%s\n'%(data[0]+' ' + error, data[1], data[2], data[3]), False
 
-        elif (indexs[1] - indexs[0]) - len(Anchors[0]) != gRNALen:
+        if indexs + gRNALen > len(data[1]):
             error = 'gRNA_LEN_ERROR'
             return '%s\n%s\n%s\n%s\n'%(data[0]+' ' + error, data[1], data[2], data[3]), False
         else:
-            x,y = indexs[0]+ len(Anchors[0]), indexs[1]
+            x,y = indexs + len(Anchors), indexs + len(Anchors) + gRNALen
+            #return '%s\n%s\n%s\n%s\n'%(data[0], data[1][x:y], data[2], data[3][x:y]), True
             if rc:
+                #print('--here--')
                 return '%s\n%s\n%s\n%s\n'%(data[0], rc[x:y], data[2], data[3][::-1][x:y]), True
             else:
                 return '%s\n%s\n%s\n%s\n'%(data[0], data[1][x:y], data[2], data[3][x:y]), True
@@ -98,6 +100,7 @@ if __name__ == '__main__':
             sys.stderr.write('ERROR: input format error. Fastq seq name not started by @: %s\n'%(data[0]))
             sys.exit(-1)
         else:
+            #print(extractGuideRNA(data))
             x,y = extractGuideRNA(data)
             if y:
                 sys.stdout.write('%s'%(x))
