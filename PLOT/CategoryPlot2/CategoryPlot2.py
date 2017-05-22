@@ -17,7 +17,8 @@
         -x xtitle
         -y ytitle
         -o outname    Output file name: output.html.
-        --yerr yecol  Column index for y error bar.
+        --yerr yecol  Column index for y error bar. single valure or two values for upper and lower bound.
+                        float | float1,float2
         --yr yrange   Set the yAxis plot range: float1,float2.
         --ydt float   Distance between y ticks.
         --xr xrange   Set the xAxis plot range: float1,float2 | tight
@@ -217,7 +218,8 @@ if __name__ == '__main__':
                     x = float(ss[1])
                     y = float(ss[2])
                     if errYCol and len(ss) >= errYCol +1:
-                        z = float(ss[errYCol])
+                        #z = float(ss[errYCol])
+                        z = ss[errYCol]
                         addData(errY,ss[0],z)
 
                     if clrClm:
@@ -283,22 +285,46 @@ if __name__ == '__main__':
                     line['width'] = groupAnnotation[k]['ms']
                     size = groupAnnotation[k]['ms']
 
-            plotData.append(
-                go.Scatter(
-                x=xdata[k],
-                y=ydata[k],
-                name = k,
-                mode = mode,
-                marker = marker,
-                line = line,
-                error_y=dict(
-                    type='data',
-                    array=errY[k],
-                    visible=True,
-                    color=color,
-                    thickness=size,
-                    )
-            ))
+            if len(errY[k][0].split(',')) == 2: # two values for error y.
+                TY  = [x.split(',') for x in errY[k]]
+                EY1 = [float(x[0]) for x in TY]
+                EY2 = [float(x[1]) for x in TY]
+                plotData.append(
+                    go.Scatter(
+                    x=xdata[k],
+                    y=ydata[k],
+                    name = k,
+                    mode = mode,
+                    marker = marker,
+                    line = line,
+                    error_y=dict(
+                        type='data',
+                        array = EY1,
+                        arrayminus = EY2,
+                        visible=True,
+                        color=color,
+                        thickness=size,
+                        )
+                ))
+
+            else: #one value for error y.
+                EY = [float(x) for x in errY[k]]
+                plotData.append(
+                    go.Scatter(
+                    x=xdata[k],
+                    y=ydata[k],
+                    name = k,
+                    mode = mode,
+                    marker = marker,
+                    line = line,
+                    error_y=dict(
+                        type='data',
+                        array=errY[k],
+                        visible=True,
+                        color=color,
+                        thickness=size,
+                        )
+                ))
         else:
             if k in pcolors:
                 marker['color'] = pcolors[k] #color, same length as the data set.
