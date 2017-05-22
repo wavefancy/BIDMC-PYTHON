@@ -16,7 +16,8 @@
         3. See example by -f.
 
     Options:
-        -m            Only output maxium number of IBD pairs.
+        -m            Output the number of IBD sharing of min and max shifting from mean.
+                      mean - min, max - mean.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -66,9 +67,9 @@ if __name__ == '__main__':
         ShowFormat()
         sys.exit(-1)
 
-    omax = False    #output maxium number of IBD pairs.
+    minmax = False
     if args['-m']:
-        omax = True
+        minmax = True
 
     covMap = {} #{pos -> [cov1, cov2 ... ]}
     for file in args['<infiles>']:
@@ -91,16 +92,16 @@ if __name__ == '__main__':
     #output results:
     from numpy import mean, std
     out = sorted(covMap.items(), key=lambda x: x[0])
-    if omax:
-        sys.stdout.write('Pos\tMaxPairs\n')
+    if minmax:
+        sys.stdout.write('Pos\tMean\tStd\tMean-Min\tMax-Mean\n')
     else:
         sys.stdout.write('Pos\tMean\tStd\n')
     for k,v in out:
-        if omax:
-            sys.stdout.write('%d\t%d\n'%(k+1, max(v)))
+        if minmax:
+            m = mean(v)
+            sys.stdout.write('%d\t%.4f\t%.4f\t%.4f\t%.4f\n'%(k+1, m, std(v), m - min(v), max(v) -m ))
         else:
             sys.stdout.write('%d\t%.4f\t%.4f\n'%(k+1, mean(v), std(v)))
-
 
 sys.stdout.flush()
 sys.stdout.close()

@@ -34,9 +34,9 @@ def ShowFormat():
 
     #output: cat in.txt | python3 BasicStatistics4Row.py -t
     ------------------------
-Min     1%Q     Mean    Median  99%Q    Max     SD
-1.0000  1.0200  2.0000  2.0000  2.9800  3.0000  0.8165
-4.0000  4.0200  5.0000  5.0000  5.9800  6.0000  0.8165
+Min     1%Q     25%Q    Mean    Median  75%Q    99%Q    Max     SD      SE
+1.0000  1.5000  1.5000  2.0000  2.0000  2.5000  2.9800  3.0000  0.8165  0.5774
+4.0000  4.5000  4.5000  5.0000  5.0000  5.5000  5.9800  6.0000  0.8165  0.5774
     ''');
 
 if __name__ == '__main__':
@@ -48,7 +48,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     if args['-t']:
-        sys.stdout.write('Min\t1%Q\tMean\tMedian\t99%Q\tMax\tSD\tSE\n')
+        sys.stdout.write('Min\t1%Q\t25%Q\tMean\tMedian\t75%Q\t99%Q\tMax\tSD\tSE\n')
 
     import numpy as np
     from scipy import stats
@@ -60,14 +60,16 @@ if __name__ == '__main__':
 
             minV = min(vals)
             q1 = np.percentile(vals,1)
+            q25 = q1 = np.percentile(vals,25)
             meanV = np.mean(vals)
             medianV = np.median(vals)
+            q75 = np.percentile(vals,75)
             q99 = np.percentile(vals,99)
             #print(q99)
             maxV = max(vals)
             sdV = np.std(vals)
             se = stats.sem(vals)
-            sys.stdout.write('%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n'%(minV,q1,meanV,medianV,q99, maxV, sdV, se))
+            sys.stdout.write('%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n'%(minV,q1,q25,meanV,medianV,q75,q99, maxV, sdV, se))
 
 sys.stdout.flush()
 sys.stdout.close()
