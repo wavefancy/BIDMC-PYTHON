@@ -17,8 +17,8 @@
         -x xtitle
         -y ytitle
         -o outname    Output file name: output.html.
-        --yerr yecol  Column index for y error bar. single valure or two values for upper and lower bound.
-                        float | float1,float2
+        --yerr yecol  Column index for y error bar. single valure or two values for lower and upper bound.
+                        float | float1,float2 (lower,upper bound)
         --yr yrange   Set the yAxis plot range: float1,float2.
         --ydt float   Distance between y ticks.
         --xr xrange   Set the xAxis plot range: float1,float2 | tight
@@ -299,8 +299,8 @@ if __name__ == '__main__':
                     line = line,
                     error_y=dict(
                         type='data',
-                        array = EY1,
-                        arrayminus = EY2,
+                        array = EY2,
+                        arrayminus = EY1,
                         visible=True,
                         color=color,
                         thickness=size,
