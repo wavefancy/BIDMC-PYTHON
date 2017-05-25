@@ -7,7 +7,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        HapsAlleleFre.py [-n int] [-s  int] [-m string]
+        HapsAlleleFre.py [-n int] [-s int] [-m string] [-a]
         HapsAlleleFre.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -18,10 +18,13 @@
         -n int          Column index for snp name, int, default 2.
         -s int          Column index for seq start(including), int, default 6.
         -m string       Set the missing code for allele, default -9.
+        -a              Output no allele code, but with physical postion.
         -h --help       Show this screen.
         -v --version    Show version.
         -f --format     Show format example.
 """
+#  BIDMC-PYTHON/GWAS/OxfordFormat/HapsAlleleFre/HapsAlleleFre.py
+
 import sys
 from docopt import docopt
 from signal import signal, SIGPIPE, SIG_DFL
@@ -43,6 +46,13 @@ def ShowFormat():
 26378838        0:0.5000_1:0.5000
 26378857        0:0.6667_1:0.3333
 26378992        0:1.0000
+
+#Output -a
+-------------------------
+6:26378681_T_C  1.0000  26378681
+6:26378838_T_C  0.5000_0.5000   26378838
+6:26378857_G_A  0.6667_0.3333   26378857
+6:26378992_A_G  1.0000  26378992
     ''');
 
 if __name__ == '__main__':
@@ -56,6 +66,7 @@ if __name__ == '__main__':
     missingCode = '-9'  # [-m]
     nameIndex = 2       # [-n]
     seqStart = 6        # [-s]
+    physicalCol = 2 #column for physical postion.
 
     if args['-m']:
         missingCode = args['-m']
@@ -82,8 +93,12 @@ if __name__ == '__main__':
                     total += alleles[k]
             #output frequency
             #print(noM)
-            out = ['%s:%.4f'%(x,noM[x]*1.0/total) for x in sorted(noM.keys())]
-            sys.stdout.write('%s\t%s\n'%(ss[nameIndex], '_'.join(out)))
+            if args['-a']:
+                out = ['%.4f'%(noM[x]*1.0/total) for x in sorted(noM.keys())]
+                sys.stdout.write('%s\t%s\t%s\n'%(ss[nameIndex], '_'.join(out), ss[physicalCol]))
+            else:
+                out = ['%s:%.4f'%(x,noM[x]*1.0/total) for x in sorted(noM.keys())]
+                sys.stdout.write('%s\t%s\n'%(ss[nameIndex], '_'.join(out)))
 
 sys.stdout.flush()
 sys.stdout.close()
