@@ -1,5 +1,7 @@
 
-zcat test1.vcf.gz | python3 VCF2GeneHunterPed.py -p ped.txt
+zcat test1.vcf.gz | python3 VCF2GeneHunterPed.py -p ped.txt -o out -w 3 -l 1
+
+# zcat test1.vcf.gz | python3 VCF2GeneHunterPed.py -p ped.txt
 
 #F       FGJG1   FGJG10  FGJG2   1       2       2 2     2 2     1 1     1 2     1 1     1 1
 #F       FGJG10  0       0       1       1       0 0     0 0     0 0     1 2     1 2     1 2

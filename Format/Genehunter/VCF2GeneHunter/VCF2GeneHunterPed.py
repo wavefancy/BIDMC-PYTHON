@@ -7,7 +7,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        VCF2GeneHunterPed.py -p pedfile
+        VCF2GeneHunterPed.py -p pedfile -o oprefix [(-w windowSize -l overlap)]
         VCF2GeneHunterPed.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -18,6 +18,9 @@
 
     Options:
         -p pedfile      input ped file.
+        -o oprefix      Output file prefix.
+        -w windowSize   Window size.
+        -l overlap      Overlap of two sliding window.
         -h --help       Show this screen.
         -v --version    Show version.
         -f --format     Show format example.
@@ -40,6 +43,13 @@ if __name__ == '__main__':
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
+
+    windowSize = ''
+    if args['-w']:
+        windowSize = int(args['-w'])
+
+    if args['-w'] and args['-l']:
+        step = windowSize - int(args['-l'])
 
     #load ped array.
     from collections import OrderedDict
@@ -90,27 +100,41 @@ if __name__ == '__main__':
                     ss = line.split()
                     content.append(ss[genoCol:])
 
-    #print(content)
-    #output for typed individluas.
-    typed = set()
+    idGenoMap = {} # idname -> genotype array.
+    #genotype data for typed individluas.
     for i in range(len(content[0])):
         out = pedArrayMap[content[0][i]]
-        typed.add(content[0][i])
+        #typed.add(content[0][i])
+        idGenoMap[content[0][i]] = []
 
         for row in range(1,len(content)):
-            out.append(content[row][i])
+            idGenoMap[content[0][i]].append(content[row][i])
 
-        sys.stdout.write('%s\n'%('\t'.join(out)))
-
-    #output untyped individluas
+    #Generate genotype for non-typed individluas.
     for x in pedArrayMap.keys():
-        if x not in typed:
-            out = pedArrayMap[x]
+        if x not in idGenoMap.keys():
+            idGenoMap[x] = []
 
             for row in range(1,len(content)):
-                out.append('0 0')
+                idGenoMap[x].append('0 0')
 
-            sys.stdout.write('%s\n'%('\t'.join(out)))
+    #output results
+    if not windowSize:
+        step = len(content)
+        windowSize = len(content)
+
+    tempIndex = 0
+    for i in range(0, len(content)-1, step):
+        tempIndex += 1
+        #output results to file.
+        #print(i)
+        with open(args['-o']+str(tempIndex)+'.dat', 'w') as of:
+            for x in pedArrayMap.keys():
+                p = pedArrayMap[x]
+                #print(idGenoMap[x][i:i+windowSize])
+                g = idGenoMap[x][i:i+windowSize]
+                of.write('%s\n'%('\t'.join(p + g)))
+            #sys.stdout.write('%s\n'%('\t'.join(out)))
 
 sys.stdout.flush()
 sys.stdout.close()
