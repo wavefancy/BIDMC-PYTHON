@@ -28,7 +28,30 @@ signal(SIGPIPE, SIG_DFL)
 def ShowFormat():
     '''Input File format example:'''
     print('''
+# input
+# -----------------------------
+chr1:11008:C:G 0.9343 0.0657 0
+chr1:11012:C:G 0.9343 0.0657 0.1
+chr1:13110:G:A 0.9293 0.0707 0.5
 
+# cat in.test.txt | python3 GenehunterLocusFile.py
+# -----------------------------
+3 0 0 5  << NO. OF LOCI, RISK LOCUS, SEXLINKED (IF 1) PROGRAM
+0 0.0 0.0 0  << MUT LOCUS, MUT RATE, HAPLOTYPE FREQUENCIES (IF 1)
+1 2 3
+1  2  << AFFECTATION, NO. OF ALLELES
+0.990000 0.010000  << GENE FREQUENCIES
+1  << NO. OF LIABILITY CLASSES
+0.001000 0.999000 0.999000
+3 2 #chr1:11008:C:G
+0.9343 0.0657
+3 2 #chr1:11012:C:G
+0.9343 0.0657
+3 2 #chr1:13110:G:A
+0.9293 0.0707
+0 0  << SEX DIFFERENCE, INTERFERENCE (IF 1 OR 2)
+0.000000 0.100000 0.400000 << RECOMB VALUES
+1 0.1 0.45  << REC VARIED, INCREMENT, FINISHING VALUE
     ''');
 
 if __name__ == '__main__':
@@ -72,9 +95,9 @@ if __name__ == '__main__':
     for i in range(1,len(temp)):
         rec.append(temp[i] - temp[i-1])
 
-    sys.stdout.write('%s %s'%(' '.join(['.4f'%(x) for x in rec]),'<< RECOMB VALUES'))
+    sys.stdout.write('%s %s\n'%(' '.join(['%.6f'%(x) for x in rec]),'<< RECOMB VALUES'))
     sys.stdout.write('1 0.1 0.45  << REC VARIED, INCREMENT, FINISHING VALUE\n')
-    
+
 sys.stdout.flush()
 sys.stdout.close()
 sys.stderr.flush()
