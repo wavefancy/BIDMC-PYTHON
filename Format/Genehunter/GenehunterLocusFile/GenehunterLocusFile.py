@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 
 """
-
     Generate genehunter locus file.
 
     @Author: wavefancy@gmail.com
 
     Usage:
-        GenehunterLocusFile.py [-r]
+        GenehunterLocusFile.py -o oprefix [(-w windowSize -l overlap)] [-r]
         GenehunterLocusFile.py -h | --help | -v | --version | -f | --format
 
     Notes:
         1. Read data from stdin.
-        2. Output results to stdout.
 
     Options:
         -r              Output locus as recessive model.
+        -o oprefix      Output file prefix.
+        -w windowSize   Window size.
+        -l overlap      Overlap of two sliding window.
         -h --help       Show this screen.
         -v --version    Show version.
         -f --format     Show format example.
@@ -34,6 +35,7 @@ chr1:11008:C:G 0.9343 0.0657 0
 chr1:11012:C:G 0.9343 0.0657 0.1
 chr1:13110:G:A 0.9293 0.0707 0.5
 
+# single slice
 # cat in.test.txt | python3 GenehunterLocusFile.py
 # -----------------------------
 3 0 0 5  << NO. OF LOCI, RISK LOCUS, SEXLINKED (IF 1) PROGRAM
@@ -62,6 +64,13 @@ if __name__ == '__main__':
         ShowFormat()
         sys.exit(-1)
 
+    windowSize = ''
+    if args['-w']:
+        windowSize = int(args['-w'])
+
+    if args['-w'] and args['-l']:
+        step = windowSize - int(args['-l'])
+
 #'12 0 0 5  << NO. OF LOCI, RISK LOCUS, SEXLINKED (IF 1) PROGRAM',
     headers = [
 ' 0 0 5  << NO. OF LOCI, RISK LOCUS, SEXLINKED (IF 1) PROGRAM',
@@ -78,25 +87,36 @@ if __name__ == '__main__':
         if line:
             markers.append(line.split())
 
-    temp = ['%d'%(x+1) for x in range(len(markers)+1)] #include disease mark. +1
-    headers[2] = ' '.join(temp)
-    headers[0] = str(len(markers)+1) + headers[0]
+    #output results
+    if not windowSize:
+        step = len(markers)
+        windowSize = len(markers)
 
-    sys.stdout.write('%s\n'%('\n'.join(headers)))
-    for x in markers:
-        out = ['3 2 #'+x[0]]
-        out.append('%s %s'%(x[1],x[2]))
-        sys.stdout.write('%s\n'%('\n'.join(out)))
+    tempIndex = 0
+    for i in range(0, len(markers)-1, step):
+        tempIndex += 1
+        with open(args['-o']+str(tempIndex)+'.dat', 'w') as of:
+            data = markers[i:i+windowSize]
+            #output for headers.
+            temp = ['%d'%(x+1) for x in range(len(data)+1)] #include disease mark. +1
+            headers[2] = ' '.join(temp)
+            headers[0] = str(len(data)+1) + headers[0]
+            of.write('%s\n'%('\n'.join(headers)))
 
-    sys.stdout.write('0 0  << SEX DIFFERENCE, INTERFERENCE (IF 1 OR 2)\n')
+            for x in data:
+                out = ['3 2 #'+x[0]]
+                out.append('%s %s'%(x[1],x[2]))
+                of.write('%s\n'%('\n'.join(out)))
 
-    temp = [float(x[3]) for x in markers]
-    rec = [temp[0]]
-    for i in range(1,len(temp)):
-        rec.append(temp[i] - temp[i-1])
+            of.write('0 0  << SEX DIFFERENCE, INTERFERENCE (IF 1 OR 2)\n')
 
-    sys.stdout.write('%s %s\n'%(' '.join(['%.6f'%(x) for x in rec]),'<< RECOMB VALUES'))
-    sys.stdout.write('1 0.1 0.45  << REC VARIED, INCREMENT, FINISHING VALUE\n')
+            temp = [float(x[3]) for x in data]
+            rec = [temp[1] - temp[0]]
+            for i in range(1,len(temp)):
+                rec.append(temp[i] - temp[i-1])
+
+            of.write('%s %s\n'%(' '.join(['%.6f'%(x) for x in rec]),'<< RECOMB VALUES'))
+            of.write('1 0.1 0.45  << REC VARIED, INCREMENT, FINISHING VALUE\n')
 
 sys.stdout.flush()
 sys.stdout.close()
