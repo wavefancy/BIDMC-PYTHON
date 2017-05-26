@@ -95,13 +95,14 @@ if __name__ == '__main__':
     tempIndex = 0
     for i in range(0, len(markers)-1, step):
         tempIndex += 1
-        with open(args['-o']+str(tempIndex)+'.dat', 'w') as of:
+        with open(args['-o']+'_s'+str(tempIndex)+'.dat', 'w') as of:
             data = markers[i:i+windowSize]
             #output for headers.
             temp = ['%d'%(x+1) for x in range(len(data)+1)] #include disease mark. +1
-            headers[2] = ' '.join(temp)
-            headers[0] = str(len(data)+1) + headers[0]
-            of.write('%s\n'%('\n'.join(headers)))
+            oh = [x for x in headers]
+            oh[2] = ' '.join(temp)
+            oh[0] = str(len(data)+1) + oh[0]
+            of.write('%s\n'%('\n'.join(oh)))
 
             for x in data:
                 out = ['3 2 #'+x[0]]

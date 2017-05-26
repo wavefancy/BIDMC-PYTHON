@@ -1,4 +1,7 @@
-cat in.test.txt | python3 GenehunterLocusFile.py
+
+cat in.test.txt | python3 GenehunterLocusFile.py -o out -w 3 -l 1
+
+# cat in.test.txt | python3 GenehunterLocusFile.py
 
 #3 0 0 5  << NO. OF LOCI, RISK LOCUS, SEXLINKED (IF 1) PROGRAM
 #0 0.0 0.0 0  << MUT LOCUS, MUT RATE, HAPLOTYPE FREQUENCIES (IF 1)

@@ -128,7 +128,7 @@ if __name__ == '__main__':
         tempIndex += 1
         #output results to file.
         #print(i)
-        with open(args['-o']+str(tempIndex)+'.dat', 'w') as of:
+        with open(args['-o']+'_s'+str(tempIndex)+'.ped', 'w') as of:
             for x in pedArrayMap.keys():
                 p = pedArrayMap[x]
                 #print(idGenoMap[x][i:i+windowSize])
