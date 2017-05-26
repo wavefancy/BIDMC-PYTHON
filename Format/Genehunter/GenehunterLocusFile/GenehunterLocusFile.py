@@ -78,9 +78,9 @@ if __name__ == '__main__':
         if line:
             markers.append(line.split())
 
-    temp = ['%d'%(x+1) for x in range(len(markers))]
+    temp = ['%d'%(x+1) for x in range(len(markers)+1)] #include disease mark. +1
     headers[2] = ' '.join(temp)
-    headers[0] = str(len(markers)) + headers[0]
+    headers[0] = str(len(markers)+1) + headers[0]
 
     sys.stdout.write('%s\n'%('\n'.join(headers)))
     for x in markers:
