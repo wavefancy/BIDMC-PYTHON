@@ -92,6 +92,12 @@ if __name__ == '__main__':
         step = len(markers)
         windowSize = len(markers)
 
+    from math import expm1
+    def distance2RecombinationRate(d):
+        '''Convert genetic distance to recombination rate'''
+        #return 0.5 * ( 1 - exp(-2*(d/100.0))) #morgen unit.
+        return 0.5 * ( 0 - expm1(-2*(d/100.0))) #morgen unit.
+
     tempIndex = 0
     for i in range(0, len(markers)-1, step):
         tempIndex += 1
@@ -105,18 +111,18 @@ if __name__ == '__main__':
             of.write('%s\n'%('\n'.join(oh)))
 
             for x in data:
-                out = ['3 2 #'+x[0]]
+                out = ['3 2 # '+x[0]]
                 out.append('%s %s'%(x[1],x[2]))
                 of.write('%s\n'%('\n'.join(out)))
 
             of.write('0 0  << SEX DIFFERENCE, INTERFERENCE (IF 1 OR 2)\n')
 
             temp = [float(x[3]) for x in data]
-            rec = [temp[1] - temp[0]]
+            rec = [distance2RecombinationRate(temp[1] - temp[0])]
             for i in range(1,len(temp)):
-                rec.append(temp[i] - temp[i-1])
+                rec.append(distance2RecombinationRate(temp[i] - temp[i-1]))
 
-            of.write('%s %s\n'%(' '.join(['%.6f'%(x) for x in rec]),'<< RECOMB VALUES'))
+            of.write('%s %s\n'%(' '.join(['%.8f'%(x) for x in rec]),'<< RECOMB VALUES'))
             of.write('1 0.1 0.45  << REC VARIED, INCREMENT, FINISHING VALUE\n')
 
 sys.stdout.flush()

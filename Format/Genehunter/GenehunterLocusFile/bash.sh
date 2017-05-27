@@ -1,5 +1,5 @@
 
-cat in.test.txt | python3 GenehunterLocusFile.py -o out -w 3 -l 1
+cat in.test.txt | python3 GenehunterLocusFile.py -o out
 
 # cat in.test.txt | python3 GenehunterLocusFile.py
 
