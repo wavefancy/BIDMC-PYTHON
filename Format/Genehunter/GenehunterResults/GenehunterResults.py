@@ -76,6 +76,10 @@ if __name__ == '__main__':
                         break
 
         #organize data for this input file.
+        if (not mapData) or (not reData):
+            sys.stderr.write('ERROR: no data found in file: %s\n'%(f))
+            sys.exit(-1)
+            
         #print(mapData)
         #print(reData)
         reData = [x.replace('(','') for x in reData]
