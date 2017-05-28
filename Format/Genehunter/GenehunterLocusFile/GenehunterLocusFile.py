@@ -11,6 +11,7 @@
 
     Notes:
         1. Read data from stdin.
+        2. The smallest genetic distance were set as 0.00000001.
 
     Options:
         -r              Output locus as recessive model.
@@ -58,12 +59,13 @@ chr1:13110:G:A 0.9293 0.0707 0.5
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='1.0')
-    #print(args)
+
 
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
 
+    smallestDistance = 0.00000001 # if the genetic distance less than this, set as this number.
     windowSize = ''
     if args['-w']:
         windowSize = int(args['-w'])
@@ -96,7 +98,10 @@ if __name__ == '__main__':
     def distance2RecombinationRate(d):
         '''Convert genetic distance to recombination rate'''
         #return 0.5 * ( 1 - exp(-2*(d/100.0))) #morgen unit.
-        return 0.5 * ( 0 - expm1(-2*(d/100.0))) #morgen unit.
+        re = 0.5 * ( 0 - expm1(-2*(d/100.0)))
+        if re < smallestDistance:
+            re = smallestDistance
+        return re #morgen unit.
 
     tempIndex = 0
     for i in range(0, len(markers)-1, step):
