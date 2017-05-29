@@ -27,21 +27,17 @@ signal(SIGPIPE, SIG_DFL)
 def ShowFormat():
     '''Input File format example:'''
     print('''
-    #in each chromosome, pos should be sorted.
-    ------------------------
+#in each chromosome, pos should be sorted.
+------------------------
 chr1 100 10
 chr1 200 5
 chr1 300 2
 chr2 300 5
 chr2 500 15
 
-    #output:
-    ------------------------
-    FamilyName      #SeqMember      #hitGeneNum     GeneList
-    S55     3       5       CHRNA7-chr15-3  NCAM2-chr21-3
-    FGJG1   3       4       JAK3-chr19-2    KRT3-chr12-3    NKD2-chr5-4     MKLN1-chr7-1
-    FGEG    3       21      RET-chr10-2-Auto-Dominant-CAKUT COLEC12-chr18-6 NUDT6-chr4-2    C6or
-    f222-chr6-5
+#output:
+------------------------
+
     ''');
 
 if __name__ == '__main__':
@@ -76,15 +72,17 @@ if __name__ == '__main__':
                 #first records
                 if len(chrs) == 0:
                     chrs.append(ss[0])
+                    shif = pos
 
                 if chrs[-1] != ss[0]: #different chromosomes.
                     chrs.append(ss[0])
-                    xlabelPos.append((shif+lastPos)/2)
+                    #xlabelPos.append((shif+lastPos)/2)
+                    xlabelPos.append(lastPos)
                     shif = lastPos
                     currentColor = getColor()
 
                 lastPos = pos + shif
-                sys.stdout.write('G\t%d\t%.4f\t%s\n'%(lastPos, val, currentColor))
+                sys.stdout.write('%s\t%d\t%.4f\t%s\n'%(chrs[-1],lastPos, val, currentColor))
                 #outPos.append(pos - shif)
                 #outValues.append(val)
                 #outColors.append(currentColor)
@@ -93,7 +91,10 @@ if __name__ == '__main__':
                 sys.stdout.write('Can not parse value at line (skipped):%s\n'%(line))
 
     #post process
-    xlabelPos.append((shif+lastPos)/2)
+    #xlabelPos.append((shif+lastPos)/2)
+    xlabelPos.append(lastPos)
+    #print(chrs)
+    #print(xlabelPos)
     sys.stdout.write('COMMAND\txticktext\t%s\n'%('\t'.join(chrs)))
     sys.stdout.write('COMMAND\txtickvals\t%s\n'%('\t'.join(['%d'%(x) for x in xlabelPos])))
 
