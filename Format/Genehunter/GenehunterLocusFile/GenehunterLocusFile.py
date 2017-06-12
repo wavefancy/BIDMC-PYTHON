@@ -11,6 +11,7 @@
 
     Notes:
         1. Read data from stdin.
+        2. The smallest genetic distance were set as 0.00000001.
 
     Options:
         -r              Output locus as recessive model.
@@ -58,12 +59,13 @@ chr1:13110:G:A 0.9293 0.0707 0.5
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='1.0')
-    #print(args)
+
 
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
 
+    smallestDistance = 0.00000001 # if the genetic distance less than this, set as this number.
     windowSize = ''
     if args['-w']:
         windowSize = int(args['-w'])
@@ -92,6 +94,15 @@ if __name__ == '__main__':
         step = len(markers)
         windowSize = len(markers)
 
+    from math import expm1
+    def distance2RecombinationRate(d):
+        '''Convert genetic distance to recombination rate'''
+        #return 0.5 * ( 1 - exp(-2*(d/100.0))) #morgen unit.
+        re = 0.5 * ( 0 - expm1(-2*(d/100.0)))
+        if re < smallestDistance:
+            re = smallestDistance
+        return re #morgen unit.
+
     tempIndex = 0
     for i in range(0, len(markers)-1, step):
         tempIndex += 1
@@ -105,18 +116,18 @@ if __name__ == '__main__':
             of.write('%s\n'%('\n'.join(oh)))
 
             for x in data:
-                out = ['3 2 #'+x[0]]
+                out = ['3 2 # '+x[0]]
                 out.append('%s %s'%(x[1],x[2]))
                 of.write('%s\n'%('\n'.join(out)))
 
             of.write('0 0  << SEX DIFFERENCE, INTERFERENCE (IF 1 OR 2)\n')
 
             temp = [float(x[3]) for x in data]
-            rec = [temp[1] - temp[0]]
+            rec = [distance2RecombinationRate(temp[1] - temp[0])]
             for i in range(1,len(temp)):
-                rec.append(temp[i] - temp[i-1])
+                rec.append(distance2RecombinationRate(temp[i] - temp[i-1]))
 
-            of.write('%s %s\n'%(' '.join(['%.6f'%(x) for x in rec]),'<< RECOMB VALUES'))
+            of.write('%s %s\n'%(' '.join(['%.8f'%(x) for x in rec]),'<< RECOMB VALUES'))
             of.write('1 0.1 0.45  << REC VARIED, INCREMENT, FINISHING VALUE\n')
 
 sys.stdout.flush()

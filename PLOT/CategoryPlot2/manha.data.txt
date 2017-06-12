@@ -1,5 +1,5 @@
-chr1 100 10
-chr1 200 5
-chr1 300 2
-chr2 300 5
-chr2 500 15
+chr1 100 10	red
+chr1 200 5	red
+chr1 300 2	red
+chr2 300 5	black
+chr2 500 15	black
