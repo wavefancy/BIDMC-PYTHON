@@ -2,7 +2,7 @@
 
 """
 
-    Clean pedigree, output minimal pedigree which conneting marked individuals.
+    Clean pedigree, output minimal pedigree which connecting marked(sequenced) individuals.
     @Author: wavefancy@gmail.com
 
     Usage:
@@ -11,7 +11,7 @@
 
     Notes:
         1. Read ped from stdin, and output results to stdout.
-        2.
+        2. Add fake individual if necessay to complete the pedigree.
         3. See example by -f.
 
     Options:
@@ -27,34 +27,45 @@ signal(SIGPIPE, SIG_DFL)
 def ShowFormat():
     '''Input File format example:'''
     print('''
-    #Output from: FamilyHitByGene.py
+    #ped file + one more column for indicating marked or not, 0/1.
     ------------------------
-    S27     S27     0       0       2       2
-    S28     S28     0       0       1       2
-    S29     S29A    0       0       1       1
-    S29     S29B    0       0       2       1
-    S29     S29     S29A    S29B    2       2
+S29     S27     S29A    S29B    2       2   1
+S29     S28     0       0       1       2   0
+S29     S29A    0       0       1       1   0
+S29     S29B    0       0       2       1   0
+S29     S29     S29A    S29B    2       2   1
 
     #output:
     ------------------------
-    S29     S29A    0       0       1       1
-    S29     S29B    0       0       2       1
-    S29     S29     S29A    S29B    2       2
+S29     S27     S29A    S29B    2       2       1
+S29     S29     S29A    S29B    2       2       1
+S29     S29B    0       0       2       1       0
+S29     S29A    0       0       1       1       0
     ''');
 
-Class Node(object):
+class Node(object):
 
-    def __init__(self, name, father, mother):
+    def __init__(self, name, father, mother, rawData):
         self.name = name
         self.father = father
         self.mother = mother
         self.visit = 0
+        self.rawData = rawData
 
     def addOneVisit(self):
         self.visit += 1
 
     def getVisitTimes(self):
         return self.visit
+
+    def getFather(self):
+        return self.father
+    def getMother(self):
+        return self.mother
+    def getName(self):
+        return self.name
+    def getRawData(self):
+        return self.rawData
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='1.0')
@@ -63,6 +74,8 @@ if __name__ == '__main__':
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
+
+    colSeq = 7-1 #column index for indicating sequenced or not. 0/1, 1 for sequenced.
 
     data = []
     for line in sys.stdin:
@@ -78,46 +91,66 @@ if __name__ == '__main__':
     for x in data:
         father = ''
         mother = ''
+        ss = x
         name = ss[1]
         if ss[2] != '0':
             father = nodeMap[ss[2]]
         else:
-            father = Node(name+'F', null, null)
+            raw = [ss[0], name+'F', '0', '0', '1', '0', '0']
+            father = Node(name+'F', None, None, raw)
             nodeMap[name+'F'] = father
         if ss[3] != '0':
             mother = nodeMap[ss[3]]
         else:
-            mother = Node(name+'M', null, null)
+            raw = [ss[0], name+'M', '0', '0', '2', '0', '0']
+            mother = Node(name+'M', None, None, raw)
             nodeMap[name+'M'] = mother
 
-        n = Node(name, father, mother)
+        n = Node(name, father, mother,ss)
         nodeMap[name] = n
 
-    #
+    #Count visit.
+    countlist = []
+    outpulist = []
+    for x in data:
+        if x[colSeq] == '1':
+            countlist.append(nodeMap.get(x[1]))
+            outpulist.append(nodeMap.get(x[1]))
 
+    #count vist number.
+    maxVisitTimes = 0
+    while(countlist):
+        x = countlist.pop(0)
+        x.addOneVisit()
+        if x.getVisitTimes() > maxVisitTimes:
+            maxVisitTimes = x.getVisitTimes()
 
+        if not (x.getMother() is None):
+            countlist.append(x.getMother())
+        if not (x.getFather() is None):
+            countlist.append(x.getFather())
 
+    #output results.
+    # fix if only one sequenced individual in a family.
+    if maxVisitTimes ==1:
+        sys.stderr.write('Error: only one marked(sequenced) individual in input, please check, at least two !!!\n')
+        sys.exit(-1)
 
+    outed = set()
+    while(outpulist):
+        #print(outpulist)
+        x = outpulist.pop(0)
+        if x in outed or x.getVisitTimes() == 0:
+            continue
 
-    from collections import OrderedDict
-    families = OrderedDict() #[familyname->[individual lines]]
+        outed.add(x)
+        if x.getVisitTimes() < maxVisitTimes:
+            if x.getMother():
+                outpulist.append(x.getMother())
+            if x.getFather():
+                outpulist.append(x.getFather())
 
-    #check families and output.
-    #only output trio family, and two parents unaffected, child affected.
-    for _,v in families.items():
-        if len(v) == 3:
-            parents = set()
-            childLine = ''
-            for x in v:
-                if x[2] == '0' and x[3] == '0' and x[5] == '1':
-                    parents.add(x[1])
-                else:
-                    childLine = x
-
-            if childLine[5] == '2' and childLine[2] in parents and childLine[3] in parents:
-                #candiate family output.
-                for x in v:
-                    sys.stdout.write('%s\n'%('\t'.join(x)))
+        sys.stdout.write('%s\n'%('\t'.join(x.getRawData())))
 
 sys.stdout.flush()
 sys.stdout.close()
