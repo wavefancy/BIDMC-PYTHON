@@ -77,46 +77,60 @@ if __name__ == '__main__':
 
     colSeq = 7-1 #column index for indicating sequenced or not. 0/1, 1 for sequenced.
 
-    data = []
+    #data = []
+    dataMap = {}
     for line in sys.stdin:
         line = line.strip()
         if line:
-            data.append(line.split())
+            #data.append(line.split())
+            ss = line.split()
+            dataMap[ss[1]] = ss
 
     #sort data, first creat parental and isolated node.
-    data = sorted(data, key=lambda x: (x[2],x[3]))
+    #data = sorted(data, key=lambda x: (x[2],x[3]))
 
     #creat nodes
     nodeMap = {} #name -> nodeClass.
-    for x in data:
-        father = ''
-        mother = ''
-        ss = x
-        name = ss[1]
-        if ss[2] != '0':
-            father = nodeMap[ss[2]]
+    def createNewNode(idname):
+        '''creat new nodes, if necessay create recussively.'''
+        if idname in nodeMap:
+            return nodeMap[idname]
         else:
-            raw = [ss[0], name+'F', '0', '0', '1', '0', '0']
-            father = Node(name+'F', None, None, raw)
-            nodeMap[name+'F'] = father
-        if ss[3] != '0':
-            mother = nodeMap[ss[3]]
-        else:
-            raw = [ss[0], name+'M', '0', '0', '2', '0', '0']
-            mother = Node(name+'M', None, None, raw)
-            nodeMap[name+'M'] = mother
+            ss = dataMap[idname]
+            name = idname
+            if ss[2] != '0':
+                father = createNewNode(ss[2])
+            else:
+                raw = [ss[0], name+'F', '0', '0', '1', '0', '0']
+                father = Node(name+'F', None, None, raw)
+                nodeMap[name+'F'] = father
+            if ss[3] != '0':
+                mother = createNewNode(ss[3])
+            else:
+                raw = [ss[0], name+'M', '0', '0', '2', '0', '0']
+                mother = Node(name+'M', None, None, raw)
+                nodeMap[name+'M'] = mother
 
-        n = Node(name, father, mother,ss)
-        nodeMap[name] = n
+            n = Node(name, father, mother,ss)
+            nodeMap[name] = n
+            return n
+
+    for x in dataMap.keys():
+        createNewNode(x)
+
+    # print(nodeMap.keys())
+    # [print(x.getRawData()) for k,x in nodeMap.items()]
 
     #Count visit.
     countlist = []
     outpulist = []
-    for x in data:
-        if x[colSeq] == '1':
-            countlist.append(nodeMap.get(x[1]))
-            outpulist.append(nodeMap.get(x[1]))
+    for x in dataMap.keys():
+        if dataMap[x][colSeq] == '1':
+            countlist.append(nodeMap.get(x))
+            outpulist.append(nodeMap.get(x))
 
+    # print(countlist)
+    # [print(x.getRawData()) for x in countlist]
     #count vist number.
     maxVisitTimes = 0
     while(countlist):
