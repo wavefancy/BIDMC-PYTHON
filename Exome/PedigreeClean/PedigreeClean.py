@@ -79,41 +79,53 @@ if __name__ == '__main__':
 
     #data = []
     dataMap = {}
+    familyName = ''
     for line in sys.stdin:
         line = line.strip()
         if line:
             #data.append(line.split())
             ss = line.split()
             dataMap[ss[1]] = ss
+            if not familyName:
+                familyName = ss[0]
 
     #sort data, first creat parental and isolated node.
     #data = sorted(data, key=lambda x: (x[2],x[3]))
 
     #creat nodes
     nodeMap = {} #name -> nodeClass.
-    def createNewNode(idname):
+    matingPair = {} # marrage pair.
+    def createNewNode(idname, sex='1'):
         '''creat new nodes, if necessay create recussively.'''
         if idname in nodeMap:
             return nodeMap[idname]
         else:
-            ss = dataMap[idname]
-            name = idname
-            if ss[2] != '0':
-                father = createNewNode(ss[2])
-            else:
-                raw = [ss[0], name+'F', '0', '0', '1', '0', '0']
-                father = Node(name+'F', None, None, raw)
-                nodeMap[name+'F'] = father
-            if ss[3] != '0':
-                mother = createNewNode(ss[3])
-            else:
-                raw = [ss[0], name+'M', '0', '0', '2', '0', '0']
-                mother = Node(name+'M', None, None, raw)
-                nodeMap[name+'M'] = mother
+            ss = dataMap.get(idname)
+            if ss:
+                name = idname
+                if ss[2] != '0':
+                    father = createNewNode(ss[2], '1')
+                else:
+                    raw = [ss[0], name+'F', '0', '0', '1', '0', '0']
+                    father = Node(name+'F', None, None, raw)
+                    nodeMap[name+'F'] = father
+                if ss[3] != '0':
+                    mother = createNewNode(ss[3], '2')
+                else:
+                    raw = [ss[0], name+'M', '0', '0', '2', '0', '0']
+                    mother = Node(name+'M', None, None, raw)
+                    nodeMap[name+'M'] = mother
 
-            n = Node(name, father, mother,ss)
-            nodeMap[name] = n
-            return n
+                matingPair[father.getName()] = mother.getName()
+                matingPair[mother.getName()] = father.getName()
+                n = Node(name, father, mother,ss)
+                nodeMap[name] = n
+                return n
+            else:
+                raw = [familyName, idname, '0', '0', sex, '0', '0']
+                n = Node(idname, None, None,raw)
+                nodeMap[idname] = n
+                return n
 
     for x in dataMap.keys():
         createNewNode(x)
@@ -147,7 +159,7 @@ if __name__ == '__main__':
     #output results.
     # fix if only one sequenced individual in a family.
     if maxVisitTimes ==1:
-        sys.stderr.write('Error: only one marked(sequenced) individual in input, please check, at least two !!!\n')
+        sys.stderr.write('Error: only one marked(sequenced) individual in input family: %s, please check, at least two !!!\n'%(familyName))
         sys.exit(-1)
 
     outed = set()
@@ -155,6 +167,8 @@ if __name__ == '__main__':
         #print(outpulist)
         x = outpulist.pop(0)
         if x in outed or x.getVisitTimes() == 0:
+            continue
+        if matingPair.get(x.getName()) and (matingPair[x.getName()][-1] == 'F' or matingPair[x.getName()][-1] == 'M') and x.getVisitTimes() < maxVisitTimes:
             continue
 
         outed.add(x)
