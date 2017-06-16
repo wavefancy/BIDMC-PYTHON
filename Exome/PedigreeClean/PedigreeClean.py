@@ -163,15 +163,19 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     outed = set()
+    #print(maxVisitTimes)
     while(outpulist):
-        #print(outpulist)
+        #print([x.getName() + '-' + str(x.getVisitTimes()) for x in outpulist])
         x = outpulist.pop(0)
         if x in outed or x.getVisitTimes() == 0:
             continue
-        if matingPair.get(x.getName()) and (matingPair[x.getName()][-1] == 'F' or matingPair[x.getName()][-1] == 'M') and x.getVisitTimes() < maxVisitTimes:
+        #print('here')
+        if matingPair.get(x.getName()) and (matingPair[x.getName()][-1] == 'F' or matingPair[x.getName()][-1] == 'M') and x.getVisitTimes() < maxVisitTimes and x.getName() not in dataMap:
             continue
 
+        #print('here2')
         outed.add(x)
+        #print([x.getName() + '-' + str(x.getVisitTimes()) for x in outed])
         if x.getVisitTimes() < maxVisitTimes:
             if x.getMother():
                 outpulist.append(x.getMother())
