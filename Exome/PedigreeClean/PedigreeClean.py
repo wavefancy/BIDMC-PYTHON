@@ -182,7 +182,13 @@ if __name__ == '__main__':
             if x.getFather():
                 outpulist.append(x.getFather())
 
-        sys.stdout.write('%s\n'%('\t'.join(x.getRawData())))
+        #update output data
+        out = x.getRawData()
+        if out[2] == '0' and x.getFather() and  x.getVisitTimes() < maxVisitTimes:
+            out[2] = x.getFather().getName()
+        if out[3] == '0' and x.getMother() and x.getVisitTimes() < maxVisitTimes:
+            out[3] = x.getMother().getName()
+        sys.stdout.write('%s\n'%('\t'.join(out)))
 
 sys.stdout.flush()
 sys.stdout.close()
