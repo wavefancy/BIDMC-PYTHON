@@ -51,6 +51,8 @@ if __name__ == '__main__':
         with open(f,'r') as inf:
             for line in inf:
                 line = line.strip()
+                if line.startswith('.'):
+                    continue
                 if line:
                     if line.startswith('Current map'):
                         readMap = True
@@ -79,7 +81,7 @@ if __name__ == '__main__':
         if (not mapData) or (not reData):
             sys.stderr.write('ERROR: no data found in file: %s\n'%(f))
             sys.exit(-1)
-            
+
         #print(mapData)
         #print(reData)
         reData = [x.replace('(','') for x in reData]
@@ -110,7 +112,17 @@ if __name__ == '__main__':
     def outElements(d):
         '''Skip the second elements'''
         return [d[0]] + d[2:]
+    #output title
     sys.stdout.write('%s\n'%('\t'.join(outElements(AllData[0]))))
+
+    #find the position for NPL_score
+    NPL_score_pos = 0
+    try:
+        NPL_score_pos = AllData[0].index('NPL_score')
+    except ValueError:
+        sys.stderr.write('Can not find keyword "NPL_score" in title line, please check !\n')
+        sys.exit(-1)
+
     AllData = sorted(AllData[1:], key=lambda x: (int(x[0].split(':')[1]), x[0])) #sort by physical location, then by suffix.
     outData = [AllData[0]]
     for k in AllData[1:]:
@@ -118,7 +130,7 @@ if __name__ == '__main__':
         if k[0] != outData[-1][0]:
             outData.append(k)
         else:
-            if float(k[2]) > float(outData[-1][2]): # the third column is lod score.
+            if float(k[NPL_score_pos]) > float(outData[-1][NPL_score_pos]): # the third column is lod score.
                 outData[-1] = k
     #print(AllData)
     for k in outData:
