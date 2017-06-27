@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over] [--bm bmargin] [--ha hanno] [--ady ady]
+        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over] [--bm bmargin] [--ha hanno] [--ady ady] [--haw float]
         BoxPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -28,6 +28,7 @@
                         Example: 1_2_0.5_**
                         Each category for the box plot with x-coordinate as 0,1,2...n-1.
         --ady ady     Set the distance between horizontal annotation line and text (default 0.025).
+        --haw float     Set the horizontal annotation line with, default 2.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -65,6 +66,7 @@ if __name__ == '__main__':
     bmargin = 40 #  bottom margin.
     arowAnnotation = ''
     ady = 0.025
+    haw = 2
 
     yrange = []
     if args['--yerr']:
@@ -83,6 +85,8 @@ if __name__ == '__main__':
         arowAnnotation = args['--ha']
     if args['--ady']:
         ady = float(args['--ady'])
+    if args['--haw']:
+        haw = float(args['--haw'])
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -99,7 +103,7 @@ if __name__ == '__main__':
                 x_data.append(ss[0])
                 y_data.append([float(x) for x in ss[1:]])
 
-    colors = ['rgba(93, 164, 214, 0.5)', 'rgba(255, 144, 14, 0.5)', 'rgba(44, 160, 101, 0.5)', 'rgba(255, 65, 54, 0.5)', 'rgba(207, 114, 255, 0.5)', 'rgba(127, 96, 0, 0.5)', 'rgba(255, 140, 184, 0.5)', 'rgba(79, 90, 117, 0.5)', 'rgba(222, 223, 0, 0.5)']
+    colors = ['rgba(93, 164, 214, 0.5)', 'rgba(255, 65, 54, 0.5)', 'rgba(44, 160, 101, 0.5)','rgba(255, 144, 14, 0.5)', 'rgba(207, 114, 255, 0.5)', 'rgba(127, 96, 0, 0.5)', 'rgba(255, 140, 184, 0.5)', 'rgba(79, 90, 117, 0.5)', 'rgba(222, 223, 0, 0.5)']
     colors += colors
     colors += colors
     import plotly
@@ -189,6 +193,7 @@ if __name__ == '__main__':
                     text='',
                     showarrow=True,
                     arrowhead=0,
+                    arrowwidth=haw,
                     arrowcolor=annoColor,
                     font=dict(
                         color=annoColor,
