@@ -31,6 +31,7 @@
         -f --format   Show input/output file format example.
 
         https:https://plot.ly/python/filled-area-plots/
+        https://plot.ly/python/reference/#scatter-marker-symbol
 """
 import sys
 from docopt import docopt
@@ -52,6 +53,7 @@ c3  3   15  area
 c4  1   3   line
 c4  2   5   line
 c4  3   10  line
+c5  2   2   marker
     ''');
 
 if __name__ == '__main__':
@@ -91,6 +93,7 @@ if __name__ == '__main__':
     from collections import OrderedDict
     dataMap = OrderedDict()
     lineDataMap = OrderedDict()
+    markerDataMap = OrderedDict()
     for line in sys.stdin:
         line = line.strip()
         if line:
@@ -110,6 +113,10 @@ if __name__ == '__main__':
                         if ss[0] not in lineDataMap:
                             lineDataMap[ss[0]] = []
                         lineDataMap[ss[0]].append((x,y))
+                    elif ss[3] == 'marker':
+                        if ss[0] not in markerDataMap:
+                            markerDataMap[ss[0]] = []
+                        markerDataMap[ss[0]].append((x,y))
 
                 except ValueError:
                     sys.stderr.write('WARN: Parse value error at(SKIPPED): %s\n'%(line))
@@ -124,6 +131,8 @@ if __name__ == '__main__':
     if args['--lclr']:
         lineColors = args['--lclr'].split(',')
 
+    markerColors = ['#404040']
+
     import plotly
     import plotly.plotly as py
     import plotly.graph_objs as go
@@ -137,6 +146,7 @@ if __name__ == '__main__':
         plotData[k] = (xx,yy)
         keyArray.append(k)
 
+    #for shaded area.
     for i in range(len(keyArray)):
         if i == 0:
             traces.append(
@@ -165,6 +175,7 @@ if __name__ == '__main__':
                 )
             )
 
+    #for lines.
     tindex = 0
     for k,v in lineDataMap.items():
         xx = [x[0] for x in v]
@@ -177,7 +188,29 @@ if __name__ == '__main__':
                 color=lineColors[tindex%len(lineColors)],
                 width=lineWidth
             ),
-            mode = 'lines + markers'
+            mode = 'lines'
+            )
+        )
+        tindex += 1
+
+    #for markers.tindex = 0
+    tindex = 0
+    symbol = 'triangle-up'
+    #symbol = 'star'
+    #print(markerDataMap)
+    for k,v in markerDataMap.items():
+        xx = [x[0] for x in v]
+        yy = [x[1] for x in v]
+        traces.append(
+            go.Scatter(
+            x = xx,
+            y = yy,
+            marker=dict(
+                color=markerColors[tindex%len(markerColors)],
+                symbol=symbol,
+                size=10
+            ),
+            mode = 'markers'
             )
         )
         tindex += 1
@@ -211,8 +244,8 @@ if __name__ == '__main__':
             b=bmargin,
             t=10,
         ),
-        paper_bgcolor='rgb(243, 243, 243)',
-        plot_bgcolor='rgb(243, 243, 243)',
+        #paper_bgcolor='rgb(243, 243, 243)',
+        #plot_bgcolor='rgb(243, 243, 243)',
         showlegend=False
     )
 
