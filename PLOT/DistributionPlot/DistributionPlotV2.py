@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange] [--yr yrange] [--xdt xdtick] [--ydt ydtick] [--nc] [-l] [-p]
+        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange] [--yr yrange] [--xdt xdtick] [--ydt ydtick] [--nc] [-l] [-p] [--lm int] [--rm int]
         DistributionPlotV2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -31,6 +31,8 @@
         --hl hline    Add horizontal lines: float1,float2.
         --ms msize    Set marker size: float, default 5.
         -p            Set histnorm as 'probability', default: 'probability density'
+        --lm int      Set left margin, default 50.
+        --rm int      Set right margin, default 30.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -78,6 +80,8 @@ if __name__ == '__main__':
     vlines = []
     msize = 5
     binsize = 0.2
+    lm = 50 #left margin
+    rm = 30 #right margin
 
     if args['--bs']:
         binsize = float(args['--bs'])
@@ -97,10 +101,10 @@ if __name__ == '__main__':
     yrange = []
     if args['--yr']:
         yrange = list(map(float, args['--yr'].split(',')))
-    # if args['--hl']:
-    #     hlines = list(map(float, args['--hl'].split(',')))
-    # if args['--ms']:
-    #     msize = float(args['--ms'])
+    if args['--lm']:
+        lm = int(args['--lm'])
+    if args['--rm']:
+        rm = int(args['--rm'])
     show_curve = True
     if args['--nc']:
         show_curve = False
@@ -197,7 +201,7 @@ if __name__ == '__main__':
         #     zeroline=False,
         #     #dtick=5,
             #white grid line
-            gridcolor='rgb(255, 255, 255)',
+            # gridcolor='rgb(255, 255, 255)',
         #     #gridwidth=1,
         #     zerolinecolor='rgb(255, 255, 255)',
         #     zerolinewidth=2,
@@ -211,13 +215,13 @@ if __name__ == '__main__':
         )
         ,
         margin=dict(
-            l=60,
-            r=30,
+            l=lm,
+            r=rm,
             b=40,
             t=10,
         ),
-        paper_bgcolor='rgb(243, 243, 243)',
-        plot_bgcolor='rgb(243, 243, 243)',
+        # paper_bgcolor='rgb(243, 243, 243)',
+        # plot_bgcolor='rgb(243, 243, 243)',
         showlegend=showlegend
     )
 
