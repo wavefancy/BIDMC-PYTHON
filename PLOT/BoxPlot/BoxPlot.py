@@ -147,7 +147,7 @@ if __name__ == '__main__':
             showgrid=True,
             zeroline=False,
             #dtick=5,
-            gridcolor='rgb(255, 255, 255)',
+            # gridcolor='rgb(255, 255, 255)',
             #gridwidth=1,
             zerolinecolor='rgb(255, 255, 255)',
             zerolinewidth=2,
@@ -162,8 +162,8 @@ if __name__ == '__main__':
             b=bmargin,
             t=10,
         ),
-        paper_bgcolor='rgb(243, 243, 243)',
-        plot_bgcolor='rgb(243, 243, 243)',
+        # paper_bgcolor='rgb(243, 243, 243)',
+        # plot_bgcolor='rgb(243, 243, 243)',
         showlegend=False
     )
 
