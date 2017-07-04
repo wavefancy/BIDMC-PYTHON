@@ -385,7 +385,7 @@ if __name__ == '__main__':
             'ticks'   : 'outside',
             'showticklabels' : True,
             'title'   : xtitle,
-            'zeroline':True,
+            'zeroline':False,
             'ticktext':xticktext,
             'tickvals':xtickvals,
             'tickangle': xtickangle,
