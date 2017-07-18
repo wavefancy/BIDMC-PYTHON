@@ -127,6 +127,8 @@ if __name__ == '__main__':
                 sys.stderr.write('%s\n'%(x))
 
     #checking the sum of shortest path.
+    import math
+    import numpy
     def sumOfShortestPath(igenes, kgenes, network):
         '''
             Checking the shortest path of each igenes with all kgenes, and pick the
@@ -135,14 +137,38 @@ if __name__ == '__main__':
         m_i = []
         for i in igenes:
             if withWeight:
-                m_i.append(min([nx.shortest_path_length(network,i,j,weight='weight') for j in kgenes]))
+                minvalue = math.inf
+                for j in kgenes: #minimal value with any known gene.
+                    try:
+                        t = nx.shortest_path_length(network,i,j,weight='weight')
+                        if t < minvalue:
+                            minvalue = t
+                    except: # NetworkXNoPath, no connection between two nodes.
+                        pass
+                m_i.append(minvalue)
+                #m_i.append(min([nx.shortest_path_length(network,i,j,weight='weight') for j in kgenes]))
             else:
-                m_i.append(min([nx.shortest_path_length(network,i,j) for j in kgenes]))
+                minvalue = math.inf
+                for j in kgenes: #minimal value with any known gene.
+                    try:
+                        t = nx.shortest_path_length(network,i,j)
+                        if t < minvalue:
+                            minvalue = t
+                    except: #NetworkXNoPath, no connection between two nodes.
+                        pass
+                m_i.append(minvalue)
+                #m_i.append(min([nx.shortest_path_length(network,i,j) for j in kgenes]))
 
-        return sum(m_i)
+        #print(m_i)
+        #remove disconnected.
+        results = [x for x in m_i if x != math.inf]
+        #print(results)
+        #return numpy.median(m_i)
+        return numpy.mean(results)
+        #return sum(results)
 
     if ifile:
-        sys.stdout.write('%d\n'%(sumOfShortestPath(inGenes, knownGenes, G)))
+        sys.stdout.write('%.4f\n'%(sumOfShortestPath(inGenes, knownGenes, G)))
         sys.exit(-1)
 
     #output results
@@ -152,7 +178,7 @@ if __name__ == '__main__':
         import random
         for i in range(BootstrapNumber):
             inGenes = random.sample(bootGeneList, rPickNumber)
-            sys.stdout.write('%d\n'%(sumOfShortestPath(inGenes, knownGenes, G)))
+            sys.stdout.write('%.4f\n'%(sumOfShortestPath(inGenes, knownGenes, G)))
 
 sys.stdout.flush()
 sys.stdout.close()
