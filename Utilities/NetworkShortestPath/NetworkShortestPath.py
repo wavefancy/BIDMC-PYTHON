@@ -146,10 +146,12 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     #output results
+    #remove known genes when bootstrap.
+    bootGeneList = [x for x in G.nodes() if x not in knownGenes]
     if rPickNumber:
         import random
         for i in range(BootstrapNumber):
-            inGenes = random.sample(G.nodes(), rPickNumber)
+            inGenes = random.sample(bootGeneList, rPickNumber)
             sys.stdout.write('%d\n'%(sumOfShortestPath(inGenes, knownGenes, G)))
 
 sys.stdout.flush()
