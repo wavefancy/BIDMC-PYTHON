@@ -50,9 +50,11 @@ def ShowFormat():
     print('''
     #input example
     ------------------------
-c1  1   10  1
-c2  2   -5  3
-c3  5   3   2
+c1  1
+c1  2
+c1  5
+c2  2
+c2  10
     ''');
 
 if __name__ == '__main__':
