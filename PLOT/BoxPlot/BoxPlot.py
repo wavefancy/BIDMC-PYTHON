@@ -27,7 +27,7 @@
                         foramt: x1_x2_y_text,x1_x2_y_text.
                         Example: 1_2_0.5_**
                         Each category for the box plot with x-coordinate as 0,1,2...n-1.
-        --ady ady     Set the distance between horizontal annotation line and text (default 0.025).
+        --ady ady     Set the distance between horizontal annotation line and text (default 0.012).
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     overBoxDot = False #overlap box with dots.
     bmargin = 40 #  bottom margin.
     arowAnnotation = ''
-    ady = 0.025
+    ady = 0.02
 
     yrange = []
     if args['--yerr']:
@@ -99,7 +99,8 @@ if __name__ == '__main__':
                 x_data.append(ss[0])
                 y_data.append([float(x) for x in ss[1:]])
 
-    colors = ['rgba(93, 164, 214, 0.5)', 'rgba(255, 144, 14, 0.5)', 'rgba(44, 160, 101, 0.5)', 'rgba(255, 65, 54, 0.5)', 'rgba(207, 114, 255, 0.5)', 'rgba(127, 96, 0, 0.5)', 'rgba(255, 140, 184, 0.5)', 'rgba(79, 90, 117, 0.5)', 'rgba(222, 223, 0, 0.5)']
+    #colors = ['rgba(93, 164, 214, 1)', 'rgba(255, 65, 54, 1)', 'rgba(44, 160, 101, 1)','rgba(255, 144, 14, 1)', 'rgba(207, 114, 255, 1)', 'rgba(127, 96, 0, 1)', 'rgba(255, 140, 184, 1)', 'rgba(79, 90, 117, 1)', 'rgba(222, 223, 0, 1)']
+    colors = ['rgba(93, 164, 214,1)', 'rgba(255, 65, 54,1)', 'rgba(44, 160, 101,1)','rgba(255, 144, 14, 1)', 'rgba(207, 114, 255, 1)', 'rgba(127, 96, 0, 1)', 'rgba(255, 140, 184, 1)', 'rgba(79, 90, 117, 1)', 'rgba(222, 223, 0, 1)']
     colors += colors
     colors += colors
     import plotly
@@ -115,9 +116,10 @@ if __name__ == '__main__':
                     y=yd,
                     name=xd,
                     whiskerwidth=0.2,
-                    fillcolor=cls,
+                    #fillcolor=cls,
                     marker=dict(
                         size=msize,
+                        color = cls
                     ),
                     line=dict(width=1),
                 ))
@@ -128,9 +130,10 @@ if __name__ == '__main__':
                     boxpoints='all',
                     jitter=0.5,
                     whiskerwidth=0.2,
-                    fillcolor=cls,
+                    #fillcolor=cls,
                     marker=dict(
                         size=msize,
+                        color = cls
                     ),
                     line=dict(width=1),
                 ))
@@ -194,6 +197,7 @@ if __name__ == '__main__':
                         color=annoColor,
                         size = 12,
                     ),
+                    arrowwidth=1,
                     # If `axref` is an axis, this is an absolute value on that axis, like `x`, NOT a relative value.
                     axref='x',
                     ax=x2,
@@ -212,7 +216,7 @@ if __name__ == '__main__':
                     arrowcolor=annoColor,
                     font=dict(
                         color= annoColor,
-                        size = 12,
+                        size = 14,
                     ),
                     # # If `axref` is an axis, this is an absolute value on that axis, like `x`, NOT a relative value.
                     # axref='x',
