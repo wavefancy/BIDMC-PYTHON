@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bm] [--or or] [--cl color]
+        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--ydt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int]
         BarPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -30,7 +30,15 @@
         --lm lmargin  Left margin, default 60.
         --bm bm       Barmode, default 2. 1: stack, 2: group.
         --or or       Orientation, default 1. 1: vertical, 2: horizontal.
-        --cl color    Set the color for different group, eg: #FA1A1A,#0784FF,#8AC300
+        --gcl color   Set the color for different group, eg: #FA1A1A,#0784FF,#8AC300
+        --bcl color   Set the color for different bar, eg: #FA1A1A,#0784FF,#8AC300
+                          Color array length equals the number of bars.
+        --ta tanno    Add text annotation.
+                        foramt: x_y_text,x_y_text.
+                        Example: 2_0.5_**
+                        Each category for the box plot with x-coordinate as 0,1,2...n-1.
+        --ts int      Text annotation text size, default 12.
+        --ydt float   Set distance between y ticks.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -71,6 +79,7 @@ if __name__ == '__main__':
     msize = 5
 
     colors = ['#419F8D','#C9E14F','#FCE532','#FC8E32','#F4B9C0','#9970AB','gray']
+    bcolor = []
 
     yrange = []
     if args['--yerr']:
@@ -98,8 +107,13 @@ if __name__ == '__main__':
     orientation = ''
     if args['--or'] == '2':
         orientation = 'h'
-    if args['--cl']:
-        colors = args['--cl'].split(',')
+    if args['--gcl']:
+        colors = args['--gcl'].split(',')
+    if args['--bcl']:
+        bcolor = args['--bcl'].split(',')
+    ydt = '' #distance betteen y ticks.
+    if args['--ydt']:
+        ydt = float(args['--ydt'])
 
     xanchor = 'right'
     yanchor = 'bottom'
@@ -129,6 +143,9 @@ if __name__ == '__main__':
     lfontSize = 10
     if args['--lfs']:
         lfontSize = int(args['--lfs'])
+    textAnnotationSize = 12
+    if args['--ts']:
+        textAnnotationSize = int(args['--ts'])
 
     from collections import OrderedDict
     xdata = OrderedDict() #{categoryName -> []}
@@ -164,6 +181,9 @@ if __name__ == '__main__':
     #colors = colors[:len(y_data)]
     # print(xtickName)
     for g, d, cl in zip(groupName, y_data, colors):
+        if bcolor:
+            cl = bcolor
+        #print(cl)
         if orientation == 'h':
             traces.append(go.Bar(
                 y = xtickName,
@@ -199,7 +219,8 @@ if __name__ == '__main__':
         # ),
         yaxis = dict(
             title =  ytitle,
-            # dtick = 0.25
+            range = yrange,
+            dtick = ydt,
             # showgrid=False,
             # showline=False,
             # showticklabels=False,
@@ -216,6 +237,7 @@ if __name__ == '__main__':
     )
 
     # api: https://plot.ly/python/legend/
+    legend = ''
     if args['--lloc'] != '0':
         if args['--lloc'] == '5':
             legend = go.Layout(
@@ -233,9 +255,58 @@ if __name__ == '__main__':
                     },
                 }
             }
+    else:
+        legend = go.Layout(
+            showlegend=False
+        )
 
     #print(legend)
-    layout.update(legend)
+    if legend:
+        layout.update(legend)
+
+
+    textAnnotation = ''
+    if args['--ta']:
+        textAnnotation = args['--ta']
+    #https://plot.ly/python/text-and-annotations/
+    #(API)https://plot.ly/python/reference/#layout-annotations
+    # Each category for the box plot with x-coordinate as 0,1,2...n-1.
+    annoArray = []
+    # arowAnnotation="2_0.8_*"
+    annoColor='black'
+    # ady = 0.025
+    if textAnnotation:
+        for x in textAnnotation.split(','):
+            ss = x.split('_')
+            x = float(ss[0])
+            y = float(ss[1])
+            t = ss[2]
+            #draw Font text.
+            annoArray.append(dict(
+                    x=x,
+                    y=y,
+                    xref='x',
+                    yref='y',
+                    #yref='paper',
+                    text=t,
+                    showarrow=False,
+                    arrowhead=0,
+                    arrowcolor=annoColor,
+                    font=dict(
+                        color= annoColor,
+                        size = textAnnotationSize,
+                    ),
+                    # # If `axref` is an axis, this is an absolute value on that axis, like `x`, NOT a relative value.
+                    # axref='x',
+                    # ax=float(ss[0])+1,
+                    # ay=0
+                ))
+
+    annoLayout = go.Layout(
+        annotations = annoArray
+    )
+    if annoArray:
+        layout.update(annoLayout)
 
     # annotations = []
     # for text, yd in zip(alleles, y_data):

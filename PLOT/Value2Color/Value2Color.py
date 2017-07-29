@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        Value2Color.py -k int [--cmax int] [-r] [-n cname]
+        Value2Color.py -k int [--cmax int] [-r] [-n cname] [--rl float] [--rr float]
         Value2Color.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -16,6 +16,8 @@
     Options:
         -k int        Color index for input value.
         --cmax int    Color scale max value, set all the input value larger than this as this value.
+        --rl float    Set color range left end, default min(inputValues).
+        --rr float    Set color range right end, default max(inputValues).
         -r            Replace the value as color, otherwise append the color value at the line end.
         -n cname      Color scale name, default YlOrRd, full list:
                       https://plot.ly/ipython-notebooks/color-scales/
@@ -89,6 +91,10 @@ if __name__ == '__main__':
     c500 = [webcolors.rgb_to_hex((int(x[0]), int(x[1]), int(x[2]))) for x in c500]
 
     vrange=[min(zcolor), max(zcolor)]
+    if args['--rl']:
+        vrange[0] = float(args['--rl'])
+    if args['--rr']:
+        vrange[1] = float(args['--rr'])
     #value to color.
     cindex = [interp(x, vrange, [0,499]) for x in zcolor]
     oColor = [c500[int(x)] for x in cindex]
