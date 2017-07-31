@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange] [--yr yrange] [--xdt xdtick] [--ydt ydtick] [--nc] [-l] [-p] [--lm int] [--rm int]
+        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange] [--yr yrange] [--xdt xdtick] [--ydt ydtick] [--nc] [-l] [-p] [--lm int] [--rm int] [--cl text]
         DistributionPlotV2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -33,6 +33,7 @@
         -p            Set histnorm as 'probability', default: 'probability density'
         --lm int      Set left margin, default 50.
         --rm int      Set right margin, default 30.
+        --cl text     Set color for distribution, eg '#37AA9C|#37AA9C,red'
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -117,6 +118,9 @@ if __name__ == '__main__':
     if args['-p']:
         histnorm = 'probability'
         ytitle = 'Probability'
+    colors = ['#37AA9C', '#E26868','#FFA556','#2BCDC1','#F66095','#393E46']
+    if args['--cl']:
+        colors = args['--cl'].split(',')
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -152,7 +156,6 @@ if __name__ == '__main__':
         group_labels.append(k)
 
     # Create distplot
-    colors = ['#37AA9C', '#E26868','#FFA556','#2BCDC1','#F66095','#393E46']
     fig = FF.create_distplot(hist_data, group_labels,bin_size=binsize,
         histnorm=histnorm,
         curve_type='normal',
