@@ -28,7 +28,7 @@
                         Example: 1_2_0.5_**
                         Each category for the box plot with x-coordinate as 0,1,2...n-1.
         --ady ady     Set the distance between horizontal annotation line and text (default 0.025).
-        --haw float     Set the horizontal annotation line with, default 2.
+        --haw float   Set the horizontal annotation line with, default 2.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
