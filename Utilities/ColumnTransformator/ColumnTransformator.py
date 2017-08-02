@@ -97,7 +97,7 @@ if __name__ == '__main__':
             elif P.action == 'entropy':
                 try:
                     val = float(ss[P.col])
-                    ss[P.col] = '%.4f'%(-1*val*math.log10(val))
+                    ss[P.col] = '%.4e'%(-1*val*math.log10(val))
                 except ValueError:
                     pass #directly copy to stdout.
 
