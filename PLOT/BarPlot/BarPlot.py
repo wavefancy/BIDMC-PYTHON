@@ -229,6 +229,8 @@ if __name__ == '__main__':
         #     ),
         #     tickangle = -90,
         #     position=0,
+        #     ticktext = xtickName,
+        #     tickvals = xtickvals,
         #     zeroline=False,
         ),
         yaxis = dict(
