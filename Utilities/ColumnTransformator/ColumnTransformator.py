@@ -21,6 +21,7 @@
                        nint: nearst int value.
                        1sub: val -> 1-val
                        plus1int: val -> val+1 (parse value as int, output also int, only work for int value.)
+                       entropy: val -> -1*val*math.log10(val)
         -h --help      Show this screen.
         -v --version   Show version.
         -f --format    Show input/output file format example.
@@ -49,9 +50,10 @@ if __name__ == '__main__':
 
     P.col = int(args['-c']) -1
     P.action = args['-t']
-    tMap = {'maf','nlog','nint','1sub', 'plus1int'}
+    tMap = {'maf','nlog','nint','1sub', 'plus1int','entropy'}
     if P.action not in tMap:
         sys.stderr.write('Transformer "%s" not supported! Please check!\n'%(P.action))
+        sys.exit(-1)
 
     import math
     for line in sys.stdin:
@@ -89,6 +91,13 @@ if __name__ == '__main__':
                 try:
                     val = int(ss[P.col])
                     ss[P.col] = '%d'%(val+1)
+                except ValueError:
+                    pass #directly copy to stdout.
+
+            elif P.action == 'entropy':
+                try:
+                    val = float(ss[P.col])
+                    ss[P.col] = '%.4f'%(-1*val*math.log10(val))
                 except ValueError:
                     pass #directly copy to stdout.
 

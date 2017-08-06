@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--ydt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int]
+        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
         BarPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -28,6 +28,7 @@
                         5 right_top out of box.
         --lfs lfs     Legend font size.
         --lm lmargin  Left margin, default 60.
+        --bma bmargin Bottom margin, default 20.
         --bm bm       Barmode, default 2. 1: stack, 2: group.
         --or or       Orientation, default 1. 1: vertical, 2: horizontal.
         --gcl color   Set the color for different group, eg: #FA1A1A,#0784FF,#8AC300
@@ -39,6 +40,8 @@
                         Each category for the box plot with x-coordinate as 0,1,2...n-1.
         --ts int      Text annotation text size, default 12.
         --ydt float   Set distance between y ticks.
+        --xdt float   Set distance between x ticks.
+        --lbcl color  Set legend boder color, eg. #EEEEEE.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -98,8 +101,11 @@ if __name__ == '__main__':
         elif args['--mt'] == '3':
             mode = 'lines+markers'
     lm = 60    #left margin.
+    bmargin = 20
     if args['--lm']:
         lm = float(args['--lm'])
+    if args['--bma']:
+        bmargin = float(args['--bma'])
     barmode = 'group'
     if args['--bm']:
         if args['--bm'] == '1':
@@ -112,8 +118,11 @@ if __name__ == '__main__':
     if args['--bcl']:
         bcolor = args['--bcl'].split(',')
     ydt = '' #distance betteen y ticks.
+    xdt = ''
     if args['--ydt']:
         ydt = float(args['--ydt'])
+    if args['--xdt']:
+        xdt = float(args['--xdt'])
 
     xanchor = 'right'
     yanchor = 'bottom'
@@ -146,6 +155,12 @@ if __name__ == '__main__':
     textAnnotationSize = 12
     if args['--ts']:
         textAnnotationSize = int(args['--ts'])
+
+    legendBorderColor='black'
+    legendBorderWidth=''
+    if args['--lbcl']:
+        legendBorderColor = args['--lbcl']
+        legendBorderWidth = 1
 
     from collections import OrderedDict
     xdata = OrderedDict() #{categoryName -> []}
@@ -207,7 +222,8 @@ if __name__ == '__main__':
 
     layout = go.Layout(
         barmode= barmode,
-        # xaxis=dict(
+        xaxis=dict(
+            dtick = xdt,
         #     tickfont=dict(
         #         color='#ff7f0e'
         #     ),
@@ -216,7 +232,7 @@ if __name__ == '__main__':
         #     ticktext = xtickName,
         #     tickvals = xtickvals,
         #     zeroline=False,
-        # ),
+        ),
         yaxis = dict(
             title =  ytitle,
             range = yrange,
@@ -228,7 +244,7 @@ if __name__ == '__main__':
         ),
         margin= dict(
             l = lm,
-            b = 20,
+            b = bmargin,
             r = 0,
             t = 0
         ),
@@ -241,7 +257,11 @@ if __name__ == '__main__':
     if args['--lloc'] != '0':
         if args['--lloc'] == '5':
             legend = go.Layout(
-                showlegend=True
+                showlegend=True,
+                legend=dict(
+                    bordercolor = legendBorderColor,
+                    borderwidth= legendBorderWidth
+                )
             )
         else:
             legend={
@@ -250,9 +270,12 @@ if __name__ == '__main__':
                     'x': xlloc,
                     'y': ylloc,
                     'yanchor': yanchor,
+                    'bordercolor' : 'black',
                     'font': {
                         'size' : lfontSize
                     },
+                    'bordercolor': legendBorderColor,
+                    'borderwidth': legendBorderWidth
                 }
             }
     else:
