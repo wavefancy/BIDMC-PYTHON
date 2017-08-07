@@ -206,7 +206,6 @@ if __name__ == '__main__':
                         color=annoColor,
                         size = 12,
                     ),
-                    # arrowwidth=1,
                     # If `axref` is an axis, this is an absolute value on that axis, like `x`, NOT a relative value.
                     axref='x',
                     ax=x2,
