@@ -103,6 +103,8 @@ if __name__ == '__main__':
             mode = 'lines+markers'
     lm = 60    #left margin.
     bmargin = 20
+    if args['--bma']:
+        bmargin = float(args['--bma'])
     if args['--lm']:
         lm = float(args['--lm'])
     rmargin = 0

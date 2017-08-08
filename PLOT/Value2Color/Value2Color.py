@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        Value2ColorV2.py -k int [-r] [-n cname] [--rl float] [--rr float]
+        Value2ColorV2.py -k int [-r] [-n cname] [-g cgroup] [--rl float] [--rr float]
         Value2ColorV2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -18,8 +18,9 @@
         --rl float    Set color range left end, default min(inputValues).
         --rr float    Set color range right end, default max(inputValues).
         -r            Reverse color map.
-        -n cname      Color scale name, default Sequential.YlGnBu_4, full list:
+        -n cname      Color scale name, default YlGnBu_4, full list:
                       https://jiffyclub.github.io/palettable/colorbrewer/
+        -g cgroup     Set color group, default sequential. [sequential|diverging|qualitative]
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -70,11 +71,57 @@ if __name__ == '__main__':
             except ValueError:
                 sys.stdout.write('Warning: Parse Value Error (Skipped): %s\n'%(line))
 
+    # https://stackoverflow.com/questions/3279560/invert-colormap-in-matplotlib
+    import matplotlib as mpl
+    def reverse_colourmap(cmap, name = 'my_cmap_r'):
+        """
+        In:
+        cmap, name
+        Out:
+        my_cmap_r
+
+        Explanation:
+        t[0] goes from 0 to 1
+        row i:   x  y0  y1 -> t[0] t[1] t[2]
+                       /
+                      /
+        row i+1: x  y0  y1 -> t[n] t[1] t[2]
+
+        so the inverse should do the same:
+        row i+1: x  y1  y0 -> 1-t[0] t[2] t[1]
+                       /
+                      /
+        row i:   x  y1  y0 -> 1-t[n] t[2] t[1]
+        """
+        reverse = []
+        k = []
+
+        for key in cmap._segmentdata:
+            k.append(key)
+            channel = cmap._segmentdata[key]
+            data = []
+
+            for t in channel:
+                data.append((1-t[0],t[2],t[1]))
+            reverse.append(sorted(data))
+
+        LinearL = dict(zip(k,reverse))
+        my_cmap_r = mpl.colors.LinearSegmentedColormap(name, LinearL)
+        return my_cmap_r
+
     #API ref: https://stackoverflow.com/questions/28752727/map-values-to-colors-in-matplotlib
     #API ref: https://jiffyclub.github.io/palettable/colorbrewer/sequential/#previews
     #API ref: https://matplotlib.org/api/cm_api.html
-    from palettable.colorbrewer.sequential import YlGnBu_4
-    import matplotlib
+    cname = 'YlGnBu_4'
+    cgroup = 'sequential'
+    if args['-n']:
+        cname = args['-n']
+    if args['-g']:
+        cgroup = args['-g']
+    #from palettable.colorbrewer.sequential import YlGnBu_4 as mycl
+    exec('from palettable.colorbrewer.%s import %s as mycl'%(cgroup,cname))
+    #import palettable.colorbrewer.sequential.YlGnBu_4 as mycl
+    #import matplotlib
     import matplotlib.cm as cm
     #ax.imshow(data, cmap=Blues_8.mpl_colormap)
 
@@ -84,8 +131,12 @@ if __name__ == '__main__':
     if args['--rr']:
         vrange[1] = float(args['--rr'])
 
-    norm = matplotlib.colors.Normalize(vmin=vrange[0], vmax=vrange[1], clip=True)
-    mapper = cm.ScalarMappable(norm=norm, cmap=YlGnBu_4.mpl_colormap)
+    norm = mpl.colors.Normalize(vmin=vrange[0], vmax=vrange[1], clip=True)
+    mycolormap = mycl.mpl_colormap
+    if args['-r']:
+        mycolormap = reverse_colourmap(mycolormap)
+    mapper = cm.ScalarMappable(norm=norm, cmap=mycolormap)
+    #print(mycl.mpl_colormap._segmentdata)
 
     # if args['-r']:
     #     for x, y in zip(indata, oColor):
@@ -93,7 +144,7 @@ if __name__ == '__main__':
     #         sys.stdout.write('%s\n'%('\t'.join(x)))
     # else:
     for x,y in zip(indata, zcolor):
-        x.append(str(mapper.to_rgba(y,alpha=opacity,bytes=True,norm=True)).replace(' ',''))
+        x.append('rgba'+str(mapper.to_rgba(y,alpha=opacity,bytes=True,norm=True)).replace(' ',''))
         sys.stdout.write('%s\n'%('\t'.join(x)))
 
 sys.stdout.flush()
