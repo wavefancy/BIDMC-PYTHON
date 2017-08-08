@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
+        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--rma rmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
         BarPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -29,10 +29,11 @@
         --lfs lfs     Legend font size.
         --lm lmargin  Left margin, default 60.
         --bma bmargin Bottom margin, default 20.
+        --rma rmargin Right margin, default 0.
         --bm bm       Barmode, default 2. 1: stack, 2: group.
         --or or       Orientation, default 1. 1: vertical, 2: horizontal.
-        --gcl color   Set the color for different group, eg: #FA1A1A,#0784FF,#8AC300
-        --bcl color   Set the color for different bar, eg: #FA1A1A,#0784FF,#8AC300
+        --gcl color   Set the color for different group, eg: #FA1A1A::#0784FF::#8AC300
+        --bcl color   Set the color for different bar, eg: #FA1A1A::#0784FF::#8AC300
                           Color array length equals the number of bars.
         --ta tanno    Add text annotation.
                         foramt: x_y_text,x_y_text.
@@ -104,8 +105,9 @@ if __name__ == '__main__':
     bmargin = 20
     if args['--lm']:
         lm = float(args['--lm'])
-    if args['--bma']:
-        bmargin = float(args['--bma'])
+    rmargin = 0
+    if args['--rma']:
+        rmargin = float(args['--rma'])
     barmode = 'group'
     if args['--bm']:
         if args['--bm'] == '1':
@@ -114,9 +116,9 @@ if __name__ == '__main__':
     if args['--or'] == '2':
         orientation = 'h'
     if args['--gcl']:
-        colors = args['--gcl'].split(',')
+        colors = args['--gcl'].split('::')
     if args['--bcl']:
-        bcolor = args['--bcl'].split(',')
+        bcolor = args['--bcl'].split('::')
     ydt = '' #distance betteen y ticks.
     xdt = ''
     if args['--ydt']:
@@ -245,7 +247,7 @@ if __name__ == '__main__':
         margin= dict(
             l = lm,
             b = bmargin,
-            r = 0,
+            r = rmargin,
             t = 0
         ),
 
