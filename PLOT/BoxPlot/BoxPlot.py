@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over] [--bm bmargin] [--ha hanno] [--ady ady] [--haw float]
+        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over] [--bm bmargin] [--ha hanno] [--ady ady] [--haw float] [--cl colors]
         BoxPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -29,6 +29,7 @@
                         Each category for the box plot with x-coordinate as 0,1,2...n-1.
         --ady ady     Set the distance between horizontal annotation line and text (default 0.025).
         --haw float   Set the horizontal annotation line with, default 2.
+        --cl colors   Set the colors of the box plot, eg: '#1F77B4::#2B9D2B'.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -118,6 +119,12 @@ if __name__ == '__main__':
     traces = []
 
     colors = colors[:len(x_data)]
+    if args['--cl']:
+        tcolors = args['--cl'].split('::')
+        colors = []
+        for i in range(len(x_data)):
+            colors.append(tcolors[i%len(tcolors)])
+
     for xd, yd, cls in zip(x_data, y_data, colors):
             if overBoxDot:
                 traces.append(go.Box(
