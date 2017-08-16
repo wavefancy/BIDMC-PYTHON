@@ -243,7 +243,7 @@ if __name__ == '__main__':
         annotations = annoArray
     )
 
-    #fig['layout'].update(layout)
+    #fig['layout'].update(layout)accounts
     fig = go.Figure(data=traces, layout=layout)
     if annoArray:
         fig['layout'].update(annoLayout)
