@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bmargin] [--ydt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int] [--ctxt int]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bmargin] [--ydt float] [--xdt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int] [--ctxt int]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -21,6 +21,7 @@
                         float | float1,float2 (lower,upper bound)
         --yr yrange   Set the yAxis plot range: float1,float2.
         --ydt float   Distance between y ticks.
+        --xdt float   Distance between x ticks.
         --xr xrange   Set the xAxis plot range: float1,float2 | tight
                       tight: set the xrange as [xmin, xmax]
         --hl hline    Add horizontal lines: float1,float2.
@@ -94,6 +95,7 @@ if __name__ == '__main__':
 
     yrange = []
     ydt = '' # Distance between y ticks.
+    xdt = '' # Distance between x ticks.
     Xrange = []
     groupAnnotation = {} # groupname -> {color:red, ms:2, ..}
     if args['--yerr']:
@@ -117,6 +119,8 @@ if __name__ == '__main__':
         bm = float(args['--bm'])
     if args['--ydt']:
         ydt = float(args['--ydt'])
+    if args['--xdt']:
+        xdt = float(args['--xdt'])
     if args['--clr']:
         clrClm = int(args['--clr']) -1
     if args['--xta']:
@@ -376,7 +380,7 @@ if __name__ == '__main__':
             't' : 10
         },
         'xaxis':{
-            #'autotick': True,
+            'dtick'   : xdt,
             'mirror'  :True,
             'range'   :Xrange,
             #       range=[0, 500],
@@ -430,9 +434,16 @@ if __name__ == '__main__':
     # api: https://plot.ly/python/legend/
     if args['--lloc'] != '0':
         if args['--lloc'] == '5':
-            legend = go.Layout(
-                showlegend=True
-            )
+            # legend = go.Layout(
+            #     showlegend=True
+            # )
+            legend={
+                'legend':{
+                    'font': {
+                        'size' : lfontSize
+                    },
+                }
+            }
         else:
             legend={
                 'legend':{
