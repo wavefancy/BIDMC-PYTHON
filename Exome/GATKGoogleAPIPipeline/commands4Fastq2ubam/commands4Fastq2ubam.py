@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        commands4Fastq2ubam.py -l library -j picard [-d odir] [-n sampleName] [-p platform] <r1fNames>...
+        commands4Fastq2ubam.py -l library -j picard [-d odir] [-n sampleName] [-p platform] [-w] [-s string] <r1fNames>...
         commands4Fastq2ubam.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -17,11 +17,15 @@
     Options:
         <r1fNames>... File names for R1 reads fastq file.
         -n sampleName Sample name, default extract from r1fName.
-                      Format like sampleName_barcode_*.gz
+                      The first part splited by -s parameter, without path.
         -j picard     Path for picard jar file.
         -l library    Library name.
         -p platform   Platform name, default illumina.
         -d odir       Output dir, default ./data.
+        -s string     Set pattern indicator for forward sequence, default '_R1_'.
+                         This pattern should be uniq in input file name.
+                         Change 1 to 2, should be corresponding to reverse sequence.
+        -w            Output file name with READ_GROUP_NAME.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -87,21 +91,26 @@ if __name__ == '__main__':
         #recommended#
         SEQUENCING_CENTER=YaleXgen
     '''
+
     errorCode = False
+    fseqindicator = '_R1_'
+    if args['-s']:
+        fseqindicator = args['-s']
+    rseqindicator = fseqindicator.replace('1','2')
     for f,n in zip(files, fnames):
         if not sampleName:
-            sampleName = n.split('/')[-1].split('_')[0]
+            sampleName = n.split('/')[-1].split(fseqindicator)[0]
         ss = f.readline().split(':')
         READ_GROUP_NAME = ss[2]+'.'+ss[3]
         PLATFORM_UNIT = ss[1] + '_' + READ_GROUP_NAME
 
         n2 = ""
-        if len(n.split('_R1_')) == 2:
-            ss = n.split('_R1_')
-            n2 = ss[0] + '_R2_' + ss[1]
-        elif len(n.split('_r1_')) == 2:
-            ss = n.split('_r1_')
-            n2 = ss[0] + '_r2_' + ss[1]
+        if len(n.split(fseqindicator)) == 2:
+            ss = n.split(fseqindicator)
+            n2 = ss[0] + rseqindicator + ss[1]
+        # elif len(n.split('_r1_')) == 2:
+        #     ss = n.split('_r1_')
+        #     n2 = ss[0] + '_r2_' + ss[1]
         else:
             sys.stderr.write('ERROR: Input fastq file name should have keyword "_R1_" or "_r1_", please check!')
             errorCode = True
@@ -112,7 +121,10 @@ if __name__ == '__main__':
         out.append(picardJar)
         out.append("FastqToSam FASTQ=" + n)
         out.append("FASTQ2=" + n2)
-        out.append('OUTPUT=%s/%s.bam'%(odir,sampleName))
+        oname = sampleName
+        if args['-w']:
+            oname = sampleName + '.' + READ_GROUP_NAME
+        out.append('OUTPUT=%s/%s.bam'%(odir,oname))
         out.append('READ_GROUP_NAME=%s'%(READ_GROUP_NAME))
         out.append('SAMPLE_NAME=%s'%(sampleName))
         out.append("LIBRARY_NAME=" + LIBRARY_NAME)
