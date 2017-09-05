@@ -1,0 +1,40 @@
+---
+# String : sample name, folder name for fastq file.
+sample:
+    "Sample_FG-CP11_006_006"
+
+# String : location for sequence fastq file.
+sampleDir:
+    "/groups/pollak/mxw_data/excallV3/testdata"
+
+# output root dir.
+orootDir:
+    "/n/scratch2/wallace/excallV3/ex_test"
+
+# True|False : whether remove intermediate files or not.
+removeTemp:
+    True
+
+# quality score format for fastq file, set "" if let program auto detect.
+# phred33" | "" | "phred64" : choose one from these three possible values.
+phredCoding:
+    ""
+
+# whether convert phred64 quality score to phred33,
+# please make sure the input quality score is encoded as phred64 if set this as True.
+# otherwise please set this as false.
+# True | False
+TOPHRED33:
+    False
+
+# String: how many threads(cpus) used for parallel computing.
+mthreads:
+    "1"
+
+libraryName:
+    "SureSelectXTV4"
+
+# True|False : whether check all reads name for rg tag.
+# set this as true if input has single end reads.
+#allReads4Tag:
+#    False

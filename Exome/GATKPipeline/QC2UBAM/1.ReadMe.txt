@@ -1,0 +1,5 @@
+QC fastq raw file, and convert to uBAM.
+
+1. QC by fastqqc
+
+2. Clean raw data by trimmomatic.
