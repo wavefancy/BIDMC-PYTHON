@@ -1,0 +1,40 @@
+{
+    "__default__":
+    {
+      "mem"  : "rusage[mem=2000]",
+      "queue": "short",
+      "comments": "Time record is the single cpu time. Effective memory on cluster is CPU_Num * MEM"
+    },
+    "fastqc4Raw":
+    {
+      "time" : "5:00",
+      "queue": "short",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=2000]",
+      "comments": "10mins on a single cpu can finish 1 job."
+    },
+    "trimmomatic_rgTagFile":
+    {
+      "time" : "11:58",
+      "queue": "short",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=10000]",
+      "comments" : "less than 2hours single cpu time."
+    },
+    "fastqc4trimed":
+    {
+      "time" : "3:00",
+      "queue": "short",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=2100]",
+      "comments": "less than 10mins single cpu time."
+    },
+    "convertTrimed2uBAM":
+    {
+      "time" : "10:00",
+      "queue": "short",
+      "cpus" : "1",
+      "mem"  : "rusage[mem=8000]",
+      "comments": ""
+    },
+}
