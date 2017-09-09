@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        commands4Fastq2ubam.py -l library -j picard [-d odir] [-n sampleName] [-p platform] <r1fNames>...
+        commands4Fastq2ubam.py -l library -j picard [-d odir] [-n sampleName] [-p platform] [-w] <r1fNames>...
         commands4Fastq2ubam.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -22,6 +22,7 @@
         -l library    Library name.
         -p platform   Platform name, default illumina.
         -d odir       Output dir, default ./data.
+        -w            Output file name with READ_GROUP_NAME.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -112,7 +113,10 @@ if __name__ == '__main__':
         out.append(picardJar)
         out.append("FastqToSam FASTQ=" + n)
         out.append("FASTQ2=" + n2)
-        out.append('OUTPUT=%s/%s.bam'%(odir,sampleName))
+        oname = sampleName
+        if args['-w']:
+            oname = sampleName + '.' + READ_GROUP_NAME
+        out.append('OUTPUT=%s/%s.bam'%(odir,oname))
         out.append('READ_GROUP_NAME=%s'%(READ_GROUP_NAME))
         out.append('SAMPLE_NAME=%s'%(sampleName))
         out.append("LIBRARY_NAME=" + LIBRARY_NAME)
