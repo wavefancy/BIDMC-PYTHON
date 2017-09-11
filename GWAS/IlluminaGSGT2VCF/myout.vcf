@@ -1,0 +1,34 @@
+##fileformat=VCFv4.2
+##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+##contig=<ID=1,length=249250621,assembly=GRCh37>
+##contig=<ID=2,length=243199373,assembly=GRCh37>
+##contig=<ID=3,length=198022430,assembly=GRCh37>
+##contig=<ID=4,length=191154276,assembly=GRCh37>
+##contig=<ID=5,length=180915260,assembly=GRCh37>
+##contig=<ID=6,length=171115067,assembly=GRCh37>
+##contig=<ID=7,length=159138663,assembly=GRCh37>
+##contig=<ID=8,length=146364022,assembly=GRCh37>
+##contig=<ID=9,length=141213431,assembly=GRCh37>
+##contig=<ID=10,length=135534747,assembly=GRCh37>
+##contig=<ID=11,length=135006516,assembly=GRCh37>
+##contig=<ID=12,length=133851895,assembly=GRCh37>
+##contig=<ID=13,length=115169878,assembly=GRCh37>
+##contig=<ID=14,length=107349540,assembly=GRCh37>
+##contig=<ID=15,length=102531392,assembly=GRCh37>
+##contig=<ID=16,length=90354753,assembly=GRCh37>
+##contig=<ID=17,length=81195210,assembly=GRCh37>
+##contig=<ID=18,length=78077248,assembly=GRCh37>
+##contig=<ID=19,length=59128983,assembly=GRCh37>
+##contig=<ID=20,length=63025520,assembly=GRCh37>
+##contig=<ID=21,length=48129895,assembly=GRCh37>
+##contig=<ID=22,length=51304566,assembly=GRCh37>
+##contigLengthInfo=/cromwell_root/broad-references/hg19/v0/Homo_sapiens_assembly19.fasta
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	WG0283937-DNA_A05_LPC6	WG0283937-DNA_A10_LPC5
+10	100012219	.	G	T	.	.	.	GT	0/0	.
+10	100013340	.	C	T	.	.	.	GT	0/0	.
+10	100013459	.	TCTC	T	.	.	.	GT	0/0	1/1
+10	100013467	.	G	A	.	.	.	GT	0/0	.
+10	100015474	.	G	A	.	.	.	GT	0/1	.
+10	100016685	.	C	T	.	.	.	GT	1/1	.
+10	100017801	.	C	T	.	.	.	GT	0/0	.
+10	100017854	.	C	T	.	.	.	GT	0/0	.
