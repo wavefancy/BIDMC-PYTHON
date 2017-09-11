@@ -13,7 +13,7 @@
     Notes:
         1. Read vcf file from stdin and output results to stdout.
         2. Reference index is 1 based. *** VCF input is 0 based.
-        3. Only check biallelic sites, skip all the other sites.
+        3. **** Only check biallelic sites, skip all the other sites in output.
         4. Correct inconsistent sites, flipping strand if necessary.
         5. **** Only correct genotype, ignore other parts, like AD field.
 
