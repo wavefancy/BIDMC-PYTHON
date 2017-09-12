@@ -2,12 +2,13 @@
 
 """
 
-    Parse Illumina Strand Report file.
+    Parse Illumina Strand Report file, matching with reference fasta file.
+    *** The output AlleleA is ref allele, AlleleB is alt allele for vcf file.
 
     @Author: wavefancy@gmail.com
 
     Usage:
-        ParseIllumiaStrandReport.py
+        ParseIllumiaStrandReport.py  -r <ref.fa>
         ParseIllumiaStrandReport.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -15,6 +16,7 @@
             Output five columns: SNP_Name chr pos AlleleA AlleleB.
 
     Options:
+        -r <ref.fa>   Reference fasta file.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -59,12 +61,47 @@ if __name__ == '__main__':
         ShowFormat()
         sys.exit(-1)
 
+    from pyfaidx import Fasta
+    from Bio.Seq import Seq
+    refFile = args['-r']
+    refGenome = Fasta(refFile, sequence_always_upper=True)
     # outprefix = args['-o']
     # Column index, 0 based.
     snpNameCol = 1
     chrCol = 4
     posCol = 5
     seqCol = 6
+    flankingSize = 10
+
+    def getSeq(left, middle, right):
+        '''Get the whole seq peace for matching'''
+        if middle == '-':
+            return (left + right).upper()
+        else:
+            return (left + middle + right).upper()
+
+    def compareSeqSkipN(seq1, seq2):
+        '''Compare seq, do not compare site with allele N'''
+        for x,y in zip(seq1, seq2):
+            if x == 'N' or y == 'N':
+                continue
+            elif x != y:
+                return False
+        return True
+
+    def checkAndGetAllele(chr, start, seq, alleles):
+        # print(start)
+        # print(seq)
+        ref_a = str(refGenome[chr][start:start+len(seq)])
+        # print(ref_a)
+        # if ref_a == seq:
+        if compareSeqSkipN(ref_a, seq):
+            return alleles
+        # elif ref_a == str(Seq(seq).reverse_complement()):
+        elif compareSeqSkipN(ref_a, str(Seq(seq).reverse_complement())):
+            return [str(Seq(x).reverse_complement()) for x in alleles]
+        else:
+            return []
 
     inData = False
     for line in sys.stdin:
@@ -72,21 +109,57 @@ if __name__ == '__main__':
         if line:
             if inData:
                 ss = line.split()
+                chr = ss[chrCol]
+                if chr == '0':
+                    continue
+                if chr =='XY':
+                    chr ='X'
                 out = []
                 out.append(ss[snpNameCol])
                 out.append(ss[chrCol])
                 out.append(ss[posCol])
 
                 try:
+                    left = ss[seqCol].split('[',1)
+                    right = left[1].split(']',1)
+
+                    alleles = right[0].split('/')
+                    left = left[0][(len(left[0])-flankingSize):len(left[0])]
+                    right = right[1][0:flankingSize]
+
+
                     alleles = ss[seqCol].split('[',1)[1].split(']',1)[0].split('/')
                 except IndexError:
-                    alleles = ss[snpNameCol].split('-')[1:3]
-                    # sys.stderr.write(line+'\n')
+                    sys.stderr.write('WARN: Parse alleles error, skipped: %s\n'%(line))
+                    continue
                     # sys.exit(-1)
-                if len(alleles[1]) > len(alleles[0]):
-                    alleles = [alleles[1], alleles[0]]
-                [out.append(x) for x in alleles]
 
+                #matching with ref.
+                seq = getSeq(left, alleles[0], right)
+                start = int(ss[posCol]) - flankingSize -1
+                if alleles[0] != '-':
+                    results = checkAndGetAllele(chr,start,seq, alleles)
+                else:
+                    results = checkAndGetAllele(chr,start+1,seq, alleles)
+
+
+                if not results:
+                    seq = getSeq(left, alleles[1], right)
+                    if alleles[1] != '-':
+                        results = checkAndGetAllele(chr,start,seq, alleles)
+                    else:
+                        results = checkAndGetAllele(chr,start+1,seq, alleles)
+                    # results = checkAndGetAllele(chr,start,seq, alleles)
+
+                if results:
+                    [out.append(x) for x in results]
+                else:
+                    sys.stderr.write(line+'\n')
+                    sys.stderr.write(str(refGenome[chr][start:start+len(seq)])+'\n')
+                    # sys.exit(-1)
+
+                # print(line)
+                # print(str(refGenome[chr][start:start+len(seq)]))
                 sys.stdout.write('%s\n'%('\t'.join(out)))
             else:
                 if line.startswith('Index'):
