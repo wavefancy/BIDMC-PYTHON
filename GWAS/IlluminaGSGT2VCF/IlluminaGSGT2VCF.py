@@ -138,17 +138,24 @@ if __name__ == '__main__':
     def getSNPAlleles(snpName):
         '''Get the two alleles of a snp.'''
         ss = snpName.split('-')
-        if len(ss) == 3:
-            return ss[1:]
+        if len(ss) >= 3:
+            return ss[1:3]
         else:
             return [ss[1][0], ss[1][1]]
+            # try:
+            #     return [ss[1][0], ss[1][1]]
+            # except IndexError:
+            #     sys.stderr.write('%s\n'%(snpName))
+            #     sys.stderr.write(CacheLine+'\n')
+            #     sys.exit(-1)
 
     from Bio.Seq import Seq
+    import math
     def checkAndFixAllele(allele, snpName):
         '''replace I and D annotation in allele'''
         alleles = getSNPAlleles(snpName) + ['I', 'D']
         if allele not in alleles:
-            allele = Seq(allele).reverse_complement()
+            allele = str(Seq(allele).reverse_complement())
 
         if allele == alleles[0]:
             return '0'
@@ -163,7 +170,7 @@ if __name__ == '__main__':
             sys.stderr.write('\n'+CacheLine+'\n')
             sys.exit(-1)
 
-    inData = False
+    # inData = False
     totalSNPs = -1;
     totalSamples = -1;
     import numpy as np
@@ -181,33 +188,35 @@ if __name__ == '__main__':
                     data = np.ndarray(shape=(totalSNPs, totalSamples), dtype=object)
                     data.fill('.')
 
-            if line.startswith('[Header]'):
-                inData = False
+            # if line.startswith('[Header]'):
+            #     inData = False
+            #     continue
+            # if line.startswith('SNP Name'):
+            #     inData = True
+            #     continue
+
+            # if inData:
+            CacheLine = line
+            chrs = line.split(':',1)[0]
+            if chrs not in chrSet:
                 continue
-            if line.startswith('SNP Name'):
-                inData = True
+
+            ss = line.split(',')
+            snpID = ss[snpNameCol]
+            sampleID = ss[sampleCol]
+            allele1 = ss[allele1Col]
+            allele2 = ss[allele2Col]
+            GCScore = float(ss[GCScoreCol])
+            if math.isnan(GCScore):
                 continue
 
-            if inData:
-                CacheLine = line
-                chrs = line.split(':',1)[0]
-                if chrs not in chrSet:
-                    continue
+            geno = ''
+            if GCScore < GCScoreThreshold:
+                geno =  missingGenotype
+            else:
+                geno = checkAndFixAllele(allele1, snpID) + '/' + checkAndFixAllele(allele2, snpID)
 
-                ss = line.split(',')
-                snpID = ss[snpNameCol]
-                sampleID = ss[sampleCol]
-                allele1 = ss[allele1Col]
-                allele2 = ss[allele2Col]
-                GCScore = float(ss[GCScoreCol])
-
-                geno = ''
-                if GCScore < GCScoreThreshold:
-                    geno =  missingGenotype
-                else:
-                    geno = checkAndFixAllele(allele1, snpID) + '/' + checkAndFixAllele(allele2, snpID)
-
-                addOneEntry(snpID,sampleID, geno, data, snpIndexMap, sampleIndexMap)
+            addOneEntry(snpID,sampleID, geno, data, snpIndexMap, sampleIndexMap)
 
     #output data.
     snps = snpIndexMap.keys()
