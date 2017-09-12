@@ -117,20 +117,6 @@ if __name__ == '__main__':
         # print(data)
         data[getSnpIndex(snpID, snpIndexMap)][getSampleIndex(sampleID, sampleIndexMap)] = genotype
 
-    def getSNPAlleles(snpName):
-        '''Get the two alleles of a snp.'''
-        ss = snpName.split('-')
-        if len(ss) >= 3:
-            return ss[1:3]
-        else:
-            return [ss[1][0], ss[1][1]]
-            # try:
-            #     return [ss[1][0], ss[1][1]]
-            # except IndexError:
-            #     sys.stderr.write('%s\n'%(snpName))
-            #     sys.stderr.write(CacheLine+'\n')
-            #     sys.exit(-1)
-
     from Bio.Seq import Seq
     import math
     def checkAndFixAllele(allele, alleles):
@@ -152,7 +138,7 @@ if __name__ == '__main__':
             sys.stderr.write('\n'+CacheLine+'\n')
             sys.exit(-1)
 
-    inData = False
+    # inData = False
     totalSNPs = -1;
     totalSamples = -1;
     import numpy as np

@@ -117,7 +117,8 @@ if __name__ == '__main__':
                 out = []
                 out.append(ss[snpNameCol])
                 out.append(ss[chrCol])
-                out.append(ss[posCol])
+                pos = int(ss[posCol])
+                # out.append(ss[posCol])
 
                 try:
                     left = ss[seqCol].split('[',1)
@@ -136,7 +137,7 @@ if __name__ == '__main__':
 
                 #matching with ref.
                 seq = getSeq(left, alleles[0], right)
-                start = int(ss[posCol]) - flankingSize -1
+                start = pos - flankingSize -1
                 if alleles[0] != '-':
                     results = checkAndGetAllele(chr,start,seq, alleles)
                 else:
@@ -152,6 +153,12 @@ if __name__ == '__main__':
                     # results = checkAndGetAllele(chr,start,seq, alleles)
 
                 if results:
+                    #check and normalize indels.
+                    if results[0] == '-' or results[1] == '-':
+                        pos = pos -1
+                        results = [left[-1] + x.strip('-') for x in results]
+
+                    out.append(str(pos))
                     [out.append(x) for x in results]
                 else:
                     sys.stderr.write(line+'\n')
