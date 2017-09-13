@@ -72,6 +72,7 @@ if __name__ == '__main__':
     posCol = 5
     seqCol = 6
     flankingSize = 10
+    refCache = ''
 
     def getSeq(left, middle, right):
         '''Get the whole seq peace for matching'''
@@ -89,35 +90,77 @@ if __name__ == '__main__':
                 return False
         return True
 
-    def checkAndGetAllele(chr, start, seq, alleles):
+    def checkAndGetAllele(chr, start, left, middle, right, alleles):
         # print(start)
         # print(seq)
+        seq = getSeq(left,middle,right)
         ref_a = str(refGenome[chr][start:start+len(seq)])
+        # print(ref_a)
+        # print(seq)
+        global refCache
+        refCache = ref_a
         # print(ref_a)
         # if ref_a == seq:
         if compareSeqSkipN(ref_a, seq):
             return alleles
-        # elif ref_a == str(Seq(seq).reverse_complement()):
-        elif compareSeqSkipN(ref_a, str(Seq(seq).reverse_complement())):
+        elif compareSeqSkipN(ref_a,str(Seq(seq).reverse_complement())):
             return [str(Seq(x).reverse_complement()) for x in alleles]
         else:
-            return []
+            seq = getSeq(left,str(Seq(middle).reverse_complement()),right)
+            if compareSeqSkipN(ref_a, seq):
+                return [str(Seq(x).reverse_complement()) for x in alleles]
+
+        return []
 
     inData = False
+    chrSet=set([str(x) for x in range(1,23)])
+    [chrSet.add(x) for x in ['X','Y','MT']]
     for line in sys.stdin:
         line = line.strip()
         if line:
             if inData:
                 ss = line.split()
                 chr = ss[chrCol]
+                snpName = ss[snpNameCol]
+                pos = int(ss[posCol])
+
+                #*** Try correct annotations ****
+                if chr == '0': # read additional info from snpname if read chr and pos info. failed.
+                    ctemp = snpName.split(':',1)
+                    if len(ctemp) == 2:
+                        chr = ctemp[0]
+                        pos = int(ctemp[1].split('-',1)[0])
+                    # else:
+                        # sys.stderr.write('WARN: 0 chr, skipped: %s\n'%(line))
+                        # continue
+
+                if chr =='0' and snpName.startswith('chr'):
+                    ctemp = snpName.strip('chr').split('_')
+                    chr = ctemp[0]
+                    pos = int(ctemp[1])
+
                 if chr == '0':
+                    sys.stderr.write('WARN: 0 chr, skipped: %s\n'%(line))
                     continue
+                if pos <= 0:
+                    sys.stderr.write('WARN: 0 pos, skipped: %s\n'%(line))
+                    continue
+
                 if chr =='XY':
                     chr ='X'
+                if chr == 'M':
+                    chr = 'MT'
+
+                if chr not in chrSet:
+                    sys.stderr.write('WARN:_No_This_CHR_skipped: %s\n'%(line))
+                    continue
+
                 out = []
-                out.append(ss[snpNameCol])
-                out.append(ss[chrCol])
-                out.append(ss[posCol])
+
+                out.append(snpName)
+                out.append(chr)
+
+                # out.append(ss[posCol])
 
                 try:
                     left = ss[seqCol].split('[',1)
@@ -129,33 +172,59 @@ if __name__ == '__main__':
 
 
                     alleles = ss[seqCol].split('[',1)[1].split(']',1)[0].split('/')
+                    alleles = [x.upper() for x in alleles]
                 except IndexError:
                     sys.stderr.write('WARN: Parse alleles error, skipped: %s\n'%(line))
                     continue
                     # sys.exit(-1)
 
+                # sn = snpName.split('-')
+                # if len(sn)==3 and len(sn[1])>=2 and len(sn[2])>=2: #for complex index.
+                #     alleles = sn[1:]
+                #     alleles = [x[1:] for x in alleles]
+
                 #matching with ref.
-                seq = getSeq(left, alleles[0], right)
-                start = int(ss[posCol]) - flankingSize -1
+                # seq = getSeq(left, alleles[0], right)
+                # *** check wether matching allele1
+                start = pos - flankingSize -1
+                refPos = pos -1 #shift one base left, from 1 based to 0 based.
                 if alleles[0] != '-':
-                    results = checkAndGetAllele(chr,start,seq, alleles)
+                    # print('here1')
+                    results = checkAndGetAllele(chr,start,left,alleles[0],right, alleles)
                 else:
-                    results = checkAndGetAllele(chr,start+1,seq, alleles)
+                    # pos = pos +1
+                    results = checkAndGetAllele(chr,start+1,left,alleles[0],right, alleles)
 
-
+                # *** if matching allele1 failed, try matching allele2.
+                # print(results)
                 if not results:
-                    seq = getSeq(left, alleles[1], right)
+                    # seq = getSeq(left, alleles[1], right)
                     if alleles[1] != '-':
-                        results = checkAndGetAllele(chr,start,seq, alleles)
+                        # print('here2')
+                        results = checkAndGetAllele(chr,start,left,alleles[1],right, alleles)
                     else:
-                        results = checkAndGetAllele(chr,start+1,seq, alleles)
+                        # pos = pos +1
+                        results = checkAndGetAllele(chr,start+1,left,alleles[1],right, alleles)
                     # results = checkAndGetAllele(chr,start,seq, alleles)
+                    # if success swap ref and alt.
+                    results = results[::-1]
 
+                # print(results)
                 if results:
+                    #check and normalize indels.
+                    if results[0] == '-' or results[1] == '-':
+                        pos = pos -1 #shift include one base more.
+                        refPos = refPos -1 #still shift one base left to include that allele.
+                        r = str(refGenome[chr][refPos:refPos+1])
+                        results = [r + x.strip('-') for x in results]
+                        # results = [left[-1] + x.strip('-') for x in results]
+
+                    out.append(str(pos))
                     [out.append(x) for x in results]
                 else:
-                    sys.stderr.write(line+'\n')
-                    sys.stderr.write(str(refGenome[chr][start:start+len(seq)])+'\n')
+                    sys.stderr.write('WARN: not match with ref:(line) %s; (ref) %s\n'%(line,refCache))
+                    #sys.stderr.write('WARN(refSeq): '+str(refGenome[chr][start:start+len(seq)])+'\n')
+                    continue
                     # sys.exit(-1)
 
                 # print(line)
