@@ -33,7 +33,7 @@
         -p            Set histnorm as 'probability', default: 'probability density'
         --lm int      Set left margin, default 50.
         --rm int      Set right margin, default 30.
-        --cl text     Set color for distribution, eg '#37AA9C|#37AA9C,red'
+        --cl text     Set color for distribution, eg '#37AA9C|#37AA9C::red'
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -120,7 +120,7 @@ if __name__ == '__main__':
         ytitle = 'Probability'
     colors = ['#37AA9C', '#E26868','#FFA556','#2BCDC1','#F66095','#393E46']
     if args['--cl']:
-        colors = args['--cl'].split(',')
+        colors = args['--cl'].split('::')
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
