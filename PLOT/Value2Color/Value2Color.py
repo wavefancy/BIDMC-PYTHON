@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        Value2ColorV2.py -k int [-r] [-n cname] [-g cgroup] [--rl float] [--rr float]
+        Value2ColorV2.py -k int [-r] [-n cname] [-g cgroup] [--rl float] [--rr float] [-s txt]
         Value2ColorV2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -21,6 +21,7 @@
         -n cname      Color scale name, default YlGnBu_4, full list:
                       https://jiffyclub.github.io/palettable/colorbrewer/
         -g cgroup     Set color group, default sequential. [sequential|diverging|qualitative]
+        -s txt        Output color as a single line array, array elements separated by 'txt'.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -54,6 +55,9 @@ if __name__ == '__main__':
         ShowFormat()
         sys.exit(-1)
 
+    singeLine=  ''
+    if args['-s']:
+        singeLine = args['-s']
     col = int(args['-k']) -1
     indata = []
     zcolor = []
@@ -143,9 +147,16 @@ if __name__ == '__main__':
     #         x[col] = y
     #         sys.stdout.write('%s\n'%('\t'.join(x)))
     # else:
+    out = []
     for x,y in zip(indata, zcolor):
-        x.append('rgba'+str(mapper.to_rgba(y,alpha=opacity,bytes=True,norm=True)).replace(' ',''))
-        sys.stdout.write('%s\n'%('\t'.join(x)))
+        if singeLine:
+            out.append('rgba'+str(mapper.to_rgba(y,alpha=opacity,bytes=True,norm=True)).replace(' ',''))
+        else:
+            x.append('rgba'+str(mapper.to_rgba(y,alpha=opacity,bytes=True,norm=True)).replace(' ',''))
+            sys.stdout.write('%s\n'%('\t'.join(x)))
+
+    if out:
+        sys.stdout.write('%s\n'%(singeLine.join(out)))
 
 sys.stdout.flush()
 sys.stdout.close()

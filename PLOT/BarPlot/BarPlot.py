@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--rma rmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
+        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--rma rmargin] [--bm bm] [--tma tmargin] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
         BarPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -30,6 +30,7 @@
         --lm lmargin  Left margin, default 60.
         --bma bmargin Bottom margin, default 20.
         --rma rmargin Right margin, default 0.
+        --tma tmargin Top margin, default 5.
         --bm bm       Barmode, default 2. 1: stack, 2: group.
         --or or       Orientation, default 1. 1: vertical, 2: horizontal.
         --gcl color   Set the color for different group, eg: #FA1A1A::#0784FF::#8AC300
@@ -103,6 +104,7 @@ if __name__ == '__main__':
             mode = 'lines+markers'
     lm = 60    #left margin.
     bmargin = 20
+    tmargin = 5
     if args['--bma']:
         bmargin = float(args['--bma'])
     if args['--lm']:
@@ -110,6 +112,8 @@ if __name__ == '__main__':
     rmargin = 0
     if args['--rma']:
         rmargin = float(args['--rma'])
+    if args['--tma']:
+        tmargin = float(args['--tma'])
     barmode = 'group'
     if args['--bm']:
         if args['--bm'] == '1':
@@ -250,7 +254,7 @@ if __name__ == '__main__':
             l = lm,
             b = bmargin,
             r = rmargin,
-            t = 0
+            t = tmargin
         ),
 
         showlegend = True,
