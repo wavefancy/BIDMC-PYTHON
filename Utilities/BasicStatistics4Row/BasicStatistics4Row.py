@@ -7,7 +7,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BasicStatistics4Row.py [-t]
+        BasicStatistics4Row.py [-t] [-l]
         BasicStatistics4Row.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -15,6 +15,7 @@
 
     Options:
         -t            Output title.
+        -l            Treat the first column as label, and output label for each row.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -47,8 +48,15 @@ if __name__ == '__main__':
         ShowFormat()
         sys.exit(-1)
 
+    label = False
+    if args['-l']:
+        label = True
+
     if args['-t']:
-        sys.stdout.write('Min\t1%Q\t25%Q\tMean\tMedian\t75%Q\t99%Q\tMax\tSD\tSE\n')
+        if not label:
+            sys.stdout.write('Min\t1%Q\t25%Q\tMean\tMedian\t75%Q\t99%Q\tMax\tSD\tSE\n')
+        else:
+            sys.stdout.write('Label\tMin\t1%Q\t25%Q\tMean\tMedian\t75%Q\t99%Q\tMax\tSD\tSE\n')
 
     import numpy as np
     from scipy import stats
@@ -56,7 +64,13 @@ if __name__ == '__main__':
         line = line.strip()
         if line:
             ss = line.split()
-            vals = [float(x) for x in ss]
+            vals = []
+            olabel = ''
+            if label:
+                vals = [float(x) for x in ss[1:]]
+                olabel = ss[0]
+            else:
+                vals = [float(x) for x in ss]
 
             minV = min(vals)
             q1 = np.percentile(vals,1)
@@ -69,7 +83,10 @@ if __name__ == '__main__':
             maxV = max(vals)
             sdV = np.std(vals)
             se = stats.sem(vals)
-            sys.stdout.write('%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n'%(minV,q1,q25,meanV,medianV,q75,q99, maxV, sdV, se))
+            if label:
+                sys.stdout.write('%s\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n'%(olabel,minV,q1,q25,meanV,medianV,q75,q99, maxV, sdV, se))
+            else:
+                sys.stdout.write('%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\t%.4f\n'%(minV,q1,q25,meanV,medianV,q75,q99, maxV, sdV, se))
 
 sys.stdout.flush()
 sys.stdout.close()

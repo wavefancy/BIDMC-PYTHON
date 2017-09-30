@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr ycol] [--yr yrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--rma rmargin] [--bm bm] [--tma tmargin] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
+        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr] [--yr yrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--rma rmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
         BarPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -17,7 +17,7 @@
         -x xtitle
         -y ytitle
         -o outname    Output file name: output.html.
-        --yerr yecol  Column index for y error bar.
+        --yerr        Set plot y error bar, default False, input should like format 2.
         --yr yrange   Set the yAxis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
         --vl vline    Add vertical lines: float1, float2...
@@ -30,7 +30,6 @@
         --lm lmargin  Left margin, default 60.
         --bma bmargin Bottom margin, default 20.
         --rma rmargin Right margin, default 0.
-        --tma tmargin Top margin, default 5.
         --bm bm       Barmode, default 2. 1: stack, 2: group.
         --or or       Orientation, default 1. 1: vertical, 2: horizontal.
         --gcl color   Set the color for different group, eg: #FA1A1A::#0784FF::#8AC300
@@ -58,12 +57,22 @@ def ShowFormat():
     '''Input File format example:'''
     print('''
     #INPUT:
-    line1: population label for each population.
-    ------------------------
+#line1: population label for each population.
+#------------------------
 xname AFR   CEU AA
 hap1    0.1 0.2 0.4
 hap2    0.6 0.8 0.5
 hap3    0.3 0   0.1
+
+# Input with error bar info.
+# Third line error Y for hap1. Fifth line error Y for hap3.
+#------------------------
+xname AFR   CEU AA
+hap1    0.6 0.8 0.5
+yerr    0.1 0.2 0.4
+hap3    0.6 0.8 0.5
+yerr    0.3 0   0.1
+
     ''');
 
 if __name__ == '__main__':
@@ -74,7 +83,7 @@ if __name__ == '__main__':
         ShowFormat()
         sys.exit(-1)
 
-    errYCol = '' #value column for error bar for Y.
+    errY = False
     xtitle = args['-x']
     ytitle = args['-y']
     outname = args['-o']
@@ -88,7 +97,7 @@ if __name__ == '__main__':
 
     yrange = []
     if args['--yerr']:
-        errYCol = int(args['--yerr']) -1
+        errY = True
     if args['--yr']:
         yrange = list(map(float, args['--yr'].split(',')))
     if args['--hl']:
@@ -104,7 +113,6 @@ if __name__ == '__main__':
             mode = 'lines+markers'
     lm = 60    #left margin.
     bmargin = 20
-    tmargin = 5
     if args['--bma']:
         bmargin = float(args['--bma'])
     if args['--lm']:
@@ -112,8 +120,6 @@ if __name__ == '__main__':
     rmargin = 0
     if args['--rma']:
         rmargin = float(args['--rma'])
-    if args['--tma']:
-        tmargin = float(args['--tma'])
     barmode = 'group'
     if args['--bm']:
         if args['--bm'] == '1':
@@ -170,10 +176,10 @@ if __name__ == '__main__':
         legendBorderColor = args['--lbcl']
         legendBorderWidth = 1
 
-    from collections import OrderedDict
-    xdata = OrderedDict() #{categoryName -> []}
-    ydata = OrderedDict() #{categoryName -> []}
-    errY  = {} #{categoryName -> []} error bar for Y.ss
+    # from collections import OrderedDict
+    # xdata = OrderedDict() #{categoryName -> []}
+    # ydata = OrderedDict() #{categoryName -> []}
+    # errY  = {} #{categoryName -> []} error bar for Y.ss
     commands = {'vl'}
 
     data = []
@@ -187,14 +193,24 @@ if __name__ == '__main__':
             else:
                 data.append(ss)
 
-    plotData = []
     import plotly
     import plotly.plotly as py
     import plotly.graph_objs as go
 
     xtickName = data[0][1:]
-    groupName = [x[0] for x in data[1:]]
-    y_data = [list(map(float, x[1:])) for x in data[1:]]
+
+    errYdata = []
+    pureData = []
+    if errY:
+        pureData = data[1::2]
+        errYdata = data[2::2]
+    else:
+        pureData = data[1:]
+
+    groupName = [x[0] for x in pureData]
+    y_data = [list(map(float, x[1:])) for x in pureData]
+    if errYdata:
+        errYdata = [list(map(float, x[1:])) for x in errYdata]
 
     traces = []
     tc = []
@@ -203,9 +219,18 @@ if __name__ == '__main__':
     colors = tc
     #colors = colors[:len(y_data)]
     # print(xtickName)
-    for g, d, cl in zip(groupName, y_data, colors):
+    for g, d, cl, index in zip(groupName, y_data, colors, range(0,len(y_data))):
         if bcolor:
             cl = bcolor
+
+        eY = dict()
+        if errY:
+            eY = dict(
+                    type='data',
+                    array=errYdata[index],
+                    visible=True
+                )
+
         #print(cl)
         if orientation == 'h':
             traces.append(go.Bar(
@@ -216,6 +241,7 @@ if __name__ == '__main__':
                 marker=dict(
                     color=cl,
                 ),
+                error_y = eY
             ))
         else:
             traces.append(go.Bar(
@@ -226,6 +252,7 @@ if __name__ == '__main__':
                 marker=dict(
                     color=cl,
                 ),
+                error_y = eY
             ))
 
     layout = go.Layout(
@@ -254,7 +281,7 @@ if __name__ == '__main__':
             l = lm,
             b = bmargin,
             r = rmargin,
-            t = tmargin
+            t = 0
         ),
 
         showlegend = True,
@@ -339,26 +366,8 @@ if __name__ == '__main__':
     if annoArray:
         layout.update(annoLayout)
 
-    # annotations = []
-    # for text, yd in zip(alleles, y_data):
-    #     for t, x in zip(text, xtickvals):
-    #         annotations.append(dict(
-    #             xref = 'x',
-    #             x = x,
-    #             yref = 'y',
-    #             y = yd,
-    #             text = t,
-    #             showarrow=False,
-    #             font=dict(
-    #                 #family='Courier New, monospace',
-    #                 #size=16,
-    #                 color='white'
-    #             ),
-    #         ))
-    #
-    # layout['annotations'] = annotations
-
     #output the last one
+    # print(traces)
     plotly.offline.plot({'data': traces,'layout': layout}
          ,show_link=False
          ,auto_open=False
