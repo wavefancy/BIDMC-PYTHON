@@ -45,16 +45,19 @@ signal(SIGPIPE, SIG_DFL)
 def ShowFormat():
     '''Input File format example:'''
     print('''
+c1  1   10  1
+c2  2   -5  3
+c3  5   3   2
     ''');
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='1.0')
-    print(args)
 
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
 
+    print(args)
     errYCol = '' #value column for error bar for Y.
     xtitle = args['-x']
     ytitle = args['-y']
@@ -153,11 +156,12 @@ if __name__ == '__main__':
                     line=dict(width=1),
                 ))
 
+    # print(yrange)
     layout = go.Layout(
         #title='Points Scored by the Top 9 Scoring NBA Players in 2012',
         yaxis=dict(
             title=ytitle,
-            autorange=True,
+            # autorange=True,
             showgrid=True,
             zeroline=False,
             #dtick=5,
@@ -165,6 +169,7 @@ if __name__ == '__main__':
             #gridwidth=1,
             zerolinecolor='rgb(255, 255, 255)',
             zerolinewidth=2,
+            range=yrange
         ),
         xaxis=dict(
             ticks='outside',
