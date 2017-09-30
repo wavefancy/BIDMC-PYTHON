@@ -130,11 +130,11 @@ if __name__ == '__main__':
         elif allele == alleles[1]:
             return '1'
         elif allele == 'I':
-            return '0'
+            return '0' if len(alleles[0]) > len(alleles[1]) else '1'
         elif allele == 'D':
-            return '1'
+            return '1' if len(alleles[0]) > len(alleles[1]) else '0'
         else:
-            sys.stderr.write('Inconsistent allele coding allele : ' + allele + ', allele set is: '+alleles)
+            sys.stderr.write('Inconsistent allele coding allele : ' + allele + ', allele set is: '+str(alleles))
             sys.stderr.write('\n'+CacheLine+'\n')
             sys.exit(-1)
 
