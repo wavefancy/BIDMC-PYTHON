@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange] [--yr yrange] [--xdt xdtick] [--ydt ydtick] [--nc] [-l] [-p] [--lm int] [--rm int] [--cl text]
+        DistributionPlotV2.py -o outname -x xtitle [-t] [--bs binsize] [--an anno] [--xr xrange] [--yr yrange] [--xdt xdtick] [--ydt ydtick] [--nc] [-l] [-p] [--lm int] [--rm int] [--tm int] [--cl text] [--title txt]
         DistributionPlotV2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -33,7 +33,9 @@
         -p            Set histnorm as 'probability', default: 'probability density'
         --lm int      Set left margin, default 50.
         --rm int      Set right margin, default 30.
-        --cl text     Set color for distribution, eg '#37AA9C|#37AA9C,red'
+        --tm int      Set top margin, default 30.
+        --cl text     Set color for distribution, eg '#37AA9C|#37AA9C::red'
+        --title txt   Set the title of the plot figure.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -85,6 +87,8 @@ if __name__ == '__main__':
     binsize = 0.2
     lm = 50 #left margin
     rm = 30 #right margin
+    tm = 30 #top margin
+    figureTitle = ''
 
     if args['--bs']:
         binsize = float(args['--bs'])
@@ -108,6 +112,8 @@ if __name__ == '__main__':
         lm = int(args['--lm'])
     if args['--rm']:
         rm = int(args['--rm'])
+    if args['--tm']:
+        tm = int(args['--tm'])
     show_curve = True
     if args['--nc']:
         show_curve = False
@@ -120,7 +126,9 @@ if __name__ == '__main__':
         ytitle = 'Probability'
     colors = ['#37AA9C', '#E26868','#FFA556','#2BCDC1','#F66095','#393E46']
     if args['--cl']:
-        colors = args['--cl'].split(',')
+        colors = args['--cl'].split('::')
+    if args['--title']:
+        figureTitle = args['--title']
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -143,7 +151,7 @@ if __name__ == '__main__':
     import plotly
     import plotly.plotly as py
     import plotly.graph_objs as go
-    from plotly.tools import FigureFactory as FF
+    from plotly import figure_factory as FF
 
     if args['-t']:
         import numpy as np
@@ -197,6 +205,9 @@ if __name__ == '__main__':
     )
 
     layout = go.Layout(
+        titlefont=dict(
+            size=14
+        ),
         #title='Points Scored by the Top 9 Scoring NBA Players in 2012',
         yaxis=dict(
             title=ytitle,
@@ -223,7 +234,7 @@ if __name__ == '__main__':
             l=lm,
             r=rm,
             b=40,
-            t=10,
+            t=tm,
         ),
         # paper_bgcolor='rgb(243, 243, 243)',
         # plot_bgcolor='rgb(243, 243, 243)',
@@ -233,6 +244,8 @@ if __name__ == '__main__':
     fig['layout'].update(layout)
     if annoArray:
         fig['layout'].update(annoLayout)
+    if figureTitle:
+        fig['layout'].update(go.Layout(title=figureTitle))
     #fig = go.Figure(data=traces, layout=layout)
     #py.iplot(fig)
     #output the last one

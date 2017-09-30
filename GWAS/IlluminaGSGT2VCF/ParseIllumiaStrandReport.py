@@ -95,6 +95,8 @@ if __name__ == '__main__':
         # print(seq)
         seq = getSeq(left,middle,right)
         ref_a = str(refGenome[chr][start:start+len(seq)])
+        # print(ref_a)
+        # print(seq)
         global refCache
         refCache = ref_a
         # print(ref_a)
@@ -111,6 +113,8 @@ if __name__ == '__main__':
         return []
 
     inData = False
+    chrSet=set([str(x) for x in range(1,23)])
+    [chrSet.add(x) for x in ['X','Y','MT']]
     for line in sys.stdin:
         line = line.strip()
         if line:
@@ -119,6 +123,8 @@ if __name__ == '__main__':
                 chr = ss[chrCol]
                 snpName = ss[snpNameCol]
                 pos = int(ss[posCol])
+
+                #*** Try correct annotations ****
                 if chr == '0': # read additional info from snpname if read chr and pos info. failed.
                     ctemp = snpName.split(':',1)
                     if len(ctemp) == 2:
@@ -144,6 +150,11 @@ if __name__ == '__main__':
                     chr ='X'
                 if chr == 'M':
                     chr = 'MT'
+
+                if chr not in chrSet:
+                    sys.stderr.write('WARN:_No_This_CHR_skipped: %s\n'%(line))
+                    continue
+
                 out = []
 
                 out.append(snpName)
@@ -174,25 +185,39 @@ if __name__ == '__main__':
 
                 #matching with ref.
                 # seq = getSeq(left, alleles[0], right)
+                # *** check wether matching allele1
                 start = pos - flankingSize -1
+                refPos = pos -1 #shift one base left, from 1 based to 0 based.
                 if alleles[0] != '-':
+                    # print('here1')
                     results = checkAndGetAllele(chr,start,left,alleles[0],right, alleles)
                 else:
+                    # pos = pos +1
                     results = checkAndGetAllele(chr,start+1,left,alleles[0],right, alleles)
 
+                # *** if matching allele1 failed, try matching allele2.
+                # print(results)
                 if not results:
                     # seq = getSeq(left, alleles[1], right)
                     if alleles[1] != '-':
+                        # print('here2')
                         results = checkAndGetAllele(chr,start,left,alleles[1],right, alleles)
                     else:
+                        # pos = pos +1
                         results = checkAndGetAllele(chr,start+1,left,alleles[1],right, alleles)
                     # results = checkAndGetAllele(chr,start,seq, alleles)
+                    # if success swap ref and alt.
+                    results = results[::-1]
 
+                # print(results)
                 if results:
                     #check and normalize indels.
                     if results[0] == '-' or results[1] == '-':
-                        pos = pos -1
-                        results = [left[-1] + x.strip('-') for x in results]
+                        pos = pos -1 #shift include one base more.
+                        refPos = refPos -1 #still shift one base left to include that allele.
+                        r = str(refGenome[chr][refPos:refPos+1])
+                        results = [r + x.strip('-') for x in results]
+                        # results = [left[-1] + x.strip('-') for x in results]
 
                     out.append(str(pos))
                     [out.append(x) for x in results]
