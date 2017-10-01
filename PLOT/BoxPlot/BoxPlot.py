@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over] [--bm bmargin] [--ha hanno] [--ady ady] [--haw float] [--cl colors]
+        BoxPlot.py -y ytitle -o outname [-x xtitle ] [--yerr ycol] [--yr yrange] [--hl hline] [--ms msize] [--over] [--bm bmargin] [--ha hanno] [--ady ady] [--haw float] [--cl colors] [--ydt float]
         BoxPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -30,6 +30,7 @@
         --ady ady     Set the distance between horizontal annotation line and text (default 0.025).
         --haw float   Set the horizontal annotation line with, default 2.
         --cl colors   Set the colors of the box plot, eg: '#1F77B4::#2B9D2B'.
+        --ydt float   Set the tick distance on y axis.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -72,7 +73,7 @@ if __name__ == '__main__':
     ady = 0.025
     haw = 2
 
-
+    ydt = ''
     yrange = []
     if args['--yerr']:
         errYCol = int(args['--yerr']) -1
@@ -92,6 +93,8 @@ if __name__ == '__main__':
         ady = float(args['--ady'])
     if args['--haw']:
         haw = float(args['--haw'])
+    if args['--ydt']:
+        ydt = float(args['--ydt'])
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -164,7 +167,7 @@ if __name__ == '__main__':
             # autorange=True,
             showgrid=True,
             zeroline=False,
-            #dtick=5,
+            dtick=ydt,
             # gridcolor='rgb(255, 255, 255)',
             #gridwidth=1,
             zerolinecolor='rgb(255, 255, 255)',
