@@ -1,0 +1,2 @@
+xname s1	s10
+yval 20 30
