@@ -12,6 +12,7 @@
 
     Notes:
         1. Read data from stdin, and output to stdout.
+        2. Use 'NA' to represent empty(invalid) value, the program will omit those values.
 
     Options:
         -t            Output title.
@@ -67,10 +68,10 @@ if __name__ == '__main__':
             vals = []
             olabel = ''
             if label:
-                vals = [float(x) for x in ss[1:]]
+                vals = [float(x) for x in ss[1:] if x != 'NA']
                 olabel = ss[0]
             else:
-                vals = [float(x) for x in ss]
+                vals = [float(x) for x in ss if x != 'NA']
 
             minV = min(vals)
             q1 = np.percentile(vals,1)
