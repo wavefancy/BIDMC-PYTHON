@@ -378,7 +378,9 @@ if __name__ == '__main__':
 
     #add a fit line
     if args['--fl']:
-        from numpy import arange,array,ones
+        #ref: https://plot.ly/python/linear-fits/
+        #ref: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.linregress.html
+        from numpy import arange,array
         from scipy import stats
         allData = []
         for k in xdata.keys():
