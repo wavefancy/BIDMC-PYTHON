@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bmargin] [--ydt float] [--xdt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int] [--ctxt int] [--fl] [--flc color]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bmargin] [--ydt float] [--xdt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int] [--ctxt int] [--fl] [--flc color] [--op]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -43,6 +43,7 @@
         --xta int     X ticks angle (rotate x ticks), eg 45.
         --fl          Add a fitting line.
         --flc color   Fitting line color, default red.
+        --op          Set open box, no right and top axis.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -181,6 +182,10 @@ if __name__ == '__main__':
     flcolor = 'red'
     if args['--flc']:
         flcolor = args['--flc']
+
+    myMirror = True
+    if args['--op']:
+        myMirror = False
 
     # https://plot.ly/python/axes/
     # change x ticks
@@ -413,7 +418,7 @@ if __name__ == '__main__':
         },
         'xaxis':{
             'dtick'   : xdt,
-            'mirror'  :True,
+            'mirror'  :myMirror,
             'range'   :Xrange,
             #       range=[0, 500],
             'showgrid':True,
@@ -546,7 +551,7 @@ if __name__ == '__main__':
         yaxis=dict(
             dtick = ydt, # '' empty string means auto ticks
             # autotick = True,
-            mirror  = True,
+            mirror  = myMirror,
             range   =yrange,
             # showgrid = True,
             showline = True,
