@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        StackedAreaPlot.py -y ytitle -o outname [-x xtitle ] [--yr yrange] [--xr yrange] [--hl hline] [--ms msize] [--bm bmargin] [--aclr colors] [--lclr colors] [--lw int]
+        StackedAreaPlot.py -y ytitle -o outname [-x xtitle ] [--yr yrange] [--xr yrange] [--hl hline] [--ms msize] [--bm bmargin] [--aclr colors] [--lclr colors] [--lw int] [--ydt float]
         StackedAreaPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -26,6 +26,7 @@
                       '#2CA02C,#F3F3F3,#1F77B4'
         --lclr colors Set colors for line.format as '--aclr'.
         --lw int      Line width, default 2.
+        --ydt float   Distance between y ticks.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -54,6 +55,8 @@ c4  1   3   line
 c4  2   5   line
 c4  3   10  line
 c5  2   2   marker
+COMMAND xticktext       chr1    chr2
+COMMAND xtickvals       1     2
     ''');
 
 if __name__ == '__main__':
@@ -88,8 +91,13 @@ if __name__ == '__main__':
         bmargin = int(args['--bm'])
     if args['--lw']:
         lineWidth = int(args['--lw'])
+    ydt = ''
+    if args['--ydt']:
+        ydt = float(args['--ydt'])
 
-    commands = {'vl'}
+    commands = {'vl','xticktext','xtickvals'}
+    xticktext = ''
+    xtickvals = ''
     from collections import OrderedDict
     dataMap = OrderedDict()
     lineDataMap = OrderedDict()
@@ -101,6 +109,10 @@ if __name__ == '__main__':
             if ss[0]=='COMMAND' and ss[1] in commands:
                 if ss[1] == 'vl':
                     vlines.append(float(ss[2]))
+                if ss[1] == 'xticktext':
+                    xticktext = ss[2:]
+                if ss[1] == 'xtickvals':
+                    xtickvals = [float(x) for x in ss[2:]]
             else:
                 try:
                     x = float(ss[1])
@@ -223,7 +235,7 @@ if __name__ == '__main__':
             # autorange=True,
             showgrid=True,
             zeroline=False,
-            #dtick=5,
+            dtick = ydt,
             # gridcolor='rgb(255, 255, 255)',
             #gridwidth=1,
             zerolinecolor='rgb(255, 255, 255)',
@@ -236,7 +248,9 @@ if __name__ == '__main__':
             ticks='outside',
             showline=True,
             title = xtitle,
-            range=xxrange
+            range=xxrange,
+            ticktext=xticktext,
+            tickvals=xtickvals,
         ),
         margin=dict(
             l=50,
