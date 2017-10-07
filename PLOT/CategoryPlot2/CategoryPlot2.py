@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bmargin] [--ydt float] [--xdt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int] [--ctxt int]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bmargin] [--ydt float] [--xdt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int] [--ctxt int] [--fl] [--flc color] [--op]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -35,12 +35,15 @@
         --lfs lfs     Legend font size, default 10.
         --tfs int     X Y tick font size, default 12.
         --ifs int     X Y title font size, default 12.
-        --lm lmargin  Left margin, default 60.
+        --lm lmargin  Left margin, default 50.
         --bm bmargin  Bottom margin, default 40.
         --clr int     Column index for color, 1 based.
         --ctxt int    Column index for text. This column can be empty for some group if it's the last column.
                       But all the points in non-empyt group should have text value, example: in.text.txt.
         --xta int     X ticks angle (rotate x ticks), eg 45.
+        --fl          Add a fitting line.
+        --flc color   Fitting line color, default red.
+        --op          Set open box, no right and top axis.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -88,7 +91,7 @@ if __name__ == '__main__':
     hlines = [] #location for horizontal lines.
     vlines = []
     msize = 5
-    lm = 60    #left margin
+    lm = 50    #left margin
     bm = 40
     clrClm = ''  #value column for parse point color.
     xtickangle = ''
@@ -175,6 +178,14 @@ if __name__ == '__main__':
     ctxt = '' #column index for display text.
     if args['--ctxt']:
         ctxt = int(args['--ctxt']) -1
+
+    flcolor = 'red'
+    if args['--flc']:
+        flcolor = args['--flc']
+
+    myMirror = True
+    if args['--op']:
+        myMirror = False
 
     # https://plot.ly/python/axes/
     # change x ticks
@@ -370,6 +381,32 @@ if __name__ == '__main__':
                     mode = mode,
                 ))
 
+    #add a fit line
+    if args['--fl']:
+        #ref: https://plot.ly/python/linear-fits/
+        #ref: https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.linregress.html
+        from numpy import arange,array
+        from scipy import stats
+        allData = []
+        for k in xdata.keys():
+            for x,y in zip(xdata[k],ydata[k]):
+                allData.append((x,y))
+
+        #sort data by x
+        allData = sorted(allData,key=lambda x:x[0])
+        x = array([x[0] for x in allData])
+        y = array([x[1] for x in allData])
+        slope, intercept, r_value, p_value, std_err = stats.linregress(x,y)
+        line = slope*x+intercept
+
+        plotData.append(go.Scatter(
+                  x=x,
+                  y=line,
+                  mode='lines',
+                  marker=go.Marker(color=flcolor),
+                  name='Fit Line'
+                  )
+            )
     #print(xticktext)
     #print(xtickvals)
     layout = {
@@ -381,7 +418,7 @@ if __name__ == '__main__':
         },
         'xaxis':{
             'dtick'   : xdt,
-            'mirror'  :True,
+            'mirror'  :myMirror,
             'range'   :Xrange,
             #       range=[0, 500],
             'showgrid':True,
@@ -404,28 +441,6 @@ if __name__ == '__main__':
                 #color: '#7f7f7f'
             },
         },
-
-        # 'yaxis':{
-        #     'autotick': True,
-        #     'mirror'  :True,
-        #     'range'   :yrange,
-        #     'showgrid':True,
-        #     'showline':True,
-        #     'ticks'   : 'outside',
-        #     'showticklabels' : True,
-        #     'title'   : ytitle,
-        #     'zeroline':False,
-        #     'tickfont': {
-        #         #family: 'Courier New, monospace',
-        #         'size': tickfontsize,
-        #         #color: '#7f7f7f'
-        #     },
-        #     'titlefont': {
-        #         #family: 'Courier New, monospace',
-        #         'size': titlefontsize,
-        #         #color: '#7f7f7f'
-        #     },
-        # },
     }
     # update legend info.
     legend = go.Layout(
@@ -536,7 +551,7 @@ if __name__ == '__main__':
         yaxis=dict(
             dtick = ydt, # '' empty string means auto ticks
             # autotick = True,
-            mirror  = True,
+            mirror  = myMirror,
             range   =yrange,
             # showgrid = True,
             showline = True,
