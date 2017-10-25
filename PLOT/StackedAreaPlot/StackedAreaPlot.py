@@ -19,6 +19,7 @@
         -o outname    Output file name: output.html.
         --yr yrange   Set the yAxis plot range: float1,float2.
         --xr yrange   Set the xAxis plot range: float1,float2.
+        --ydt float   Set the tick distance on y axis.
         --hl hline    Add horizontal lines: float1,float2.
         --ms msize    Set marker size: float, default 2.
         --bm bmargin  Bottom margin, default 40.
@@ -79,6 +80,7 @@ if __name__ == '__main__':
 
     yrange = []
     xxrange = []
+    ydt = ''
     if args['--yr']:
         yrange = list(map(float, args['--yr'].split(',')))
     if args['--xr']:
@@ -91,6 +93,7 @@ if __name__ == '__main__':
         bmargin = int(args['--bm'])
     if args['--lw']:
         lineWidth = int(args['--lw'])
+
     ydt = ''
     if args['--ydt']:
         ydt = float(args['--ydt'])
@@ -242,7 +245,8 @@ if __name__ == '__main__':
             zerolinewidth=2,
             ticks='outside',
             showline=True,
-            range=yrange
+            range=yrange,
+            dtick=ydt
         ),
         xaxis=dict(
             ticks='outside',

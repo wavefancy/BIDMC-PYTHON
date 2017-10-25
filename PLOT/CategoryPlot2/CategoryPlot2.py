@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bmargin] [--ydt float] [--xdt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int] [--ctxt int] [--fl] [--flc color] [--op]
+        CategoryPlot2.py -x xtitle -y ytitle -o outname [--yerr ycol] [--yr yrange] [--vl vline] [--hl hline] [--ab abline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bm bmargin] [--ydt float] [--xdt float] [--clr int] [--xta int] [--xr xrange] [--tfs int] [--ifs int] [--ctxt int] [--fl] [--flc color] [--op] [--cms int]
         CategoryPlot2.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -41,6 +41,8 @@
         --ctxt int    Column index for text. This column can be empty for some group if it's the last column.
                       But all the points in non-empyt group should have text value, example: in.text.txt.
         --xta int     X ticks angle (rotate x ticks), eg 45.
+        --cms int     Column index for marker symbol. Default: circle.
+                          All of the supported symbols: https://plot.ly/python/reference/#scatter-marker-symbol
         --fl          Add a fitting line.
         --flc color   Fitting line color, default red.
         --op          Set open box, no right and top axis.
@@ -187,6 +189,10 @@ if __name__ == '__main__':
     if args['--op']:
         myMirror = False
 
+    cms = ''
+    if args['--cms']:
+        cms = int(args['--cms']) -1
+
     # https://plot.ly/python/axes/
     # change x ticks
     #ticktext=labels,
@@ -199,6 +205,7 @@ if __name__ == '__main__':
     ydata = OrderedDict() #{categoryName -> []}
     errY  = {} #{categoryName -> []} error bar for Y.ss
     pcolors = {} # {categoryName -> []} error bar for point colors.
+    symbols = {} # for point symbol.
     ptxt = {} #for display text.
     commands = {'vl','xticktext','xtickvals','groupAnnotation'}
 
@@ -243,6 +250,9 @@ if __name__ == '__main__':
                     if ctxt and len(ss) > ctxt:
                         addData(ptxt, ss[0], ss[ctxt])
 
+                    if cms:
+                        addData(symbols,ss[0], ss[cms])
+
                     addData(xdata, ss[0], x)
                     addData(ydata, ss[0] ,y)
                     if Xrange == 'tight':
@@ -280,6 +290,10 @@ if __name__ == '__main__':
     #print(pcolors)
     #print(xdata)
     for k in xdata.keys(): #data category.
+        if cms: #set point markers.
+            marker['symbol'] = symbols[k]
+            # print(marker['symbol'])
+
         if k in errY:
             color = 'dark'
             size = '1'
@@ -381,6 +395,7 @@ if __name__ == '__main__':
                     mode = mode,
                 ))
 
+    # print(plotData)
     #add a fit line
     if args['--fl']:
         #ref: https://plot.ly/python/linear-fits/
