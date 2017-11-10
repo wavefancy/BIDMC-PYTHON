@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        FormatGeno.py
+        FormatGeno.py [-l]
         FormatGeno.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -14,6 +14,7 @@
         2. See example by -f.
 
     Options:
+        -l            Only list individual names.
         -h --help     Show this screen.
         -v --version  Show version.
         -f --format   Show input/output file format example.
@@ -37,6 +38,11 @@ def ShowFormat():
 FGGU11  FGGU117 FGGU1112        FGGU114 FGGU1110
 0/1:16,13       0/1:14,19       ./.     0/1:13,18       ./.
 0/1:19,23       0/1:13,12       ./.:3,0 0/1:17,14       0/0:13,0
+
+    #output: -l
+    ------------------------
+FGGU1    FGGU11,FGGU117,FGGU1112,FGGU114,FGGU1110
+FGGU1    FGGU11,FGGU117,FGGU1112,FGGU114,FGGU1110
     ''');
 
 if __name__ == '__main__':
@@ -46,6 +52,10 @@ if __name__ == '__main__':
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
+
+    onlyListIDName = False
+    if args['-l']:
+        onlyListIDName = True
 
     from collections import OrderedDict
     idGeno = OrderedDict() #{idName - [geno list.]}
@@ -58,27 +68,40 @@ if __name__ == '__main__':
                 temp = ss[i].split('[')
                 if len(temp) == 2:
                     ss[i] = temp[1]
+                    if onlyListIDName:
+                        sys.stdout.write('%s\t '%(temp[0][1:])) #list family name.
                 if ss[i][-1] == ']' or ss[i][-1] == ')':
                     ss[i] = ss[i][0:-1]
 
-            #store data.
-            for x in ss:
-                temp = x.split(':',maxsplit=1)
-                if temp[0] not in idGeno:
-                    idGeno[temp[0]] = []
-                idGeno[temp[0]].append(temp[1])
+            #only list in names
+            if onlyListIDName:
+                out = []
+                for x in ss:
+                    temp = x.split(':',maxsplit=1)
+                    out.append(temp[0])
+                sys.stdout.write('%s\n'%(','.join(out)))
+            else:
+                #store data.
+                for x in ss:
+                    temp = x.split(':',maxsplit=1)
+                    if temp[0] not in idGeno:
+                        idGeno[temp[0]] = []
+                    idGeno[temp[0]].append(temp[1])
 
-    #output results
-    sys.stdout.write('%s\n'%('\t'.join(idGeno.keys())))
-    genoArr = []
-    for k in idGeno.keys():
-        genoArr.append(idGeno[k])
-    #print(genoArr)
-    for i in range(len(genoArr[0])):
-        out = []
-        for x in genoArr:
-            out.append(x[i])
-        sys.stdout.write('%s\n'%('\t'.join(out)))
+    if onlyListIDName:
+        pass
+    else:
+        #output results
+        sys.stdout.write('%s\n'%('\t'.join(idGeno.keys())))
+        genoArr = []
+        for k in idGeno.keys():
+            genoArr.append(idGeno[k])
+        #print(genoArr)
+        for i in range(len(genoArr[0])):
+            out = []
+            for x in genoArr:
+                out.append(x[i])
+            sys.stdout.write('%s\n'%('\t'.join(out)))
 
 sys.stdout.flush()
 sys.stdout.close()
