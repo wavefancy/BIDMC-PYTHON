@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr] [--yr yrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--rma rmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
+        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr] [--yr yrange] [--xr xrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--rma rmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
         BarPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -19,6 +19,7 @@
         -o outname    Output file name: output.html.
         --yerr        Set plot y error bar, default False, input should like format 2.
         --yr yrange   Set the yAxis plot range: float1,float2.
+        --xr xrange   Set the yAxis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
         --vl vline    Add vertical lines: float1, float2...
         --ms msize    Set marker size: float, default 5.
@@ -96,10 +97,13 @@ if __name__ == '__main__':
     bcolor = []
 
     yrange = []
+    xxrange = []
     if args['--yerr']:
         errY = True
     if args['--yr']:
         yrange = list(map(float, args['--yr'].split(',')))
+    if args['--xr']:
+        xxrange = list(map(float, args['--xr'].split(',')))
     if args['--hl']:
         hlines = list(map(float, args['--hl'].split(',')))
     if args['--vl']:
@@ -259,6 +263,7 @@ if __name__ == '__main__':
         barmode= barmode,
         xaxis=dict(
             dtick = xdt,
+            range = xxrange
         #     tickfont=dict(
         #         color='#ff7f0e'
         #     ),
