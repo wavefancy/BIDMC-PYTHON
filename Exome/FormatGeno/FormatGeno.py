@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        FormatGeno.py [-l]
+        FormatGeno.py [(-l -c int)]
         FormatGeno.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -14,6 +14,8 @@
         2. See example by -f.
 
     Options:
+        -c int        Column index for reformating.
+                        The contect of other columns will be copyed to output.
         -l            Only list individual names.
         -h --help     Show this screen.
         -v --version  Show version.
@@ -39,10 +41,23 @@ FGGU11  FGGU117 FGGU1112        FGGU114 FGGU1110
 0/1:16,13       0/1:14,19       ./.     0/1:13,18       ./.
 0/1:19,23       0/1:13,12       ./.:3,0 0/1:17,14       0/0:13,0
 
-    #output: -l
-    ------------------------
-FGGU1    FGGU11,FGGU117,FGGU1112,FGGU114,FGGU1110
-FGGU1    FGGU11,FGGU117,FGGU1112,FGGU114,FGGU1110
+#input:
+------------------------
+(FGGU1[FGGU11:0/1:16,13;FGGU117:0/1:14,19;FGGU1112:./.;FGGU114:0/1:13,18];FGGU1110:./.) COL1
+(FGGU1[FGGU11:0/1:19,23;FGGU117:0/1:13,12;FGGU1112:./.:3,0;FGGU114:0/1:17,14];FGGU1110:0/0:13,0) COL2
+
+#output: -l -c 1
+------------------------
+COL1    FGGU11
+COL1    FGGU117
+COL1    FGGU1112
+COL1    FGGU114
+COL1    FGGU1110
+COL2    FGGU11
+COL2    FGGU117
+COL2    FGGU1112
+COL2    FGGU114
+COL2    FGGU1110
     ''');
 
 if __name__ == '__main__':
@@ -54,8 +69,10 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     onlyListIDName = False
+    col = -1
     if args['-l']:
         onlyListIDName = True
+        col = int(args['-c']) -1
 
     from collections import OrderedDict
     idGeno = OrderedDict() #{idName - [geno list.]}
@@ -63,23 +80,30 @@ if __name__ == '__main__':
         line = line.strip()
         if line:
             #print(line)
+            out = []
+            if col >= 0:
+                kk = line.split()
+                line = kk[col]
+                out = [kk[i] for i in range(len(kk)) if i != col]
+
             ss = line.split(';')
             for i in range(len(ss)):
                 temp = ss[i].split('[')
                 if len(temp) == 2:
                     ss[i] = temp[1]
-                    if onlyListIDName:
-                        sys.stdout.write('%s\t '%(temp[0][1:])) #list family name.
+                    # if onlyListIDName:
+                    #     sys.stdout.write('%s\t '%(temp[0][1:])) #list family name.
                 if ss[i][-1] == ']' or ss[i][-1] == ')':
                     ss[i] = ss[i][0:-1]
 
             #only list in names
             if onlyListIDName:
-                out = []
                 for x in ss:
                     temp = x.split(':',maxsplit=1)
-                    out.append(temp[0])
-                sys.stdout.write('%s\n'%(','.join(out)))
+                    # out.append(temp[0])
+                    sys.stdout.write('%s\t'%('\t'.join(out)))
+                    sys.stdout.write('%s\n'%(temp[0]))
+                # sys.stdout.write('%s\n'%('\n'.join(out)))
             else:
                 #store data.
                 for x in ss:
