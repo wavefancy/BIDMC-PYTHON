@@ -14,6 +14,20 @@ options:
             Need packages of biocLite(c("foreach","doParallel"))
  ' -> doc
 
+# funtion for deal with process substution.
+# https://stackoverflow.com/questions/15784373/process-substitution
+OpenRead <- function(arg) {
+  if (arg %in% c("-", "/dev/stdin")) {
+    f = file("stdin", open = "r")
+  } else if (grepl("^/dev/fd/", arg)) {
+    f = fifo(arg, open = "r")
+  } else {
+    f = file(arg, open = "r")
+  }
+  #on.exit(close(f))
+  return(f)
+}
+
 # load the docopt library
 library(docopt)
 # retrieve the command-line arguments
@@ -23,7 +37,9 @@ opts <- docopt(doc)
 inNetWork = opts$'n' # input network file, with weight.
 kgenes = NULL #known gens list.
 if (!is.null(opts$'k')) {
-  kgenes = as.character(read.table(opts$'k', header = F)[,1])
+  f=OpenRead(opts$'k')
+  kgenes = as.character(read.table(f, header = F)[,1])
+  on.exit(close(f))
 }
 numcores = NULL
 if (!is.null(opts$'t')){
@@ -44,7 +60,9 @@ if (!is.null(opts$'r')){
 library(igraph)
 library(dnet)
 
-el = read.table(opts$'n', header = F)
+f = OpenRead(opts$'n')
+el = read.table(f, header = F)
+on.exit(close(f))
 #el=read.csv(file.choose()) # read  the 'el.with.weights.csv' file
 el[,1]=as.character(el[,1]) #Because the vertex IDs in this dataset are numbers, we make sure igraph knows these should be treated as characters. Otherwise, it'll create problems (see page on data import)
 el[,2]=as.character(el[,2])
@@ -57,7 +75,16 @@ E(g)$weight=as.numeric(el[,3]) #We then add the edge weights to this network by 
 #node name
 nname = V(g)$name
 kstarts = NULL
+#print(kgenes)
 if (!is.null(kgenes)){
+  t = kgenes[!(kgenes %in% nname)] #gene not in graph. 
+  #print(t)
+  if(length(t) > 0){
+    print('*** ERROR: Can not find these nodes in graph:')
+    print(t)
+    q("no",-1)
+  }
+  
   kstarts = seq(0,0,length.out = length(nname))
   kstarts[nname %in% kgenes] = 1
 }
@@ -92,3 +119,5 @@ steadyP = dRWR(g, normalise = "column",
 
 write.table(format(as.matrix(steadyP), digits = 4, scientific = T), 
             opts$'o',quote = FALSE, col.names = FALSE)
+
+q("no")
