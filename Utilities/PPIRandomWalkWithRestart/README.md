@@ -4,11 +4,11 @@ An R implementation of Random Walk with Restart (RWR) algorithm
 
 Requires modules `dnet`, `docopt`, `foreach`, and `doParallel`.
 
-`
+```
 source("http://bioconductor.org/biocLite.R")
 biocLite()
 biocLite(c("dnet","docopt","foreach","doParallel"))
-`
+```
 
 For a description of the Random Walk with Restart (RWR) algorithm, which
 this module implements, see the paper by Kohler et al. at
@@ -26,7 +26,7 @@ This module can be used to run:
 
 ## Running a random walk
 
-The PPIRandomWalkWithRestart.R script can be used to run a random walk. The syntax looks like:
+The `PPIRandomWalkWithRestart.R` script can be used to run a random walk. The syntax looks like:
 
 `Rscript PPIRandomWalkWithRestart.R -n ppi.txt -k kgene.txt -o output.txt -t 3`
 
@@ -46,11 +46,13 @@ For example, run a random walk with random picking of 2 genes as start from inpu
 without replacement each sampling process, repeat this process 3 times.
 The output is quantile normalized between all columns. Each column is the result
 for one random sampling.
+
 `Rscript PPIRandomWalkWithRestart.R -n ppi.txt -o output23.txt -t 3 -r 2-3`
 
 Or, run a pre-selected starts with random sampling. The first column is the result for using
-the pre-selected genes as start, columns '2-n' is the results for random sampling.
+the pre-selected genes as start, columns '2-n' is the results for random sampling (without counting row title).
 The output is quantile normalized between all columns.
+
 `Rscript PPIRandomWalkWithRestart.R -n ppi.txt -k kgene.txt -o outputk23.txt -t 3 -r 2-3`
 
 ## Using the module
