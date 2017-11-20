@@ -116,8 +116,9 @@ steadyP = dRWR(g, normalise = "column",
      setSeeds = setSeeds, restart = restart, normalise.affinity.matrix ="quantile",
      parallel = TRUE, multicores = opts$'t', verbose = T)
 #steadyP
-
-write.table(format(as.matrix(steadyP), digits = 4, scientific = T), 
+out = as.matrix(steadyP)
+rownames(out) = nname
+write.table(format(out, digits = 4, scientific = T), 
             opts$'o',quote = FALSE, col.names = FALSE)
 
 q("no")
