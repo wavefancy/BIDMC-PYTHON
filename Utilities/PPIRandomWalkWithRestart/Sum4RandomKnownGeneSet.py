@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        Sum4RandomKnownGeneSet.py ([-k file] | [-s int -r int])
+        Sum4RandomKnownGeneSet.py (-k file | -s int -r int)
         Sum4RandomKnownGeneSet.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -31,78 +31,73 @@ signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 def ShowFormat():
     '''File format example'''
     print('''
-    #Input example
-    ------------------------
-    "
-    123 # comments #
-    456 # multiple
-    line
-    comments#
-    // line comments
-    789
-    !new line
-    "
-    "123 # comments# 456 789"
+#Input example
+------------------------
+1       1
+2       2
+3       3
+4       4
+5       5
+6       7
 
-    #Output example
-    ------------------------
-    123  456 789
+#Output example: -k <(echo -e '1\n2')
+------------------------
+3
+
+#Output example: -r 3 -s 4
+------------------------
+1.6000e+01
+1.4000e+01
+1.0000e+01
           ''');
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='2.0')
-    #version 2.0
-    #1. add function for line comments.
+    args = docopt(__doc__, version='1.0')
 
-    commentDelimeter = '#'
-    linecomment = '//'
-    linebreaker = '!'
+    knownGenes = set()
+    sSize = -1 # random selection gene set size.
+    rTimes = -1 # the number of times for random selection.
 
-    if args['-d']:
-        commentDelimeter = args['-d']
-    if args['-l']:
-        linecomment = args['-l']
-    if args['-b']:
-        linebreaker = args['-b']
+    if args['-k']:
+        with open(args['-k'],'r') as target:
+            for line in target:
+                if line:
+                    line = line.strip()
+                    knownGenes.add(line)
+
+    if args['-s']:
+        sSize = int(args['-s'])
+    if args['-r']:
+        rTimes = int(args['-r'])
     #print(args)
 
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
 
-    #split by lines.
-    import re
-    lines = args['<string>'].strip()
-    lines = lines.split(commentDelimeter)
-    if len(lines) %2 == 0:
-        sys.stderr.write('Error: Comment delimter should be appeared in pair!.\n')
-        sys.exit(-1)
+    allData = []
+    for line in sys.stdin:
+        line = line.strip()
+        if line:
+            ss = line.split()
+            allData.append((ss[0],float(ss[1])))
 
-    #skip comments
-    arr2 = []
-    for i in range(0,len(lines),2):
-        arr2.append(lines[i])
+    if knownGenes:
+        out = [x for x in allData if x[0] in knownGenes]
+        if len(out) != len(knownGenes):
+            sys.stderr.write('ERROR: Not all genes in known genes has weight or repeat entries from stdin.\n')
+            sys.exit(-1)
 
-    #remove line breakers.
-    arr1 = []
-    for x in arr2:
-        if x:
-            for y in x.splitlines():
-                y = y.strip()
-                #compatible with bash line breaker.
-                y = y.strip('\\')
-                if not y.startswith(linecomment): #skip line commented line.
-                    arr1.append(y)
+        sys.stdout.write('%.4e\n'%(sum([x[1] for x in out])))
 
-    out = ' '.join(arr1)
-    out = re.sub(r'\s+',' ',out)
-    out = out.split(linebreaker)
-    for x in out:
-        x = x.strip()
-        sys.stdout.write('%s\n'%(x))
-
-    # if len(lines) == 1:
-    #     lines = re.split('\\\\n',lines[0])
+    # print(allData)
+    allData = [x[1] for x in allData]
+    import numpy.random as random
+    if rTimes >0:
+        for i in range(rTimes):
+            out = random.choice(allData,size=sSize,replace=False)
+            # print(out)
+            sys.stdout.write('%.4e\n'%(sum([x for x in out])))
 
 sys.stdout.flush()
 sys.stdout.close()
