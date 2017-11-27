@@ -1,5 +1,5 @@
 
-'usage: PPIRandomWalkWithRestart.R -n <file> -o <str> [-k <file> -r <s>-<t> -t <n>]
+'usage: PPIRandomWalkWithRestart.R -n <file> -o <str> [-k <file> -r <s>-<t> -t <n>] [-p <float>]
 
 Do random walk on a PPI network, 
 prioritize new genes according to RWR steady probability.
@@ -9,6 +9,7 @@ options:
             Node1 Node2 weight.
  -o <str>   Output file name.
  -k <file>  The list of start gene names, no header.
+ -p <float> The probability for restart, default is 0.5.
  -r <s>-<t> Random select <s> genes as start genes, repeat <t> times.
  -t <n>     Set the number of cpus for parallel computing.
             Need packages of biocLite(c("foreach","doParallel"))
@@ -44,6 +45,12 @@ if (!is.null(opts$'k')) {
 numcores = NULL
 if (!is.null(opts$'t')){
   numcores = as.numeric(opts$'t')
+}
+
+# The probability for restart.
+restart = 0.5
+if (!is.null(opts$'p')){
+  restart = as.numeric(opts$'p')
 }
 
 ssize = NULL # resampling size.
@@ -111,7 +118,6 @@ setSeeds = cbind(kstarts, randomStars)
 rownames(setSeeds)=nname
 #print(setSeeds)
 
-restart = 0.5
 steadyP = dRWR(g, normalise = "column",
      setSeeds = setSeeds, restart = restart, normalise.affinity.matrix ="quantile",
      parallel = TRUE, multicores = opts$'t', verbose = T)
