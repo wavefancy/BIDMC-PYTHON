@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr] [--yr yrange] [--xr xrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--rma rmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color]
+        BarPlot.py -y ytitle -o outname [-x xtitle] [--yerr] [--yr yrange] [--xr xrange] [--ydt float] [--xdt float] [--vl vline] [--hl hline] [--ms msize] [--mt mtype] [--lloc lloc] [--lfs lfs] [--lm lmargin] [--bma bmargin] [--rma rmargin] [--bm bm] [--or or] [--gcl color] [--bcl color] [--ta tanno] [--ts int] [--lbcl color] [--xtfs int] [--ytfs int]
         BarPlot.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -41,6 +41,8 @@
                         Example: 2_0.5_**
                         Each category for the box plot with x-coordinate as 0,1,2...n-1.
         --ts int      Text annotation text size, default 12.
+        --xtfs int    X ticks font size, default 12.
+        --ytfs int    Y ticks font size, default 12.
         --ydt float   Set distance between y ticks.
         --xdt float   Set distance between x ticks.
         --lbcl color  Set legend boder color, eg. #EEEEEE.
@@ -141,6 +143,12 @@ if __name__ == '__main__':
         ydt = float(args['--ydt'])
     if args['--xdt']:
         xdt = float(args['--xdt'])
+    ytfs = 12
+    xtfs = 12
+    if args['--ytfs']:
+        ytfs = float(args['--ytfs'])
+    if args['--xtfs']:
+        xtfs = float(args['--xtfs'])
 
     xanchor = 'right'
     yanchor = 'bottom'
@@ -263,10 +271,11 @@ if __name__ == '__main__':
         barmode= barmode,
         xaxis=dict(
             dtick = xdt,
-            range = xxrange
-        #     tickfont=dict(
-        #         color='#ff7f0e'
-        #     ),
+            range = xxrange,
+            tickfont=dict(
+                # color='#ff7f0e',
+                size=xtfs
+            ),
         #     tickangle = -90,
         #     position=0,
         #     ticktext = xtickName,
@@ -277,6 +286,10 @@ if __name__ == '__main__':
             title =  ytitle,
             range = yrange,
             dtick = ydt,
+            tickfont=dict(
+                # color='#ff7f0e',
+                size=ytfs
+            ),
             # showgrid=False,
             # showline=False,
             # showticklabels=False,
