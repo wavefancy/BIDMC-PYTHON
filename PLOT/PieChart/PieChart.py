@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        PieChart.py -o outname [--bm bmargin] [--lm lmargin]  [--rm rmargin] [--lx legendx]
+        PieChart.py -o outname [--bm bmargin] [--lm lmargin] [--rm rmargin] [--tm tmargin] [--lx legendx] [--ti txt] [--sl] [--ts int]
         PieChart.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -17,13 +17,19 @@
         -x xtitle
         -y ytitle
         -o outname    Output file name: output.html.
-        --yerr yecol  Column index for y error bar.
+        --ti txt      Textinfo: Any combination of "label", "text", "value", "percent",
+                         joined with a "+" OR "none".
+                         Examples: "label", "text", "label+text", "label+text+value", "none"
+                         Default: label+percent
+        --sl          Show legend.
+        --ts int      Set text size, default 10.
         --yr yrange   Set the yAxis plot range: float1,float2.
         --hl hline    Add horizontal lines: float1,float2.
         --ms msize    Set marker size: float, default 2.
         --bm bmargin  Bottom margin, default 10.
         --lm lmargin  Left margin, default 10.
         --rm rmargin  Right margin, default 0.
+        --tm tmargin  Top margin, default 10.
         --lx legendx  X loction for legend, default 1, percent relative to x-axis.
         --over        Overlap dot with box.
         -h --help     Show this screen.
@@ -39,11 +45,11 @@ signal(SIGPIPE, SIG_DFL)
 def ShowFormat():
     '''Input File format example:'''
     print('''
-    #input example
-    ------------------------
-c1  1   10  1
-c2  2   -5  3
-c3  5   3   2
+#input example
+------------------------
+c1  1
+c2  2
+c3  5
     ''');
 
 if __name__ == '__main__':
@@ -58,15 +64,28 @@ if __name__ == '__main__':
     bmargin = 10
     lmargin = 10
     rmargin = 0
+    tmargin = 10
     lengdx = 1
+    textinfo = 'label+percent'
+    showlegend = False
+    ts = 10 #text size.
     if args['--bm']:
         bmargin = float(args['--bm'])
     if args['--lm']:
         lmargin = float(args['--lm'])
     if args['--rm']:
         rmargin = float(args['--rm'])
+    if args['--tm']:
+        tmargin = float(args['--tm'])
     if args['--lx']:
         lengdx = float(args['--lx'])
+    if args['--sl']:
+        showlegend = True
+    if args['--ti']:
+        textinfo = args['--ti']
+    if args['--ts']:
+        ts = args['--ts']
+    # print(textinfo)
 
     commands = {'vl'}
     data = [] #[[name, val1,val2 ..], [name, val1, val2...]]
@@ -87,7 +106,9 @@ if __name__ == '__main__':
     print(x_data)
     print(y_data)
     traces = []
-    traces.append(go.Pie(labels=x_data,values=y_data))
+    traces.append(go.Pie(labels=x_data,values=y_data,textinfo=textinfo,showlegend=showlegend,
+        textfont=dict(size=ts)
+    ))
 
     layout = go.Layout(
         #title='Points Scored by the Top 9 Scoring NBA Players in 2012',
@@ -110,11 +131,11 @@ if __name__ == '__main__':
             l=lmargin,
             r=rmargin,
             b=bmargin,
-            t=10,
+            t=tmargin,
         ),
-        paper_bgcolor='rgb(243, 243, 243)',
-        plot_bgcolor='rgb(243, 243, 243)',
-        showlegend=True,
+        # paper_bgcolor='rgb(243, 243, 243)',
+        # plot_bgcolor='rgb(243, 243, 243)',
+        showlegend=showlegend,
         legend=dict(
          x=lengdx,
          y=1
