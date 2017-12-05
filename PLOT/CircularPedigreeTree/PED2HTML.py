@@ -10,7 +10,7 @@
         PED2HTML.py -h | --help | -v | --version | -f | --format
 
     Notes:
-        1. Read results from stdin, and output results to stdout.
+        1. Read sigle family ped file from stdin, and output results to stdout.
         2. See example by -f.
 
     Options:
@@ -20,6 +20,7 @@
 
 """
 import sys
+import json
 from docopt import docopt
 from signal import signal, SIGPIPE, SIG_DFL
 signal(SIGPIPE, SIG_DFL)
@@ -36,13 +37,29 @@ c3  5
 
 class Node(object):
 
-    def __init__(self, name, children, mateName):
+    def __init__(self, name):
         self.name = name
-        self.children = children
-        self.mateName = mateName
+        self.children = []
+        self.mateName = ''
 
     def addOneChild(self, childName):
         self.children.append(childName)
+    def setMateName(self, name):
+        self.mateName = name
+    def getMateName(self):
+        return self.mateName
+    def toMapString(self):
+        smap = self.__dict__
+        # print(smap)
+        if self.children:
+            stemp = ''
+            for x in self.children:
+                stemp += x.toMapString()
+            smap['children'] = '[' + stemp + ']'
+        else:
+            smap.pop('children')
+        # print(smap)
+        return str(smap).replace("\"",'')
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='1.0')
@@ -58,9 +75,56 @@ if __name__ == '__main__':
         line = line.strip()
         if line:
             ss = line.split()
-            ped_data[ss[0]] = ss
+            ped_data[ss[1]] = ss
 
-    
+    root = '';
+    NodeMap = {} #name -> Node
+    def checkAddNode(name):
+        if name != '0' and name not in NodeMap:
+            NodeMap[name] = Node(name)
+
+    JsonMap = {}
+    for name,data in ped_data.items():
+        #create node
+        [checkAddNode(x) for x in data[1:4]]
+        #set node children.
+        [NodeMap[x].addOneChild(NodeMap[data[1]]) for x in data[2:4] if x != '0']
+        #set mating info.
+        if data[2] != '0' and data[3] != '0':
+            NodeMap[data[2]].setMateName(data[3])
+            NodeMap[data[3]].setMateName(data[2])
+        elif data[2] == '0' and data[3] == '0':
+            pass
+        else:
+            sys.stderr.write('ERROR: Please set full parent info. Error at: %s\n'%('\t'.join(data)))
+            sys.exit(-1)
+
+        #add data to JsonMap
+        JsonMap[name] = {
+            'name': name,
+            'father': data[2],
+            'mother': data[3],
+            'sex': data[4],
+            'affected': data[5]
+        }
+
+    #find the root node, and convert results to josn.
+    print(ped_data)
+    for name,data in ped_data.items():
+        if data[2] == '0' and data[3] == '0':
+            mateName = NodeMap[name].getMateName()
+            if mateName:
+                mdata = ped_data[mateName]
+                if mdata[2] == '0' and mdata[3] == '0':
+                    # print("ROOT NAME:" + name)
+                    # Indeed we have two roots, but we chose abitrary one as root.
+                    root = NodeMap[name]
+                    break
+
+    print(root.toMapString())
+    print(JsonMap)
+    # j = json.dumps(root.toMapString(), sort_keys=True,indent=4, separators=(',', ': '))
+    # sys.stdout.write('%s\n'%(j))
 
 
 sys.stdout.flush()

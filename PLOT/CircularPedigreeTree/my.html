@@ -20,38 +20,47 @@
         <div id="viz"></div>
 
         <script type="text/javascript">
+            //define plot attribute.
+            SHAPE_SIZE = 10
+            SHAPE_EDGE_SIZE = 2
+            SHAPE_COLOR = 'blue'
+
 
             //JSON object with the data
-            var treeData = {"name" : "A", "info" : "tst", "children" : [
-                    {"name" : "A1", "children" : [
-                            {"name" : "A12" },
-                            {"name" : "A13" },
-                            {"name" : "A14" },
-                            {"name" : "A15" },
-                            {"name" : "A16" }
-                        ] },
-                    {"name" : "A2", "children" : [
-                            {"name" : "A21" },
-                            {"name" : "A22", "children" : [
-                            {"name" : "A221" },
-                            {"name" : "A222" },
-                            {"name" : "A223" },
-                            {"name" : "A22" }
-                        ]},
-                            {"name" : "A23" },
-                            {"name" : "A24" },
-                            {"name" : "A25" }] },
-                    {"name" : "A3", "children": [
-                            {"name" : "A31", "children" :[
-                                    {"name" : "A311" },
-                                    {"name" : "A312" },
-                                    {"name" : "A313" },
-                                    {"name" : "A314" },
-                                    {"name" : "A315" }
-                                ]}] }
-                ]};
+            // var treeData = {"name" : "A", "info" : "tst", "children" : [
+            //         {"name" : "A1", "children" : [
+            //                 {"name" : "A12" },
+            //                 {"name" : "A13" },
+            //                 {"name" : "A14" },
+            //                 {"name" : "A15" },
+            //                 {"name" : "A16" }
+            //             ] },
+            //         {"name" : "A2", "children" : [
+            //                 {"name" : "A21" },
+            //                 {"name" : "A22", "children" : [
+            //                 {"name" : "A221" },
+            //                 {"name" : "A222" },
+            //                 {"name" : "A223" },
+            //                 {"name" : "A22" }
+            //             ]},
+            //                 {"name" : "A23" },
+            //                 {"name" : "A24" },
+            //                 {"name" : "A25" }] },
+            //         {"name" : "A3", "children": [
+            //                 {"name" : "A31", "children" :[
+            //                         {"name" : "A311" },
+            //                         {"name" : "A312" },
+            //                         {"name" : "A313" },
+            //                         {"name" : "A314" },
+            //                         {"name" : "A315" }
+            //                     ]}] }
+            //     ]};
+            var treeData = {'name': 'NA06985', 'children': [{'name': 'A', 'children': [{'name': 'B', 'mateName': ''}], 'mateName': 'BM'}], 'mateName': 'NA06991'};
 
             treeData = {"name" : "root", "info" : "root", "children" : [treeData]}
+
+            var annotation = {'NA06985': {'name': 'NA06985', 'father': '0', 'mother': '0', 'sex': '1', 'affected': '1'}, 'NA06991': {'name': 'NA06991', 'father': '0', 'mother': '0', 'sex': '1', 'affected': '1'}, 'A': {'name': 'A', 'father': 'NA06985', 'mother': 'NA06991', 'sex': '2', 'affected': '2'}, 'B': {'name': 'B', 'father': 'A', 'mother': 'BM', 'sex': '2', 'affected': '1'},'BM': {'name': 'BM', 'father': '0', 'mother': '0', 'sex': '1', 'affected': '2'}}
+            console.log(annotation['A']);
             // Create a svg canvas
             var vis = d3.select("#viz").append("svg:svg")
             .attr("width", 600)
@@ -129,7 +138,7 @@
                   // console.log("astring1"+astring)
                   //arc for plot mating partner.
                   xSHIFT = -10
-                  pEnd = {x:source.x + xSHIFT, y:source.y, name:'new'}
+                  pEnd = {x:source.x + xSHIFT, y:source.y, name:source.mateName}
                   pstring = makeArcString(source,pEnd)
                   // console.log("astring2"+astring);
                   // console.log("pstring"+pstring);
@@ -160,24 +169,59 @@
                 plotNodes.push({x:d.x,y:d.y,name:d.name})
             })
 
-            console.log(JSON.stringify(newNodes));
+            // console.log(JSON.stringify(nodes.concat(newNodes)));
+            nodes.concat(newNodes).map(function(d){console.log(d.name);})
 
-            var node = vis.selectAll("g.node")
-            // .data(nodes)
+            var nodes = vis.selectAll("g.node")
             .data(nodes.concat(newNodes))
             .enter().append("svg:g")
+
+            var getfill = function(x){
+                if(annotation[x].affected == '2'){
+                    return SHAPE_COLOR;
+                }else {
+                    return 'white';
+                }
+            }
+
+            //add shape for females
+            nodes
+            .filter(function(d){
+              if (d.name in annotation && annotation[d.name].sex == '2'){
+                return true;
+              }else {
+                return false;
+              }})
             .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+            .append("svg:circle")
+            .attr("r", SHAPE_SIZE/2.0)
+            .style("stroke-width", SHAPE_EDGE_SIZE)    // set the stroke width
+            .style("stroke", SHAPE_COLOR)   // set the line colour
+            .style("fill", function(d){return getfill(d.name);})
 
-            // Add the dot at every node
-            node.append("svg:circle")
-            .attr("r", 5.5);
+            //add shape for males
+            nodes
+            .filter(function(d){
+              if (d.name in annotation && annotation[d.name].sex == '1'){
+                return true;
+              }else {
+                return false;
+              }})
+            .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y - SHAPE_SIZE/2.0) + ")"; })
+            .append("svg:rect")
+            .attr("width", SHAPE_SIZE)
+            .attr("height", SHAPE_SIZE)
+            .style("stroke-width", SHAPE_EDGE_SIZE)    // set the stroke width
+            .style("stroke", SHAPE_COLOR)   // set the line colour
+            .style("fill", function(d){return getfill(d.name);})
 
-            node.append("svg:text")
-            .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
-            .attr("dy", ".31em")
-            .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+            nodes.append("svg:text")
+            // .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+            .attr("dy", SHAPE_SIZE*2)
+            // .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+            .attr("text-anchor", 'middle')
             // .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
-            // .attr("transform", function(d) { return d.x > 180 ? "rotate(-90)" : "rotate(90)"; })
+            .attr("transform", function(d) { return d.x > 180 ? "rotate(-90)" : "rotate(90)"; })
             // .text(function(d) { return d.x; });
             .text(function(d) { return d.name; });
 

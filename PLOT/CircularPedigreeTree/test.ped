@@ -1,0 +1,5 @@
+FAM1    NA06985 0   0   1   1
+FAM1    NA06991 0   0   1   1
+FAM1    A       NA06985 NA06991 2 2
+FAM1    B       A       BM  2   2
+FAM1    BM      0   0   1   1
