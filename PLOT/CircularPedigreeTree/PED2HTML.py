@@ -52,10 +52,10 @@ class Node(object):
         smap = self.__dict__
         # print(smap)
         if self.children:
-            stemp = ''
+            stemp = []
             for x in self.children:
-                stemp += x.toMapString()
-            smap['children'] = '[' + stemp + ']'
+                stemp.append(x.toMapString())
+            smap['children'] = '[' + ','.join(stemp) + ']'
         else:
             smap.pop('children')
         # print(smap)
@@ -63,17 +63,19 @@ class Node(object):
 
 if __name__ == '__main__':
     args = docopt(__doc__, version='1.0')
-    print(args)
+    # print(args)
 
     if(args['--format']):
         ShowFormat()
         sys.exit(-1)
 
+    basehtml = 'd3.base.html'
+
     #read ped file from stdin.
     ped_data = {} #map for name -> raw data.
     for line in sys.stdin:
         line = line.strip()
-        if line:
+        if line and line[0] != '#': #skip comment line.
             ss = line.split()
             ped_data[ss[1]] = ss
 
@@ -109,7 +111,19 @@ if __name__ == '__main__':
         }
 
     #find the root node, and convert results to josn.
-    print(ped_data)
+    #print(ped_data)
+    #Check data integrity.
+    m_error = False
+    for _, data in ped_data.items():
+        if data[2] != '0' and data[2] not in ped_data.keys():
+            m_error = True
+            sys.stderr.write('ERROR: missing declearation for father: %s\n'%(data[2]) )
+        if data[3] != '0' and data[3] not in ped_data.keys():
+            m_error = True
+            sys.stderr.write('ERROR: missing declearation for mother: %s\n'%(data[3]) )
+    if m_error:
+        sys.exit(-1)
+
     for name,data in ped_data.items():
         if data[2] == '0' and data[3] == '0':
             mateName = NodeMap[name].getMateName()
@@ -121,11 +135,17 @@ if __name__ == '__main__':
                     root = NodeMap[name]
                     break
 
-    print(root.toMapString())
-    print(JsonMap)
+    # print(root.toMapString())
+    # print(JsonMap)
     # j = json.dumps(root.toMapString(), sort_keys=True,indent=4, separators=(',', ': '))
     # sys.stdout.write('%s\n'%(j))
-
+    treeData = root.toMapString()
+    annotation = str(JsonMap)
+    with open(basehtml,'r') as bf:
+        for line in bf:
+            line = line.replace('__treeData__',treeData)
+            line = line.replace('__annotation__',annotation)
+            sys.stdout.write('%s'%(line))
 
 sys.stdout.flush()
 sys.stdout.close()

@@ -1,232 +1,466 @@
 <!DOCTYPE html>
+
 <html>
+
     <head>
+
         <title>Radial Cluster Demo</title>
+
         <script type="text/javascript" src="d3.v3.5.17.min.js"></script>
+
         <style>
+
             svg {
+
                 border: solid 1px #ccc;
+
                 font: 10px sans-serif;
+
             }
+
             .link {
+
                 fill: none;
+
                 stroke: #ccc;
+
                 stroke-width: 1.5px;
+
             }
+
         </style>
+
     </head>
+
     <body>
+
+
 
         <div id="viz"></div>
 
+
+
         <script type="text/javascript">
+
             //define plot attribute.
+
             SHAPE_SIZE = 10
+
             SHAPE_EDGE_SIZE = 2
+
             SHAPE_COLOR = 'blue'
 
 
+
+
+
             //JSON object with the data
+
             // var treeData = {"name" : "A", "info" : "tst", "children" : [
+
             //         {"name" : "A1", "children" : [
+
             //                 {"name" : "A12" },
+
             //                 {"name" : "A13" },
+
             //                 {"name" : "A14" },
+
             //                 {"name" : "A15" },
+
             //                 {"name" : "A16" }
+
             //             ] },
+
             //         {"name" : "A2", "children" : [
+
             //                 {"name" : "A21" },
+
             //                 {"name" : "A22", "children" : [
+
             //                 {"name" : "A221" },
+
             //                 {"name" : "A222" },
+
             //                 {"name" : "A223" },
+
             //                 {"name" : "A22" }
+
             //             ]},
+
             //                 {"name" : "A23" },
+
             //                 {"name" : "A24" },
+
             //                 {"name" : "A25" }] },
+
             //         {"name" : "A3", "children": [
+
             //                 {"name" : "A31", "children" :[
+
             //                         {"name" : "A311" },
+
             //                         {"name" : "A312" },
+
             //                         {"name" : "A313" },
+
             //                         {"name" : "A314" },
+
             //                         {"name" : "A315" }
+
             //                     ]}] }
+
             //     ]};
+
             //var treeData = {'name': 'NA06985', 'children': [{'name': 'A', 'children': [{'name': 'B', 'mateName': ''}], 'mateName': 'BM'}], 'mateName': 'NA06991'};
-            var treeData = __treeData__
+
+            var treeData = {'children': [{'children': [{'mateName': '', 'name': 'FGLV221'},{'mateName': '', 'name': 'FGLV223'},{'mateName': '', 'name': 'FGLV222'}], 'mateName': 'FGLV23', 'name': 'FGLV22'},{'children': [{'children': [{'mateName': '', 'name': 'FGLV1142'},{'mateName': '', 'name': 'FGLV1144'},{'mateName': '', 'name': 'FGLV1143'},{'mateName': '', 'name': 'FGLV1141'}], 'mateName': 'FGLV1140', 'name': 'FGLV114'},{'children': [{'mateName': '', 'name': 'FGLV1125'},{'mateName': '', 'name': 'FGLV1121'},{'mateName': '', 'name': 'FGLV1123'},{'mateName': '', 'name': 'FGLV1124'},{'mateName': '', 'name': 'FGLV1122'}], 'mateName': 'FGLV1120', 'name': 'FGLV112'},{'children': [{'mateName': '', 'name': 'FGLV1151'},{'mateName': '', 'name': 'FGLV1152'},{'mateName': '', 'name': 'FGLV1153'},{'mateName': '', 'name': 'FGLV1154'}], 'mateName': 'FGLV1150', 'name': 'FGLV115'},{'mateName': '', 'name': 'FGLV111'},{'children': [{'mateName': '', 'name': 'FGLV1132'},{'mateName': '', 'name': 'FGLV1131'},{'mateName': '', 'name': 'FGLV1134'},{'mateName': '', 'name': 'FGLV1133'}], 'mateName': 'FGLV1130', 'name': 'FGLV113'},{'children': [{'mateName': '', 'name': 'FGLV1162'},{'mateName': '', 'name': 'FGLV1161'}], 'mateName': 'FGLV1160', 'name': 'FGLV116'}], 'mateName': 'FGLV110', 'name': 'FGLV11'},{'children': [{'mateName': '', 'name': 'FGLV185'},{'mateName': '', 'name': 'FGLV184'},{'mateName': '', 'name': 'FGLV181'},{'mateName': '', 'name': 'FGLV186'},{'mateName': '', 'name': 'FGLV183'},{'mateName': '', 'name': 'FGLV182'}], 'mateName': 'FGLV24', 'name': 'FGLV18'},{'mateName': '', 'name': 'FGLV19'},{'mateName': '', 'name': 'FGLV13'},{'children': [{'mateName': '', 'name': 'FGLV122'},{'mateName': '', 'name': 'FGLV121'}], 'mateName': 'FGLV120', 'name': 'FGLV12'},{'mateName': '', 'name': 'FGLV16'},{'mateName': '', 'name': 'FGLV20'},{'children': [{'mateName': '', 'name': 'FGLV142'},{'mateName': '', 'name': 'FGLV141'}], 'mateName': 'FGLV140', 'name': 'FGLV14'},{'mateName': '', 'name': 'FGLV15'},{'children': [{'mateName': '', 'name': 'FGLV171'}], 'mateName': 'FGLV25', 'name': 'FGLV17'},{'mateName': '', 'name': 'FGLV21'}], 'mateName': 'FGLV10', 'name': 'FGLV1'}
+
             treeData = {"name" : "root", "info" : "root", "children" : [treeData]}
-            var annotation = __annotation__
+
+            var annotation = {'FGLV1160': {'mother': '0', 'sex': '1', 'father': '0', 'affected': '1', 'name': 'FGLV1160'}, 'FGLV1130': {'mother': '0', 'sex': '2', 'father': '0', 'affected': '1', 'name': 'FGLV1130'}, 'FGLV1151': {'mother': 'FGLV115', 'sex': '1', 'father': 'FGLV1150', 'affected': '1', 'name': 'FGLV1151'}, 'FGLV183': {'mother': 'FGLV18', 'sex': '2', 'father': 'FGLV24', 'affected': '1', 'name': 'FGLV183'}, 'FGLV1125': {'mother': 'FGLV112', 'sex': '2', 'father': 'FGLV1120', 'affected': '1', 'name': 'FGLV1125'}, 'FGLV122': {'mother': 'FGLV120', 'sex': '2', 'father': 'FGLV12', 'affected': '1', 'name': 'FGLV122'}, 'FGLV1': {'mother': '0', 'sex': '1', 'father': '0', 'affected': '1', 'name': 'FGLV1'}, 'FGLV1120': {'mother': '0', 'sex': '1', 'father': '0', 'affected': '1', 'name': 'FGLV1120'}, 'FGLV1110': {'mother': '0', 'sex': '1', 'father': '0', 'affected': '1', 'name': 'FGLV1110'}, 'FGLV116': {'mother': 'FGLV110', 'sex': '2', 'father': 'FGLV11', 'affected': '2', 'name': 'FGLV116'}, 'FGLV10': {'mother': '0', 'sex': '2', 'father': '0', 'affected': '1', 'name': 'FGLV10'}, 'FGLV17': {'mother': 'FGLV10', 'sex': '2', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV17'}, 'FGLV1121': {'mother': 'FGLV112', 'sex': '1', 'father': 'FGLV1120', 'affected': '2', 'name': 'FGLV1121'}, 'FGLV1142': {'mother': 'FGLV114', 'sex': '1', 'father': 'FGLV1140', 'affected': '1', 'name': 'FGLV1142'}, 'FGLV1162': {'mother': 'FGLV116', 'sex': '2', 'father': 'FGLV1160', 'affected': '1', 'name': 'FGLV1162'}, 'FGLV21': {'mother': 'FGLV10', 'sex': '2', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV21'}, 'FGLV1152': {'mother': 'FGLV115', 'sex': '1', 'father': 'FGLV1150', 'affected': '1', 'name': 'FGLV1152'}, 'FGLV120': {'mother': '0', 'sex': '2', 'father': '0', 'affected': '1', 'name': 'FGLV120'}, 'FGLV110': {'mother': '0', 'sex': '2', 'father': '0', 'affected': '1', 'name': 'FGLV110'}, 'FGLV1123': {'mother': 'FGLV112', 'sex': '1', 'father': 'FGLV1120', 'affected': '1', 'name': 'FGLV1123'}, 'FGLV171': {'mother': 'FGLV17', 'sex': '1', 'father': 'FGLV25', 'affected': '1', 'name': 'FGLV171'}, 'FGLV22': {'mother': 'FGLV10', 'sex': '1', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV22'}, 'FGLV11': {'mother': 'FGLV10', 'sex': '1', 'father': 'FGLV1', 'affected': '2', 'name': 'FGLV11'}, 'FGLV114': {'mother': 'FGLV110', 'sex': '2', 'father': 'FGLV11', 'affected': '2', 'name': 'FGLV114'}, 'FGLV112': {'mother': 'FGLV110', 'sex': '2', 'father': 'FGLV11', 'affected': '2', 'name': 'FGLV112'}, 'FGLV221': {'mother': 'FGLV23', 'sex': '2', 'father': 'FGLV22', 'affected': '1', 'name': 'FGLV221'}, 'FGLV115': {'mother': 'FGLV110', 'sex': '2', 'father': 'FGLV11', 'affected': '2', 'name': 'FGLV115'}, 'FGLV181': {'mother': 'FGLV18', 'sex': '1', 'father': 'FGLV24', 'affected': '1', 'name': 'FGLV181'}, 'FGLV223': {'mother': 'FGLV23', 'sex': '1', 'father': 'FGLV22', 'affected': '1', 'name': 'FGLV223'}, 'FGLV1144': {'mother': 'FGLV114', 'sex': '2', 'father': 'FGLV1140', 'affected': '1', 'name': 'FGLV1144'}, 'FGLV142': {'mother': 'FGLV14', 'sex': '2', 'father': 'FGLV140', 'affected': '1', 'name': 'FGLV142'}, 'FGLV1161': {'mother': 'FGLV116', 'sex': '1', 'father': 'FGLV1160', 'affected': '1', 'name': 'FGLV1161'}, 'FGLV1122': {'mother': 'FGLV112', 'sex': '2', 'father': 'FGLV1120', 'affected': '1', 'name': 'FGLV1122'}, 'FGLV18': {'mother': 'FGLV10', 'sex': '2', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV18'}, 'FGLV1153': {'mother': 'FGLV115', 'sex': '2', 'father': 'FGLV1150', 'affected': '2', 'name': 'FGLV1153'}, 'FGLV1131': {'mother': 'FGLV1130', 'sex': '2', 'father': 'FGLV113', 'affected': '2', 'name': 'FGLV1131'}, 'FGLV186': {'mother': 'FGLV18', 'sex': '2', 'father': 'FGLV24', 'affected': '1', 'name': 'FGLV186'}, 'FGLV19': {'mother': 'FGLV10', 'sex': '1', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV19'}, 'FGLV1154': {'mother': 'FGLV115', 'sex': '2', 'father': 'FGLV1150', 'affected': '2', 'name': 'FGLV1154'}, 'FGLV13': {'mother': 'FGLV10', 'sex': '2', 'father': 'FGLV1', 'affected': '2', 'name': 'FGLV13'}, 'FGLV222': {'mother': 'FGLV23', 'sex': '1', 'father': 'FGLV22', 'affected': '1', 'name': 'FGLV222'}, 'FGLV1143': {'mother': 'FGLV114', 'sex': '2', 'father': 'FGLV1140', 'affected': '1', 'name': 'FGLV1143'}, 'FGLV12': {'mother': 'FGLV10', 'sex': '1', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV12'}, 'FGLV16': {'mother': 'FGLV10', 'sex': '2', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV16'}, 'FGLV185': {'mother': 'FGLV18', 'sex': '1', 'father': 'FGLV24', 'affected': '1', 'name': 'FGLV185'}, 'FGLV24': {'mother': '0', 'sex': '1', 'father': '0', 'affected': '1', 'name': 'FGLV24'}, 'FGLV20': {'mother': 'FGLV10', 'sex': '1', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV20'}, 'FGLV1132': {'mother': 'FGLV1130', 'sex': '1', 'father': 'FGLV113', 'affected': '1', 'name': 'FGLV1132'}, 'FGLV25': {'mother': '0', 'sex': '1', 'father': '0', 'affected': '1', 'name': 'FGLV25'}, 'FGLV1124': {'mother': 'FGLV112', 'sex': '1', 'father': 'FGLV1120', 'affected': '1', 'name': 'FGLV1124'}, 'FGLV14': {'mother': 'FGLV10', 'sex': '2', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV14'}, 'FGLV1134': {'mother': 'FGLV1130', 'sex': '1', 'father': 'FGLV113', 'affected': '1', 'name': 'FGLV1134'}, 'FGLV15': {'mother': 'FGLV10', 'sex': '2', 'father': 'FGLV1', 'affected': '1', 'name': 'FGLV15'}, 'FGLV1150': {'mother': '0', 'sex': '1', 'father': '0', 'affected': '1', 'name': 'FGLV1150'}, 'FGLV1133': {'mother': 'FGLV1130', 'sex': '1', 'father': 'FGLV113', 'affected': '2', 'name': 'FGLV1133'}, 'FGLV23': {'mother': '0', 'sex': '2', 'father': '0', 'affected': '1', 'name': 'FGLV23'}, 'FGLV184': {'mother': 'FGLV18', 'sex': '2', 'father': 'FGLV24', 'affected': '1', 'name': 'FGLV184'}, 'FGLV1141': {'mother': 'FGLV114', 'sex': '2', 'father': 'FGLV1140', 'affected': '1', 'name': 'FGLV1141'}, 'FGLV113': {'mother': 'FGLV110', 'sex': '1', 'father': 'FGLV11', 'affected': '2', 'name': 'FGLV113'}, 'FGLV140': {'mother': '0', 'sex': '1', 'father': '0', 'affected': '1', 'name': 'FGLV140'}, 'FGLV182': {'mother': 'FGLV18', 'sex': '2', 'father': 'FGLV24', 'affected': '1', 'name': 'FGLV182'}, 'FGLV1140': {'mother': '0', 'sex': '1', 'father': '0', 'affected': '1', 'name': 'FGLV1140'}, 'FGLV111': {'mother': 'FGLV110', 'sex': '2', 'father': 'FGLV11', 'affected': '1', 'name': 'FGLV111'}, 'FGLV121': {'mother': 'FGLV120', 'sex': '1', 'father': 'FGLV12', 'affected': '1', 'name': 'FGLV121'}, 'FGLV141': {'mother': 'FGLV14', 'sex': '1', 'father': 'FGLV140', 'affected': '1', 'name': 'FGLV141'}}
+
             //var annotation = {'NA06985': {'name': 'NA06985', 'father': '0', 'mother': '0', 'sex': '1', 'affected': '1'}, 'NA06991': {'name': 'NA06991', 'father': '0', 'mother': '0', 'sex': '1', 'affected': '1'}, 'A': {'name': 'A', 'father': 'NA06985', 'mother': 'NA06991', 'sex': '2', 'affected': '2'}, 'B': {'name': 'B', 'father': 'A', 'mother': 'BM', 'sex': '2', 'affected': '1'},'BM': {'name': 'BM', 'father': '0', 'mother': '0', 'sex': '1', 'affected': '2'}}
+
             //console.log(annotation['A']);
+
             // Create a svg canvas
+
+            t = 1.2
+
             var vis = d3.select("#viz").append("svg:svg")
-            .attr("width", 600)
-            .attr("height", 600)
+
+            .attr("width", 600*t)
+
+            .attr("height", 600*t)
+
             .append("svg:g")
+
             .attr("transform", "translate(300, 300)");
 
+
+
             // Create a cluster "canvas"
+
             var cluster = d3.layout.tree()
-            .size([450,225]);
+
+            .size([450*t,225*t]);
+
+
 
             //Using Cartesian layout to connect nodes.
+
             //https://bl.ocks.org/mbostock/4063550
+
             // var diagonal = d3.svg.diagonal.radial()
+
             // .projection(function(d) { return [d.y, d.x / 180 * Math.PI]; });
 
+
+
             var nodes = cluster.nodes(treeData);
+
             var links = cluster.links(nodes);
+
 //---------------------------
+
             // var myprojection = function(d) { return [d.y, d.x / 180 * Math.PI]; }
+
             var path = function(pathData) { // [(radius, angle),(radius, angle),(radius, angle)]
+
               // return "M" + pathData[0] + ' ' + pathData[1] + " " + pathData[2];
+
                return "M" + pathData[0] + " L " + pathData[2];
+
             }
+
+
 
             // from radial system to xy system.
+
             var raToXY = function(d){
+
                 var r = d.y, a = (d.x - 90) / 180 * Math.PI;
+
                 return [r * Math.cos(a), r * Math.sin(a)];
+
             }
+
+
 
             //Get the svg command for plot a arc from start to end, and a line connect end to target.
+
             var makeArcString = function(start, end, target){
+
                 var target = target || end,
+
                     //circle from middle point
+
                     arcEnd = {x:target.x,y:start.y},
+
                     aData = [start, arcEnd].map(raToXY);
 
+
+
                 var radius = Math.sqrt(aData[0][0]*aData[0][0] + aData[0][1]*aData[0][1]),
+
                     clockwise = target.x <= start.x,
+
                     rotation = 0,
+
                     largeArc = 0,
+
                     sweep = clockwise ? 0 : 1;
 
+
+
                 var astring = 'M' + aData[0] + ' ' +
+
                       "A" + [radius,radius] + ' ' + rotation + ' ' + largeArc+','+sweep + ' ' + aData[1]
+
                       + 'L' + raToXY(target);
+
                 return astring
+
             }
+
+
 
             newNodes = []
 
+
+
             //Convert from xy point to radius system.
+
             function mydiagonal(diagonalPath, i) {
+
               var source = diagonalPath.source,
+
                   target = diagonalPath.target,
+
                   // midpointX = (source.x + target.x) / 2,
+
                   midpointX = source.x,
+
                   midpointY = source.y + (target.y - source.y) / 2,
+
                   midpoint = {x:midpointX,y:midpointY},
 
+
+
                   // pathData = [midpoint, {x: target.x, y: source.y}, target];
+
                   //start from middle.
 
+
+
                   //first part, root point to middle point.
+
                   fData = [source,midpoint].map(raToXY);
+
                   fstring = 'M' + fData[0] + " L " + fData[1]
+
+
 
                   // console.log(JSON.stringify(source.name));
 
+
+
                   //circle from middle point, and then connect to target.
+
                   arcEnd = {x:target.x,y:midpointY}
+
                   astring = makeArcString(midpoint,arcEnd,target)
+
                   // console.log(astring)
+
                   // console.log("astring1"+astring)
+
                   //arc for plot mating partner.
+
                   xSHIFT = -10
+
                   pEnd = {x:source.x + xSHIFT, y:source.y, name:source.mateName}
+
                   pstring = makeArcString(source,pEnd)
+
                   // console.log("astring2"+astring);
+
                   // console.log("pstring"+pstring);
+
+
 
                   newNodes.push(pEnd)
 
+
+
               // pathData = pathData.map(myprojection);
+
               // pathData = pathData.map(raToXY)
+
               // return pstring
+
               // return fstring + astring + pstring
+
                 // console.log(fstring + astring + pstring)
+
                  return fstring + astring + pstring
+
             }
+
 //---------------------------
+
             //draw links.
+
             var link = vis.selectAll("pathlink")
+
             .data(links)
+
             .enter().append("svg:path")
+
             .attr("class", "link")
+
             .attr("d", mydiagonal)
+
             // .attr("d", diagonal)
 
+
+
             plotNodes = []
+
             nodes.forEach(function(d){
+
                 plotNodes.push({x:d.x,y:d.y,name:d.name})
+
             })
+
             newNodes.forEach(function(d){
+
                 plotNodes.push({x:d.x,y:d.y,name:d.name})
+
             })
+
+
 
             // console.log(JSON.stringify(nodes.concat(newNodes)));
+
             nodes.concat(newNodes).map(function(d){console.log(d.name);})
 
+
+
             var nodes = vis.selectAll("g.node")
+
             .data(nodes.concat(newNodes))
+
             .enter().append("svg:g")
 
+
+
             var getfill = function(x){
+
                 if(annotation[x].affected == '2'){
+
                     return SHAPE_COLOR;
+
                 }else {
+
                     return 'white';
+
                 }
+
             }
 
+
+
             //add shape for females
+
             nodes
+
             .filter(function(d){
+
               if (d.name in annotation && annotation[d.name].sex == '2'){
+
                 return true;
+
               }else {
+
                 return false;
+
               }})
+
             .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+
             .append("svg:circle")
+
             .attr("r", SHAPE_SIZE/2.0)
+
             .style("stroke-width", SHAPE_EDGE_SIZE)    // set the stroke width
+
             .style("stroke", SHAPE_COLOR)   // set the line colour
+
             .style("fill", function(d){return getfill(d.name);})
+
+
 
             //add shape for males
+
             nodes
+
             .filter(function(d){
+
               if (d.name in annotation && annotation[d.name].sex == '1'){
+
                 return true;
+
               }else {
+
                 return false;
+
               }})
+
             .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y - SHAPE_SIZE/2.0) + ")"; })
+
             .append("svg:rect")
+
             .attr("width", SHAPE_SIZE)
+
             .attr("height", SHAPE_SIZE)
+
             .style("stroke-width", SHAPE_EDGE_SIZE)    // set the stroke width
+
             .style("stroke", SHAPE_COLOR)   // set the line colour
+
             .style("fill", function(d){return getfill(d.name);})
 
+
+
             nodes.append("svg:text")
+
             // .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+
             .attr("dy", SHAPE_SIZE*2)
+
             // .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+
             .attr("text-anchor", 'middle')
+
             // .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
+
             .attr("transform", function(d) { return d.x > 180 ? "rotate(-90)" : "rotate(90)"; })
+
             // .text(function(d) { return d.x; });
+
             .text(function(d) { return d.name; });
 
 
 
+
+
+
+
         </script>
+
     </body>
+
 </html>
+

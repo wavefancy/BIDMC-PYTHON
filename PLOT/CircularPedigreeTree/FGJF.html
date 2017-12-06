@@ -10,7 +10,8 @@
             }
             .link {
                 fill: none;
-                stroke: #ccc;
+                /*stroke: #ccc;*/
+                stroke: black;
                 stroke-width: 1.5px;
             }
         </style>
@@ -23,7 +24,7 @@
             //define plot attribute.
             SHAPE_SIZE = 10
             SHAPE_EDGE_SIZE = 2
-            SHAPE_COLOR = 'blue'
+            SHAPE_COLOR = 'black'
 
 
             //JSON object with the data
@@ -56,21 +57,22 @@
             //                     ]}] }
             //     ]};
             //var treeData = {'name': 'NA06985', 'children': [{'name': 'A', 'children': [{'name': 'B', 'mateName': ''}], 'mateName': 'BM'}], 'mateName': 'NA06991'};
-            var treeData = __treeData__
+            var treeData = {'children': [{'children': [{'children': [{'name': 'f233-p15', 'mateName': ''},{'name': 'f233-p16', 'mateName': ''}], 'name': 'FGJF122', 'mateName': 'FGJF124'},{'children': [{'name': 'f233-p4', 'mateName': ''},{'name': 'f233-p3', 'mateName': ''}], 'name': 'FGJF121', 'mateName': 'FGJF123'}], 'name': 'FGJF12', 'mateName': 'FGJF14'},{'name': 'f233-p7', 'mateName': ''},{'name': 'FGJF11', 'mateName': ''},{'name': 'FGJF13', 'mateName': ''},{'children': [{'name': 'f233-p19', 'mateName': ''}], 'name': 'f233-p8', 'mateName': 'FGJF17'},{'children': [{'name': 'f233-p17', 'mateName': ''},{'name': 'f233-p18', 'mateName': ''}], 'name': 'f233-p9', 'mateName': 'FGJF18'},{'children': [{'name': 'f233-p13', 'mateName': ''},{'name': 'f233-p12', 'mateName': ''},{'name': 'f233-p11', 'mateName': ''}], 'name': 'f233-p10', 'mateName': 'FGJF16'}], 'name': 'f233-p21', 'mateName': 'f233-p20'}
             treeData = {"name" : "root", "info" : "root", "children" : [treeData]}
-            var annotation = __annotation__
+            var annotation = {'FGJF12': {'affected': '2', 'mother': 'f233-p21', 'father': 'f233-p20', 'name': 'FGJF12', 'sex': '2'}, 'f233-p17': {'affected': '1', 'mother': 'FGJF18', 'father': 'f233-p9', 'name': 'f233-p17', 'sex': '1'}, 'f233-p8': {'affected': '1', 'mother': 'f233-p21', 'father': 'f233-p20', 'name': 'f233-p8', 'sex': '2'}, 'f233-p7': {'affected': '2', 'mother': 'f233-p21', 'father': 'f233-p20', 'name': 'f233-p7', 'sex': '1'}, 'f233-p15': {'affected': '1', 'mother': 'FGJF122', 'father': 'FGJF124', 'name': 'f233-p15', 'sex': '1'}, 'f233-p21': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'f233-p21', 'sex': '2'}, 'FGJF11': {'affected': '2', 'mother': 'f233-p21', 'father': 'f233-p20', 'name': 'FGJF11', 'sex': '2'}, 'f233-p18': {'affected': '1', 'mother': 'FGJF18', 'father': 'f233-p9', 'name': 'f233-p18', 'sex': '1'}, 'f233-p29': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'f233-p29', 'sex': '1'}, 'f233-p32': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'f233-p32', 'sex': '2'}, 'f233-p13': {'affected': '1', 'mother': 'FGJF16', 'father': 'f233-p10', 'name': 'f233-p13', 'sex': '1'}, 'f233-p16': {'affected': '1', 'mother': 'FGJF122', 'father': 'FGJF124', 'name': 'f233-p16', 'sex': '1'}, 'f233-p28': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'f233-p28', 'sex': '2'}, 'f233-p4': {'affected': '1', 'mother': 'FGJF121', 'father': 'FGJF123', 'name': 'f233-p4', 'sex': '2'}, 'f233-p20': {'affected': '2', 'mother': '0', 'father': '0', 'name': 'f233-p20', 'sex': '1'}, 'f233-p27': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'f233-p27', 'sex': '1'}, 'f233-p3': {'affected': '1', 'mother': 'FGJF121', 'father': 'FGJF123', 'name': 'f233-p3', 'sex': '2'}, 'f233-p30': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'f233-p30', 'sex': '2'}, 'f233-p10': {'affected': '1', 'mother': 'f233-p21', 'father': 'f233-p20', 'name': 'f233-p10', 'sex': '1'}, 'FGJF17': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'FGJF17', 'sex': '1'}, 'f233-p11': {'affected': '1', 'mother': 'FGJF16', 'father': 'f233-p10', 'name': 'f233-p11', 'sex': '1'}, 'f233-p31': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'f233-p31', 'sex': '2'}, 'FGJF122': {'affected': '2', 'mother': 'FGJF12', 'father': 'FGJF14', 'name': 'FGJF122', 'sex': '2'}, 'f233-p19': {'affected': '1', 'mother': 'f233-p8', 'father': 'FGJF17', 'name': 'f233-p19', 'sex': '1'}, 'f233-p26': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'f233-p26', 'sex': '2'}, 'FGJF123': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'FGJF123', 'sex': '1'}, 'FGJF16': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'FGJF16', 'sex': '2'}, 'f233-p9': {'affected': '1', 'mother': 'f233-p21', 'father': 'f233-p20', 'name': 'f233-p9', 'sex': '1'}, 'FGJF14': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'FGJF14', 'sex': '1'}, 'FGJF13': {'affected': '2', 'mother': 'f233-p21', 'father': 'f233-p20', 'name': 'FGJF13', 'sex': '2'}, 'FGJF124': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'FGJF124', 'sex': '1'}, 'FGJF121': {'affected': '1', 'mother': 'FGJF12', 'father': 'FGJF14', 'name': 'FGJF121', 'sex': '2'}, 'f233-p12': {'affected': '1', 'mother': 'FGJF16', 'father': 'f233-p10', 'name': 'f233-p12', 'sex': '1'}, 'FGJF18': {'affected': '1', 'mother': '0', 'father': '0', 'name': 'FGJF18', 'sex': '2'}}
             //var annotation = {'NA06985': {'name': 'NA06985', 'father': '0', 'mother': '0', 'sex': '1', 'affected': '1'}, 'NA06991': {'name': 'NA06991', 'father': '0', 'mother': '0', 'sex': '1', 'affected': '1'}, 'A': {'name': 'A', 'father': 'NA06985', 'mother': 'NA06991', 'sex': '2', 'affected': '2'}, 'B': {'name': 'B', 'father': 'A', 'mother': 'BM', 'sex': '2', 'affected': '1'},'BM': {'name': 'BM', 'father': '0', 'mother': '0', 'sex': '1', 'affected': '2'}}
             //console.log(annotation['A']);
             // Create a svg canvas
+            t = 1.2
             var vis = d3.select("#viz").append("svg:svg")
-            .attr("width", 600)
-            .attr("height", 600)
+            .attr("width", 600*t)
+            .attr("height", 600*t)
             .append("svg:g")
             .attr("transform", "translate(300, 300)");
 
             // Create a cluster "canvas"
             var cluster = d3.layout.tree()
-            .size([450,225]);
+            .size([450*t,225*t]);
 
             //Using Cartesian layout to connect nodes.
             //https://bl.ocks.org/mbostock/4063550
@@ -92,6 +94,18 @@
                 return [r * Math.cos(a), r * Math.sin(a)];
             }
 
+            //make angle to range of 0-360
+            var changeRange = function(d){
+                return d;
+                console.log('begin:' +d);
+                var x = d
+                if(d >= 360){
+                    x =  d % 360
+                }
+                console.log('end:' +x);
+                return x
+            }
+
             //Get the svg command for plot a arc from start to end, and a line connect end to target.
             var makeArcString = function(start, end, target){
                 var target = target || end,
@@ -99,14 +113,22 @@
                     arcEnd = {x:target.x,y:start.y},
                     aData = [start, arcEnd].map(raToXY);
 
+                target.x = changeRange(target.x)
+                start.x = changeRange(start.x)
+
                 var radius = Math.sqrt(aData[0][0]*aData[0][0] + aData[0][1]*aData[0][1]),
                     clockwise = target.x <= start.x,
                     rotation = 0,
                     largeArc = 0,
                     sweep = clockwise ? 0 : 1;
 
+                    console.log(start.name +'---'+target.name);
+                    console.log('x:'+start.x +'---'+target.x);
+                    console.log('y:'+start.y +'---'+target.y);
+
                 var astring = 'M' + aData[0] + ' ' +
-                      "A" + [radius,radius] + ' ' + rotation + ' ' + largeArc+','+sweep + ' ' + aData[1]
+                      // "A" + [radius,radius] + ' ' + rotation + ' ' + largeArc+','+sweep + ' ' + aData[1]
+                      "A" + [radius,radius] + ' ' + rotation + ' ' + 0+','+sweep+ ' ' + aData[1]
                       + 'L' + raToXY(target);
                 return astring
             }
@@ -215,15 +237,15 @@
             .style("stroke", SHAPE_COLOR)   // set the line colour
             .style("fill", function(d){return getfill(d.name);})
 
-            nodes.append("svg:text")
-            // .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
-            .attr("dy", SHAPE_SIZE*2)
-            // .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-            .attr("text-anchor", 'middle')
-            // .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
-            .attr("transform", function(d) { return d.x > 180 ? "rotate(-90)" : "rotate(90)"; })
-            // .text(function(d) { return d.x; });
-            .text(function(d) { return d.name; });
+            // nodes.append("svg:text")
+            // // .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+            // .attr("dy", SHAPE_SIZE*2)
+            // // .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+            // .attr("text-anchor", 'middle')
+            // // .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
+            // .attr("transform", function(d) { return d.x > 180 ? "rotate(-90)" : "rotate(90)"; })
+            // // .text(function(d) { return d.x; });
+            // .text(function(d) { return d.name; });
 
 
 
