@@ -58,13 +58,16 @@ if __name__ == '__main__':
         else:
             ss = geno.split(':')
             try:
+                if ss[DPIndex] == '.':
+                    return '.'
                 DPvalue = int(ss[DPIndex])
                 if DPvalue < minDP:
                     return '.'
                 else:
                     return geno
             except ValueError:
-                return '.'
+                sys.stderr.write('ERROR: can not parse DP field: "%s"\n'%(geno))
+                sys.exit(-1)
 
     DPIndex = -1
     def setDPIndex(oldFormatTags):
