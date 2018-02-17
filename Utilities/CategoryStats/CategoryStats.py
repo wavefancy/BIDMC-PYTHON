@@ -49,7 +49,7 @@ C2      X
     ''');
 
 if __name__ == '__main__':
-    args = docopt(__doc__, version='1.0')
+    args = docopt(__doc__, version='1.1')
     #print(args)
 
     if(args['--format']):

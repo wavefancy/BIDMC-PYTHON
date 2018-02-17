@@ -1,15 +1,25 @@
 ---
+# *** Important ****
+# This pipeline only suitable to pair-end sequencing.
+# The name of the fastq file should contain key word '_R1_', and '_R2_'
+# file name should be end by .fastq.gz
+# Example: GEN17-02F-D2_CCTAATCC_BHG25WBCXY_L002_001_R1_.fastq.gz
+# ----
+# PLEASE CHANGE PARAMETERS IN THIS FILES BEFORE USE.
+
 # String : sample name, folder name for fastq file.
 sample:
-    "Sample_FG-CP11_006_006"
+    "Sample_CG66844_005_005"
 
 # String : location for sequence fastq file.
 sampleDir:
-    "/groups/pollak/mxw_data/excallV3/testdata"
+    "/groups/pollak/mxw_data/coworkers/cris/exomes"
+#"/groups/pollak/mxw_data/excallV3/testdata"
 
 # output root dir.
 orootDir:
-    "/n/scratch2/wallace/excallV3/ex_test"
+    "/n/scratch2/wallace/cris"
+#"/n/scratch2/wallace/excallV3/ex_test"
 
 # True|False : whether remove intermediate files or not.
 removeTemp:
@@ -29,10 +39,10 @@ TOPHRED33:
 
 # String: how many threads(cpus) used for parallel computing.
 mthreads:
-    "1"
+    "2"
 
 libraryName:
-    "SureSelectXTV4"
+    "SureSelectCRE"
 
 # True|False : whether check all reads name for rg tag.
 # set this as true if input has single end reads.
