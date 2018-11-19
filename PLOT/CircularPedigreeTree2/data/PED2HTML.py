@@ -6,7 +6,7 @@
     @Author: wavefancy@gmail.com
 
     Usage:
-        PED2HTML.py [--html base_file]
+        PED2HTML.py [--html base_file] [-d int] [--notext] [-c color] [--sweep txt] [--degree int]
         PED2HTML.py -h | --help | -v | --version | -f | --format
 
     Notes:
@@ -15,6 +15,11 @@
 
     Options:
         --html base_file  html template file, default base.html
+        -d int            distance between mating partner, default 2000.
+        -c color          Set the line color, default #05668D.
+        --sweep txt       Target node name for sweep arc, e.g. 115,117.
+        --notext          Do not show text on the figure, default show.
+        --degree int      Set the layout circular degree, default 360.
         -h --help         Show this screen.
         -v --version      Show version.
         -f --format       Show input/output file format example.
@@ -122,11 +127,25 @@ if __name__ == '__main__':
     T.add_child(root)
     treeData = T.write(format=1)[:-1] + 'root||root:1;'
     # print(out)
-
+    ss = ''
+    if args['--sweep']:
+        temp = args['--sweep'].split(',')
+        ss = 'SWEEP_ARC_NODE=new Set([' + str(temp)[1:-1] +'])'
     with open(basehtml,'r') as bf:
         for line in bf:
             line = line.replace('__treeData__',treeData)
-            # line = line.replace('__annotation__',annotation)
+            if args['-d']:
+                line = line.replace('DISTANCE_PARTNER=2000','DISTANCE_PARTNER='+args['-d'])
+            if args['--notext']:
+                line = line.replace('SHOW_TEXT=true','SHOW_TEXT=false')
+            if args['-c']:
+                line = line.replace('#05668D',args['-c'])
+            if args['--sweep']:
+                # ss = 'SWEEP_ARC_NODE=new Set([' + args['--sweep']+'])'
+                line = line.replace('SWEEP_ARC_NODE=new Set()',ss)
+            if args['--degree']:
+                line = line.replace('LAYOUT_DEGREE=360','LAYOUT_DEGREE='+args['--degree'])
+
             sys.stdout.write('%s'%(line))
 
 sys.stdout.flush()

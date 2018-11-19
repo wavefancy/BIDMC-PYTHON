@@ -58,7 +58,7 @@ rect {
 path {
     fill: none;
     stroke: #05668D;
-    opacity: 0.6;
+    /* opacity: 0.6; */
     stroke-width: 2px;
 }
 
@@ -80,6 +80,12 @@ path {
 // color for fill circle or rectangle.
 FILL_COLOR = '#05668D';
 NO_FILL_COLOR = 'white';
+DISTANCE_PARTNER=2000;
+SHOW_TEXT=true;
+// SWEEP_ARC_NODE=new Set(['115']);
+SWEEP_ARC_NODE=new Set();
+// set the circular layout degree.
+LAYOUT_DEGREE=360
 
 var outerRadius = 960 / 2,
     innerRadius = outerRadius - 170;
@@ -89,7 +95,7 @@ var color = d3.scaleOrdinal()
     .range(d3.schemeCategory10);
 
 var cluster = d3.cluster()
-    .size([360, innerRadius])
+    .size([LAYOUT_DEGREE, innerRadius])
     .separation(function(a, b) { return 1; });
 
 var svg = d3.select("body").append("svg")
@@ -188,7 +194,8 @@ document.addEventListener("DOMContentLoaded", function(e) {
 
       y.name = t[0]
       // console.log(y.name)
-      if(!y.name.startsWith('root')){
+      if(y.y != null && !y.name.startsWith('root')){
+          // console.log(JSON.stringify(y))
           if(y.name.split('_')[4]=='2'){
               CIRCLES.push(y);
           }else{
@@ -202,6 +209,8 @@ document.addEventListener("DOMContentLoaded", function(e) {
           TEXTS.push(ob);
       }
   });
+
+  // console.log(JSON.stringify(RECTS))
 
   // console.log(CIRCLES)
   //node markers, circle.
@@ -226,18 +235,20 @@ document.addEventListener("DOMContentLoaded", function(e) {
       // .style("stroke", SHAPE_COLOR)   // set the line colour
 
   //text for each nodes.
-  chart.append("g")
-      .attr("class", "labels")
-      .selectAll("text")
-      // .data(CIRCLES.concat(RECTS))
-      .data(TEXTS)
-      .enter().append("text")
-      .attr("dy", ".31em")
-      // .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (innerRadius + 4) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
-      .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y+10) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
-      .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-      // .text(function(d) { return d.data.name.replace(/_/g, " "); })
-      .text(function(d) { return d.name.split('_')[1]; })
+  if(SHOW_TEXT){
+      chart.append("g")
+          .attr("class", "labels")
+          .selectAll("text")
+          // .data(CIRCLES.concat(RECTS))
+          .data(TEXTS)
+          .enter().append("text")
+          .attr("dy", ".31em")
+          // .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (innerRadius + 4) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
+          .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y+10) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
+          .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+          // .text(function(d) { return d.data.name.replace(/_/g, " "); })
+          .text(function(d) { return d.name.split('_')[1]; })
+  }
       // .on("mouseover", mouseovered(true))
       // .on("mouseout", mouseovered(false));
 
@@ -300,7 +311,12 @@ function linkVariable(d) {
     //do not plot root.
     if(d.source.data.name.startsWith('root')){ return;}
     // return linkStep(d.source.x, d.source.radius, d.target.x, d.target.radius);
-    return linkStep(d.source.x, n_start_y, d.target.x, d.target.radius);
+    name = d.target.data.name.split('_')[1]
+    if(SWEEP_ARC_NODE.has(name)){
+        return linkStep(d.source.x, n_start_y, d.target.x, d.target.radius,sweep=1);
+    }else{
+        return linkStep(d.source.x, n_start_y, d.target.x, d.target.radius);
+    }
 }
 
 // the link between of the arc and to the end points.
@@ -315,7 +331,7 @@ function linkConstant(d) {
 function linkPartner(d) {
   // console.log(d)
   //push start on Y further. shift x a little bit.
-  new_x = d.source.x+ 2000/d.source.radius;
+  new_x = d.source.x+ DISTANCE_PARTNER/d.source.radius;
   n = d.source.data.name.split('||')[1];
   MARKER_NODES.add(JSON.stringify({x:new_x, y:d.source.radius, name:n}));
   return linkStep(d.source.x, d.source.radius, new_x , d.source.radius);
@@ -338,7 +354,8 @@ function linkExtensionConstant(d) {
 
 // Like d3.svg.diagonal.radial, but with square corners.
 PLOT_DONE = new Set() // already draw, no need draw again.
-function linkStep(startAngle, startRadius, endAngle, endRadius) {
+// function linkStep(startAngle, startRadius, endAngle, endRadius) {
+function linkStep(startAngle, startRadius, endAngle, endRadius, sweep=0) {
     //remove duplicate draw.
     line = JSON.stringify({x:startAngle,y:startRadius,m:endAngle,n:endRadius})
     if(PLOT_DONE.has(line)){return;}
@@ -348,9 +365,17 @@ function linkStep(startAngle, startRadius, endAngle, endRadius) {
       s0 = Math.sin(startAngle),
       c1 = Math.cos(endAngle = (endAngle - 90) / 180 * Math.PI),
       s1 = Math.sin(endAngle);
-  var old =  "M" + startRadius * c0 + "," + startRadius * s0
-      + (endAngle === startAngle ? "" : "A" + startRadius + "," + startRadius + " 0 0 " + (endAngle > startAngle ? 1 : 0) + " " + startRadius * c1 + "," + startRadius * s1)
-      + "L" + endRadius * c1 + "," + endRadius * s1;
+
+  if(sweep==0){
+      var old =  "M" + startRadius * c0 + "," + startRadius * s0
+          + (endAngle === startAngle ? "" : "A" + startRadius + "," + startRadius + " 0 0 " + (endAngle > startAngle ? 1 : 0) + " " + startRadius * c1 + "," + startRadius * s1)
+          + "L" + endRadius * c1 + "," + endRadius * s1;
+  }else{ // different sweep.
+      var old =  "M" + startRadius * c0 + "," + startRadius * s0
+          + (endAngle === startAngle ? "" : "A" + startRadius + "," + startRadius + " 0 0 " + (endAngle < startAngle ? 1 : 0) + " " + startRadius * c1 + "," + startRadius * s1)
+          + "L" + endRadius * c1 + "," + endRadius * s1;
+  }
+
       // console.log(old);
   return old;
 }
